@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type ElementType } from "react";
 import {
-  ArrowLeft, Bell, CalendarDays, Check, ChevronRight, IndianRupee, ShieldCheck,
+  ArrowLeft, Bell, CalendarDays, Check, IndianRupee, ShieldCheck,
   Store, TentTree, TrendingUp, UserRound, Users as UsersIcon, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,7 @@ function Overview() {
         <Stat icon={CalendarDays} label="Total bookings" value="1,284" tone="text-primary" sub="+124 this month" />
         <Stat icon={Store} label="Active providers" value="86" tone="text-accent" sub="12 pending verify" />
         <Stat icon={IndianRupee} label="Revenue (Sept)" value="₹9.4L" tone="text-primary" sub="₹75K platform fee" />
-        <Stat icon={Users} label="App users" value="5,730" tone="text-accent" sub="+410 this week" />
+        <Stat icon={UsersIcon} label="App users" value="5,730" tone="text-accent" sub="+410 this week" />
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <section><h2 className="mb-3 text-lg font-bold">Latest bookings</h2>
