@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type ElementType } from "react";
 import {
   ArrowLeft, Bell, CalendarDays, Check, ChevronRight, IndianRupee, ShieldCheck,
-  Store, TentTree, TrendingUp, UserRound, Users, X,
+  Store, TentTree, TrendingUp, UserRound, Users as UsersIcon, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -178,5 +178,3 @@ function Stat({ icon: Icon, label, value, tone, sub }: { icon: ElementType; labe
   );
 }
 
-function ChevronHint() { return <ChevronRight className="size-4 text-muted-foreground" />; }
-void ChevronHint;
