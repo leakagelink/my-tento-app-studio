@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type ElementType } from "react";
+import { useState, type ElementType, type ReactNode } from "react";
 import {
   ArrowLeft, Bell, CalendarDays, Car, Check, ChevronDown, Clock3, Home,
   MapPin, Minus, PartyPopper, Plus, Search, ShieldCheck, Sparkles,
@@ -45,6 +45,7 @@ function Index() {
   const [service, setService] = useState<ServiceName>("Tent");
   const [guests, setGuests] = useState(200);
   const [provider, setProvider] = useState(0);
+  const chosenProvider = providers[provider] ?? providers[0];
 
   const beginBooking = (name: ServiceName) => { setService(name); setStep("details"); window.scrollTo(0, 0); };
 
@@ -65,8 +66,8 @@ function Index() {
         {step === "home" && <HomeScreen onBook={beginBooking} />}
         {step === "details" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => setStep("providers")} />}
         {step === "providers" && <ProvidersScreen selected={provider} setSelected={setProvider} onContinue={() => setStep("payment")} />}
-        {step === "payment" && <PaymentScreen service={service} guests={guests} provider={providers[provider]} onConfirm={() => setStep("success")} />}
-        {step === "success" && <SuccessScreen provider={providers[provider]} onHome={() => setStep("home")} />}
+        {step === "payment" && chosenProvider && <PaymentScreen service={service} guests={guests} provider={chosenProvider} onConfirm={() => setStep("success")} />}
+        {step === "success" && chosenProvider && <SuccessScreen provider={chosenProvider} onHome={() => setStep("home")} />}
       </main>
 
       {step === "home" && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card"><div className="mx-auto grid h-18 max-w-md grid-cols-4">
@@ -102,7 +103,8 @@ function ProvidersScreen({ selected, setSelected, onContinue }: { selected: numb
 
 function PaymentScreen({ service, guests, provider, onConfirm }: { service: ServiceName; guests: number; provider: (typeof providers)[number]; onConfirm: () => void }) {
   const [pay, setPay] = useState("advance");
-  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="3 of 3" title="Confirm & pay" subtitle="Review your booking details" /><div className="rounded-lg border border-border bg-card p-5"><h3 className="mb-4 font-bold">Booking summary</h3><Summary label="Service" value={service} /><Summary label="Provider" value={provider.name} /><Summary label="Date & time" value="25 Dec 2026 · 6:00 PM" /><Summary label="Guests" value={`${guests}`} /><div className="mt-4 border-t border-border pt-4"><Summary label="Package total" value={provider.price} strong /></div></div><div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="mb-3 font-bold">Payment method</h3>{[["advance","Pay 20% advance online"],["cash","Cash / pay provider"]].map(([id,label]) => <button key={id} onClick={() => setPay(id)} className={`mb-2 flex w-full items-center gap-3 rounded-lg border p-3 text-left text-sm font-semibold ${pay === id ? "border-primary bg-secondary" : "border-border"}`}><span className={`grid size-5 place-items-center rounded-full border ${pay === id ? "border-primary" : "border-border"}`}>{pay === id && <span className="size-2.5 rounded-full bg-primary" />}</span>{label}</button>)}</div><div className="mt-4 flex gap-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" /><p>Your booking is protected. Provider details are shared after confirmation.</p></div><Button onClick={onConfirm} className="mt-5 w-full">Confirm booking</Button></div>;
+  const methods = [{ id: "advance", label: "Pay 20% advance online" }, { id: "cash", label: "Cash / pay provider" }];
+  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="3 of 3" title="Confirm & pay" subtitle="Review your booking details" /><div className="rounded-lg border border-border bg-card p-5"><h3 className="mb-4 font-bold">Booking summary</h3><Summary label="Service" value={service} /><Summary label="Provider" value={provider.name} /><Summary label="Date & time" value="25 Dec 2026 · 6:00 PM" /><Summary label="Guests" value={`${guests}`} /><div className="mt-4 border-t border-border pt-4"><Summary label="Package total" value={provider.price} strong /></div></div><div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="mb-3 font-bold">Payment method</h3>{methods.map(({ id, label }) => <button key={id} onClick={() => setPay(id)} className={`mb-2 flex w-full items-center gap-3 rounded-lg border p-3 text-left text-sm font-semibold ${pay === id ? "border-primary bg-secondary" : "border-border"}`}><span className={`grid size-5 place-items-center rounded-full border ${pay === id ? "border-primary" : "border-border"}`}>{pay === id && <span className="size-2.5 rounded-full bg-primary" />}</span>{label}</button>)}</div><div className="mt-4 flex gap-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" /><p>Your booking is protected. Provider details are shared after confirmation.</p></div><Button onClick={onConfirm} className="mt-5 w-full">Confirm booking</Button></div>;
 }
 
 function SuccessScreen({ provider, onHome }: { provider: (typeof providers)[number]; onHome: () => void }) {
@@ -110,6 +112,6 @@ function SuccessScreen({ provider, onHome }: { provider: (typeof providers)[numb
 }
 
 function StepTitle({ step, title, subtitle }: { step: string; title: string; subtitle: string }) { return <div className="mb-6"><p className="text-xs font-extrabold uppercase text-accent">{step}</p><h1 className="mt-1 text-2xl font-extrabold">{title}</h1><p className="mt-1 text-sm text-muted-foreground">{subtitle}</p><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full bg-primary ${step.startsWith("1") ? "w-1/3" : step.startsWith("2") ? "w-2/3" : "w-full"}`} /></div></div>; }
-function Field({ icon: Icon, label, children }: { icon: ElementType; label: string; children: React.ReactNode }) { return <div><label className="mb-2 block text-sm font-bold">{label}</label><div className="flex items-center gap-3 rounded-lg border border-border p-3"><Icon className="size-5 text-primary" /><div className="min-w-0 flex-1 text-sm">{children}</div></div></div>; }
+function Field({ icon: Icon, label, children }: { icon: ElementType; label: string; children: ReactNode }) { return <div><label className="mb-2 block text-sm font-bold">{label}</label><div className="flex items-center gap-3 rounded-lg border border-border p-3"><Icon className="size-5 text-primary" /><div className="min-w-0 flex-1 text-sm">{children}</div></div></div>; }
 function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className="flex items-center justify-between gap-4 py-2 text-sm"><span className="text-muted-foreground">{label}</span><span className={strong ? "font-display text-lg font-extrabold text-primary" : "text-right font-bold"}>{value}</span></div>; }
 function NavItem({ icon: Icon, label, active = false }: { icon: ElementType; label: string; active?: boolean }) { return <button className={`flex flex-col items-center justify-center gap-1 text-[11px] font-bold ${active ? "text-primary" : "text-muted-foreground"}`}><Icon className="size-5" />{label}</button>; }
