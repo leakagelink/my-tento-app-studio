@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, type ElementType, type ReactNode } from "react";
+import { useEffect, useState, type ElementType, type ReactNode } from "react";
 import {
   ArrowLeft, Bell, CalendarDays, Car, Check, ChevronDown, ChevronRight, Clock3, CreditCard, Headphones, Home,
   MapPin, Minus, PartyPopper, Plus, Search, Settings, ShieldCheck, Sparkles,
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, type Lang } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.jpg";
 import packagePremium from "@/assets/package-premium.jpg";
@@ -81,7 +80,7 @@ function Index() {
     const previous: Partial<Record<Step, Step>> = { details: "home", providers: "details", providerDetail: "providers", payment: combo ? "combo" : "providers", success: "home", bookings: "home", bookingDetail: "bookings", wallet: "home", profile: "home", notifications: "home", services: "home", combo: "home", reviews: "providerDetail" };
     go(previous[step] ?? "home");
   };
-  const t = useT(), _unused = null; void _unused;
+  const t = useT();
   const tab = step === "bookings" || step === "bookingDetail" ? "bookings" : step === "wallet" ? "wallet" : step === "profile" ? "profile" : "home";
 
   return (
@@ -174,13 +173,11 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
 
 function ServicesScreen({ onBook }: { onBook: (name: ServiceName) => void }) { return <div className="animate-rise-in"><PageTitle title="All services" subtitle="Choose what your event needs" /><div className="grid gap-3 sm:grid-cols-2">{services.map(({ name, subtitle, icon: Icon, tone }) => <Button variant="outline" key={name} onClick={() => onBook(name)} className="h-auto justify-start gap-4 p-5 text-left"><span className={`grid size-14 place-items-center rounded-lg ${tone}`}><Icon /></span><span className="flex-1"><span className="block text-base font-bold">{name}</span><span className="text-xs font-normal text-muted-foreground">{subtitle}</span></span><ChevronRight className="size-5" /></Button>)}</div></div>; }
 
-function ProviderDetail({ provider, onBook }: { provider: (typeof providers)[number]; onBook: () => void }) { return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-5 flex items-center gap-4"><span className="grid size-20 place-items-center rounded-lg bg-brand-soft font-display text-xl font-bold text-primary">{provider.initials}</span><div><h1 className="text-2xl font-extrabold">{provider.name}</h1><p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground"><Star className="size-4 fill-accent text-accent" /> {provider.rating} · Verified · Lucknow</p></div></div><div className="space-y-4 rounded-lg border border-border bg-card p-5"><h2 className="font-bold">Tent package</h2><p className="text-sm leading-6 text-muted-foreground">Shamiyana, stage, 200 chairs, 20 tables, lighting and setup staff included.</p><Summary label="Capacity" value={provider.detail} /><Summary label="Package price" value={provider.price} strong /><div className="rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="mb-2 size-5" />Identity and service details verified by My Tento.</div><Button onClick={onBook} className="w-full">Book this provider</Button></div></div>; }
 
 function PageTitle({ title, subtitle }: { title: string; subtitle: string }) { return <div className="mb-6"><h1 className="text-2xl font-extrabold">{title}</h1><p className="mt-1 text-sm text-muted-foreground">{subtitle}</p></div>; }
 
 function BookingsScreen({ onTrack }: { onTrack: () => void }) { return <div className="animate-rise-in"><PageTitle title="My bookings" subtitle="Upcoming and previous events" /><div className="mb-4 flex gap-2"><Button size="sm">Upcoming</Button><Button variant="outline" size="sm">Past</Button></div><div className="rounded-lg border border-border bg-card p-5"><div className="flex items-start justify-between gap-4"><div><span className="text-xs font-bold text-success">CONFIRMED</span><h2 className="mt-1 font-bold">Royal Tent House</h2><p className="mt-1 text-sm text-muted-foreground">25 Dec 2026 · 6:00 PM</p></div><TentTree className="size-7 text-primary" /></div><div className="my-4 border-t border-border" /><Summary label="Booking ID" value="MT-261225-48" /><Summary label="Location" value="Gomti Nagar" /><Button onClick={onTrack} className="mt-4 w-full">View booking & tracking</Button></div></div>; }
 
-function BookingDetail() { return <div className="mx-auto max-w-2xl animate-rise-in"><PageTitle title="Booking details" subtitle="MT-261225-48" /><div className="rounded-lg border border-border bg-card p-5"><span className="text-xs font-bold text-success">PROVIDER CONFIRMED</span><h2 className="mt-2 text-xl font-bold">Royal Tent House</h2><p className="mt-1 text-sm text-muted-foreground">25 Dec 2026 · 6:00 PM · Gomti Nagar</p><div className="my-5 border-t border-border" /><h3 className="font-bold">Live status</h3><div className="mt-4 space-y-4">{["Booking confirmed", "Provider assigned", "Team departure", "Setup started"].map((x,i)=><div key={x} className="flex gap-3"><span className={`mt-1 size-3 rounded-full ${i < 2 ? "bg-success" : "bg-border"}`} /><div><p className="text-sm font-semibold">{x}</p><p className="text-xs text-muted-foreground">{i === 0 ? "Completed" : i === 1 ? "Rohit and team assigned" : "Updates on event day"}</p></div></div>)}</div><Button variant="outline" className="mt-6 w-full"><Headphones className="size-4" /> Contact support</Button></div></div>; }
 
 function WalletScreen() { const [added, setAdded] = useState(false); return <div className="animate-rise-in"><PageTitle title="My wallet" subtitle="Payments, refunds and offers" /><div className="rounded-lg bg-primary p-6 text-primary-foreground"><p className="text-sm text-primary-foreground/70">Available balance</p><p className="mt-1 font-display text-3xl font-extrabold">₹1,250</p><Button onClick={() => setAdded(true)} className="mt-5 bg-accent text-accent-foreground hover:bg-accent/90">{added ? <><Check className="size-4" /> Money added</> : <><Plus className="size-4" /> Add money</>}</Button></div><section className="mt-6"><h2 className="mb-3 font-bold">Recent transactions</h2><div className="rounded-lg border border-border bg-card p-4"><Summary label="Booking advance · Royal Tent" value="− ₹5,000" /><Summary label="Refund · Cancelled cab" value="+ ₹450" /><Summary label="Wallet cashback" value="+ ₹200" /></div></section><section className="mt-6"><h2 className="mb-3 font-bold">Payment methods</h2><div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"><CreditCard className="size-5 text-primary" /><div className="flex-1"><p className="text-sm font-bold">UPI & Cards</p><p className="text-xs text-muted-foreground">Secure mock checkout</p></div><ChevronRight className="size-5" /></div></section></div>; }
 
