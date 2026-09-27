@@ -141,18 +141,51 @@ function ProfileScreen() { const [editing, setEditing] = useState(false); const 
 
 function NotificationsScreen({ read, onRead, onBooking }: { read: boolean; onRead: () => void; onBooking: () => void }) { return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and offer updates" /><Button variant="ghost" size="sm" onClick={onRead}>{read ? "All read" : "Mark all read"}</Button></div><div className="space-y-3"><Button variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${read ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">Booking confirmed</span><span className="text-xs font-normal text-muted-foreground">Royal Tent House accepted your booking.</span></span></Button><div className="rounded-lg border border-border bg-card p-4"><p className="font-bold">Wedding season offer</p><p className="mt-1 text-xs text-muted-foreground">Save on event combos booked this week.</p></div></div></div>; }
 
-function DetailsScreen({ service, guests, setGuests, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; onContinue: () => void }) {
-  const packages = [
+const servicePackages: Record<Exclude<ServiceName, "Cab">, { name: string; detail: string; price: number; image?: string }[]> = {
+  Decoration: [
     { name: "Premium", detail: "Full setup + grand stage", price: 25000, image: packagePremium },
     { name: "Standard", detail: "Stage + main hall", price: 15000, image: packageStandard },
     { name: "Basic", detail: "Elegant stage only", price: 10000, image: packageBasic },
-  ];
-  const addOnOptions = [{ name: "Stage Setup", price: 5000 }, { name: "Lighting Setup", price: 3000 }, { name: "Flower Decoration", price: 4000 }, { name: "DJ / Sound", price: 6000 }];
+    { name: "Custom", detail: "As per your need", price: 0 },
+  ],
+  Tent: [
+    { name: "Royal Shamiyana", detail: "Premium tent + full setup", price: 30000, image: packagePremium },
+    { name: "Standard Tent", detail: "Tent + chairs + tables", price: 18000, image: packageStandard },
+    { name: "Basic Canopy", detail: "Simple tent setup", price: 12000, image: packageBasic },
+    { name: "Custom", detail: "Type, size, design & colour", price: 0 },
+  ],
+  Catering: [
+    { name: "Full Catering", detail: "Food, snacks, drinks & staff", price: 20000, image: packagePremium },
+    { name: "Cooking Master", detail: "Experienced cook only", price: 8000, image: packageStandard },
+    { name: "Bartan Only", detail: "Utensils & serving items", price: 6000, image: packageBasic },
+    { name: "Custom", detail: "Menu as per your need", price: 0 },
+  ],
+};
+
+const serviceAddOns: Record<Exclude<ServiceName, "Cab">, { name: string; price: number }[]> = {
+  Decoration: [
+    { name: "Stage Setup", price: 5000 }, { name: "Lighting Setup", price: 3000 }, { name: "Flower Decoration", price: 4000 },
+    { name: "DJ / Sound System", price: 6000 }, { name: "Photography", price: 5000 }, { name: "LED Screen", price: 7000 },
+  ],
+  Tent: [
+    { name: "DJ Sound + Light Setup", price: 6000 }, { name: "Night Light + Gate Light", price: 3500 }, { name: "Mineral Water (Branded / Normal)", price: 2000 },
+    { name: "Normal Decoration", price: 4000 }, { name: "All Catering Facility", price: 15000 }, { name: "Catering Staff Only", price: 5000 },
+  ],
+  Catering: [
+    { name: "Mineral Water (Branded / Normal)", price: 2000 }, { name: "DJ Speakers", price: 5000 }, { name: "Extra Serving Staff", price: 3000 }, { name: "Snacks & Drinks Counter", price: 4000 },
+  ],
+};
+
+function DetailsScreen({ service, guests, setGuests, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; onContinue: () => void }) {
+  const key = (service === "Cab" ? "Tent" : service) as Exclude<ServiceName, "Cab">;
+  const packages = servicePackages[key];
+  const addOnOptions = serviceAddOns[key];
   const [selectedPackage, setSelectedPackage] = useState(0);
-  const [addOns, setAddOns] = useState<string[]>(["Stage Setup"]);
+  const [addOns, setAddOns] = useState<string[]>([addOnOptions[0]?.name ?? ""]);
   const selected = packages[selectedPackage] ?? packages[0];
   const addOnTotal = addOnOptions.filter((item) => addOns.includes(item.name)).reduce((total, item) => total + item.price, 0);
   const total = (selected?.price ?? 0) + addOnTotal;
+  const isQuote = (selected?.price ?? 0) === 0;
   const toggleAddOn = (name: string) => setAddOns((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
 
   return <div className="animate-rise-in pb-40">
