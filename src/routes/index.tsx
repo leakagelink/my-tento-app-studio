@@ -214,8 +214,8 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
         <SectionHeading number="2" title={`Choose ${service} Package`} subtitle="Select your preferred style" />
         <div className="-mx-1 mt-4 flex snap-x gap-3 overflow-x-auto px-1 pb-4">
           {packages.map((item, index) => <Button key={item.name} variant="outline" onClick={() => setSelectedPackage(index)} className={`h-auto min-w-44 snap-start flex-col items-stretch overflow-hidden p-1.5 text-left ${selectedPackage === index ? "border-primary ring-4 ring-secondary" : "border-border"}`}>
-            <span className="relative block h-28 overflow-hidden rounded-md"><img src={item.image} alt={`${item.name} decoration package`} loading="lazy" width={1024} height={768} className="h-full w-full object-cover" />{selectedPackage === index && <span className="absolute left-2 top-2 grid size-5 place-items-center rounded-full border-2 border-primary-foreground bg-primary text-primary-foreground"><Check className="size-3" /></span>}</span>
-            <span className="block w-full px-2 pb-2 pt-2"><span className="block text-xs font-extrabold">{item.name} {service}</span><span className="mt-0.5 block text-[10px] font-medium text-muted-foreground">{item.detail}</span><span className="mt-2 block font-display text-sm font-extrabold text-primary">₹ {item.price.toLocaleString("en-IN")}</span></span>
+            <span className="relative block h-28 overflow-hidden rounded-md">{item.image ? <img src={item.image} alt={`${item.name} ${service} package`} loading="lazy" width={1024} height={768} className="h-full w-full object-cover" /> : <span className="grid h-full w-full place-items-center bg-brand-soft"><Sparkles className="size-8 text-primary" /></span>}{selectedPackage === index && <span className="absolute left-2 top-2 grid size-5 place-items-center rounded-full border-2 border-primary-foreground bg-primary text-primary-foreground"><Check className="size-3" /></span>}</span>
+            <span className="block w-full px-2 pb-2 pt-2"><span className="block text-xs font-extrabold">{item.name} {service}</span><span className="mt-0.5 block text-[10px] font-medium text-muted-foreground">{item.detail}</span><span className="mt-2 block font-display text-sm font-extrabold text-primary">{item.price === 0 ? "Get Quote" : `₹ ${item.price.toLocaleString("en-IN")}`}</span></span>
           </Button>)}
         </div>
       </section>
@@ -229,7 +229,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
     </div>
 
     <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 p-4 backdrop-blur sm:left-1/2 sm:max-w-md sm:-translate-x-1/2">
-      <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">Total amount</p><p className="font-display text-xl font-extrabold">₹ {total.toLocaleString("en-IN")}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">Book now <ChevronRight className="size-4" /></Button></div>
+      <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">{isQuote ? "Custom package" : "Total amount"}</p><p className="font-display text-xl font-extrabold">{isQuote ? "Get Quote" : `₹ ${total.toLocaleString("en-IN")}`}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">{isQuote ? "Request quote" : "Book now"} <ChevronRight className="size-4" /></Button></div>
     </div>
   </div>;
 }
