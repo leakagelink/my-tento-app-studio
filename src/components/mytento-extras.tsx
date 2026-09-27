@@ -17,6 +17,7 @@ const dict = {
 } as const;
 export type TKey = keyof (typeof dict)["en"];
 export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "en", setLang: () => {} });
+export function tr(lang: Lang, k: TKey) { return dict[lang][k]; }
 export function useT() { const { lang } = useContext(LangContext); return (k: TKey) => dict[lang][k]; }
 
 export function LanguageToggle() {

@@ -6,7 +6,7 @@ import {
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, type Lang } from "@/components/mytento-extras";
+import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.jpg";
 import packagePremium from "@/assets/package-premium.jpg";
 import packageStandard from "@/assets/package-standard.jpg";
@@ -80,7 +80,7 @@ function Index() {
     const previous: Partial<Record<Step, Step>> = { details: "home", providers: "details", providerDetail: "providers", payment: combo ? "combo" : "providers", success: "home", bookings: "home", bookingDetail: "bookings", wallet: "home", profile: "home", notifications: "home", services: "home", combo: "home", reviews: "providerDetail" };
     go(previous[step] ?? "home");
   };
-  const t = useT();
+  const t = (k: TKey) => tr(lang, k);
   const tab = step === "bookings" || step === "bookingDetail" ? "bookings" : step === "wallet" ? "wallet" : step === "profile" ? "profile" : "home";
 
   return (
