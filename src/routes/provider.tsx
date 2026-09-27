@@ -77,7 +77,7 @@ function ProviderApp() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {open ? (
-          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) update(open.id, n.next); else setOpenId(null); }} onDecline={() => update(open.id, "declined")} onClose={() => setOpenId(null)} />
+          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) update(open.id, n.next); else setOpenId(null); }} onDecline={() => { update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
           <Dashboard bookings={bookings} onOpen={(id) => setOpenId(id)} />
         ) : tab === "bookings" ? (
