@@ -20,7 +20,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminApp,
 });
 
-type Tab = "overview" | "providers" | "bookings" | "users";
+type Tab = "overview" | "providers" | "bookings" | "users" | "payments" | "offers";
 
 type AdminBooking = { id: string; customer: string; provider: string; service: string; date: string; amount: string; status: "confirmed" | "completed" | "pending" };
 type AdminProvider = { name: string; service: string; city: string; rating: string; verified: boolean; initials: string };
@@ -64,7 +64,7 @@ function AdminApp() {
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
         <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 sm:px-6">
-          {([["overview", "Overview"], ["providers", "Providers"], ["bookings", "Bookings"], ["users", "Users"]] as [Tab, string][]).map(([id, label]) => (
+          {([["overview", "Overview"], ["providers", "Providers"], ["bookings", "Bookings"], ["users", "Users"], ["payments", "Payments"], ["offers", "Offers"]] as [Tab, string][]).map(([id, label]) => (
             <Button key={id} variant="ghost" size="sm" onClick={() => go(id)} className={`rounded-b-none border-b-2 ${tab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{label}</Button>
           ))}
         </div>
@@ -75,6 +75,8 @@ function AdminApp() {
         {tab === "providers" && <Providers providers={providers} onToggle={toggle} />}
         {tab === "bookings" && <Bookings />}
         {tab === "users" && <Users />}
+        {tab === "payments" && <Payments />}
+        {tab === "offers" && <Offers />}
       </main>
     </div>
   );
