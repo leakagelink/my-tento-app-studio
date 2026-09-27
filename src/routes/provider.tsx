@@ -20,11 +20,11 @@ export const Route = createFileRoute("/provider")({
   component: ProviderApp,
 });
 
-type Tab = "dashboard" | "bookings" | "calendar" | "earnings";
+type Tab = "dashboard" | "bookings" | "calendar" | "earnings" | "profile";
 
 type ProviderBooking = {
   id: string; customer: string; phone: string; service: string; detail: string;
-  date: string; time: string; area: string; amount: string; status: "new" | "confirmed" | "team" | "setup" | "done";
+  date: string; time: string; area: string; amount: string; status: "new" | "confirmed" | "team" | "setup" | "done" | "declined";
 };
 
 const initialBookings: ProviderBooking[] = [
