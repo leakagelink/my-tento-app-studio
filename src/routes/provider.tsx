@@ -230,6 +230,53 @@ function Earnings({ paidOut, onPayout }: { paidOut: boolean; onPayout: () => voi
   );
 }
 
+function Profile() {
+  const [services, setServices] = useState([
+    { name: "Royal Shamiyana package", price: "₹30,000", active: true },
+    { name: "Standard tent package", price: "₹18,000", active: true },
+    { name: "Stage decoration", price: "₹12,000", active: true },
+    { name: "DJ + night lighting", price: "₹6,000", active: false },
+  ]);
+  const [saved, setSaved] = useState(false);
+  const toggleService = (name: string) => { setServices((list) => list.map((s) => (s.name === name ? { ...s, active: !s.active } : s))); setSaved(false); };
+  return (
+    <div className="animate-rise-in">
+      <PageTitle title="My profile" subtitle="How customers see Royal Tent House on myTento" />
+      <div className="rounded-lg border border-border bg-card p-5">
+        <div className="flex items-center gap-4">
+          <span className="grid size-14 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary">RT</span>
+          <div className="flex-1"><p className="font-bold">Royal Tent House</p><p className="text-xs text-muted-foreground">Gomti Nagar, Lucknow · +91 94150 12345</p></div>
+          <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">Verified</span>
+        </div>
+      </div>
+      <section className="mt-6">
+        <h2 className="mb-3 font-bold">My services & prices</h2>
+        <div className="space-y-3">
+          {services.map((s) => (
+            <button key={s.name} onClick={() => toggleService(s.name)} className={`flex w-full items-center gap-4 rounded-lg border p-4 text-left transition ${s.active ? "border-primary bg-secondary" : "border-border bg-card"}`}>
+              <span className={`grid size-6 place-items-center rounded-full ${s.active ? "bg-primary text-primary-foreground" : "border border-border"}`}>{s.active && <Check className="size-4" />}</span>
+              <span className="flex-1 text-sm font-bold">{s.name}</span>
+              <span className="font-display font-extrabold text-primary">{s.price}</span>
+            </button>
+          ))}
+        </div>
+        <Button onClick={() => setSaved(true)} className="mt-4 w-full sm:w-auto">{saved ? <><Check className="size-4" /> Saved</> : "Save changes"}</Button>
+      </section>
+      <section className="mt-8">
+        <h2 className="mb-3 font-bold">Customer reviews</h2>
+        <div className="space-y-3">
+          {providerReviews.map((r) => (
+            <div key={r.name} className="rounded-lg border border-border bg-card p-4">
+              <div className="flex items-center justify-between"><p className="text-sm font-bold">{r.name}</p><span className="flex items-center gap-1 text-xs font-bold text-accent"><Star className="size-3 fill-accent" /> {r.rating}.0 · {r.date}</span></div>
+              <p className="mt-2 text-sm text-muted-foreground">{r.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function Stat({ icon: Icon, label, value, tone }: { icon: ElementType; label: string; value: string; tone: string }) {
   return <div className="rounded-lg border border-border bg-card p-4"><Icon className={`size-5 ${tone}`} /><p className="mt-3 font-display text-xl font-extrabold">{value}</p><p className="text-xs text-muted-foreground">{label}</p></div>;
 }
