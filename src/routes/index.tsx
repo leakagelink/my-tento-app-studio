@@ -79,7 +79,8 @@ function Index() {
       <main className={step === "details" ? "" : "px-4 py-6"}>
         {step === "home" && <HomeScreen onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
-        {step === "details" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
+        {step === "details" && service === "Cab" && <CabScreen onContinue={() => go("payment")} />}
+        {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
         {step === "providers" && <ProvidersScreen selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
         {step === "providerDetail" && chosenProvider && <ProviderDetail provider={chosenProvider} onBook={() => go("details")} />}
         {step === "payment" && chosenProvider && <PaymentScreen service={service} guests={guests} provider={chosenProvider} onConfirm={() => go("success")} />}
@@ -213,3 +214,50 @@ function StepTitle({ step, title, subtitle }: { step: string; title: string; sub
 function Field({ icon: Icon, label, children }: { icon: ElementType; label: string; children: ReactNode }) { return <div><label className="mb-2 block text-sm font-bold">{label}</label><div className="flex items-center gap-3 rounded-lg border border-border p-3"><Icon className="size-5 text-primary" /><div className="min-w-0 flex-1 text-sm">{children}</div></div></div>; }
 function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className="flex items-center justify-between gap-4 py-2 text-sm"><span className="text-muted-foreground">{label}</span><span className={strong ? "font-display text-lg font-extrabold text-primary" : "text-right font-bold"}>{value}</span></div>; }
 function NavItem({ icon: Icon, label, active = false, onClick }: { icon: ElementType; label: string; active?: boolean; onClick: () => void }) { return <Button variant="ghost" onClick={onClick} className={`h-full rounded-none flex-col gap-1 text-[11px] ${active ? "text-primary" : "text-muted-foreground"}`}><Icon className="size-5" />{label}</Button>; }
+
+function CabScreen({ onContinue }: { onContinue: () => void }) {
+  const [mode, setMode] = useState<"daily" | "marriage">("daily");
+  const [vehicle, setVehicle] = useState("Cab");
+  const [count, setCount] = useState("5");
+  const [pickup, setPickup] = useState("Gomti Nagar, Lucknow");
+  const [drop, setDrop] = useState("Charbagh Railway Station, Lucknow");
+  const [premium, setPremium] = useState("Toyota Fortuner");
+  const swap = () => { setPickup(drop); setDrop(pickup); };
+  const field = "w-full rounded-lg border border-border bg-card p-3 text-sm outline-none focus:border-primary";
+  return (
+    <div className="mx-auto max-w-2xl animate-rise-in">
+      <p className="text-xs font-extrabold text-accent">2 OF 3</p>
+      <h1 className="text-3xl font-extrabold">Cab Booking</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Choose your booking type and fill in the details</p>
+      <div className="mt-4 h-1.5 rounded-full bg-border"><div className="h-full w-1/2 rounded-full bg-primary" /></div>
+      <div className="mt-5 grid grid-cols-2 gap-2 rounded-lg border border-border bg-card p-1.5">
+        {(["daily", "marriage"] as const).map((m) => <Button key={m} variant={mode === m ? "default" : "ghost"} onClick={() => setMode(m)}>{m === "daily" ? <><Car className="size-4" /> Daily Ride</> : <><PartyPopper className="size-4" /> Marriage Function</>}</Button>)}
+      </div>
+      <div className="mt-4 space-y-5 rounded-lg border border-border bg-card p-4">
+        {mode === "daily" ? (
+          <section><h2 className="font-bold">1. Select Vehicle Type</h2><p className="text-xs text-muted-foreground">Choose the vehicle you need for your daily ride</p>
+            <div className="mt-3 grid grid-cols-4 gap-2">{["Cab", "Auto", "Toto", "SUV"].map((v) => <Button key={v} variant={vehicle === v ? "default" : "outline"} onClick={() => setVehicle(v)} className="h-20 flex-col gap-1"><Car className="size-6" />{v}</Button>)}</div></section>
+        ) : (
+          <section><h2 className="font-bold">1. Select Number of Vehicles</h2><p className="text-xs text-muted-foreground">How many vehicles do you need for your function?</p>
+            <div className="mt-3 grid grid-cols-5 gap-2">{["5", "6", "7", "8", "10+"].map((v) => <Button key={v} variant={count === v ? "default" : "outline"} onClick={() => setCount(v)}>{v}</Button>)}</div></section>
+        )}
+        <label className="block"><span className="flex items-center gap-2 text-sm font-bold"><MapPin className="size-4 text-primary" /> 2. {mode === "daily" ? "Current" : "Pickup"} Location</span><input aria-label="Pickup location" value={pickup} onChange={(e) => setPickup(e.target.value)} className={`mt-2 ${field}`} /></label>
+        <label className="block"><span className="flex items-center justify-between text-sm font-bold"><span className="flex items-center gap-2"><MapPin className="size-4 text-primary" /> 3. Drop Location</span><Button type="button" variant="outline" size="sm" onClick={swap} aria-label="Swap locations">⇅</Button></span><input aria-label="Drop location" value={drop} onChange={(e) => setDrop(e.target.value)} className={`mt-2 ${field}`} /></label>
+        {mode === "daily" ? (
+          <div className="grid grid-cols-2 gap-3">
+            <label><span className="text-sm font-bold">4. Passengers</span><select aria-label="Passengers" defaultValue="2" className={`mt-2 ${field}`}>{[1, 2, 3, 4, 5, 6].map((n) => <option key={n}>{n}</option>)}</select></label>
+            <label><span className="text-sm font-bold">5. Preference</span><select aria-label="Vehicle preference" className={`mt-2 ${field}`}><option>Economy (Normal)</option><option>Comfort</option><option>Premium</option></select></label>
+          </div>
+        ) : (
+          <>
+            <label className="block"><span className="flex items-center gap-2 text-sm font-bold"><Clock3 className="size-4 text-primary" /> 4. Function Duration</span><select aria-label="Function duration" defaultValue="4 Hours" className={`mt-2 ${field}`}>{["2 Hours", "4 Hours", "6 Hours", "8 Hours", "Full Day"].map((d) => <option key={d}>{d}</option>)}</select></label>
+            <section className="rounded-lg bg-brand-soft p-3"><h2 className="text-sm font-bold">Select Premium Vehicles (Marriage Function)</h2><p className="text-xs text-muted-foreground">Luxury cars for your special day</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{([["Toyota Fortuner", "7 Seater"], ["Scorpio", "7 Seater"], ["Innova Crysta", "7 Seater"], ["Toyota Camry", "5 Seater"]] as const).map(([n, s]) => <Button key={n} variant={premium === n ? "default" : "outline"} onClick={() => setPremium(n)} className="h-auto flex-col gap-1 p-3"><Car className="size-6" /><span className="text-xs font-bold">{n}</span><span className="text-[10px] opacity-80">({s}) · Premium</span></Button>)}</div></section>
+          </>
+        )}
+        <Button onClick={onContinue} className="w-full" size="lg"><Car className="size-4" /> {mode === "daily" ? "Book Ride" : "Book Marriage Function"} <ChevronRight className="size-4" /></Button>
+      </div>
+      <div className="mt-4 flex items-center gap-3 rounded-lg border border-border bg-card p-4"><ShieldCheck className="size-8 text-primary" /><div><p className="text-sm font-bold">{mode === "daily" ? "Safe • Affordable • Reliable" : "Make Your Special Day More Special"}</p><p className="text-xs text-muted-foreground">{mode === "daily" ? "Your daily commute, our priority" : "Premium cars for weddings, receptions & special events"}</p></div></div>
+    </div>
+  );
+}
