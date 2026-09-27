@@ -72,7 +72,7 @@ function Index() {
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
   useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); }, []);
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
-  const chosenProvider = providers[provider] ?? providers[0];
+  const chosenProvider = providers[provider] ?? providers[0]!;
 
   const go = (next: Step) => { setStep(next); window.scrollTo(0, 0); };
   const beginBooking = (name: ServiceName) => { setService(name); setCombo(null); go("details"); };
