@@ -79,7 +79,11 @@ function Index() {
             <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground"><TentTree className="size-6" /></span>
             <span><span className="block font-display text-xl font-extrabold text-primary">My<span className="text-accent">Tento</span></span><span className="block text-[9px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
+            <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
+            <Button variant="ghost" size="icon" aria-label="Profile" onClick={() => go("profile")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><UserRound className="size-5" /></Button>
+          </div>
         </div>
       </header>
 
@@ -99,11 +103,12 @@ function Index() {
         {step === "notifications" && <NotificationsScreen read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
       </main>
 
-      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-4">
+      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
         <NavItem icon={Home} label="Home" active={tab === "home"} onClick={() => go("home")} />
-        <NavItem icon={CalendarDays} label="Bookings" active={tab === "bookings"} onClick={() => go("bookings")} />
-        <NavItem icon={WalletCards} label="Wallet" active={tab === "wallet"} onClick={() => go("wallet")} />
-        <NavItem icon={UserRound} label="Profile" active={tab === "profile"} onClick={() => go("profile")} />
+        <NavItem icon={TentTree} label="Tent" active={false} onClick={() => beginBooking("Tent")} />
+        <NavItem icon={Sparkles} label="Decoration" active={false} onClick={() => beginBooking("Decoration")} />
+        <NavItem icon={UtensilsCrossed} label="Catering" active={false} onClick={() => beginBooking("Catering")} />
+        <NavItem icon={Car} label="Cab" active={false} onClick={() => beginBooking("Cab")} />
       </div></nav>}
       </div>
     </div>
