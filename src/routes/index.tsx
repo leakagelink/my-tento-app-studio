@@ -79,7 +79,8 @@ function Index() {
       <main className={step === "details" ? "" : "px-4 py-6"}>
         {step === "home" && <HomeScreen onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
-        {step === "details" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
+        {step === "details" && service === "Cab" && <CabScreen onContinue={() => go("payment")} />}
+        {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
         {step === "providers" && <ProvidersScreen selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
         {step === "providerDetail" && chosenProvider && <ProviderDetail provider={chosenProvider} onBook={() => go("details")} />}
         {step === "payment" && chosenProvider && <PaymentScreen service={service} guests={guests} provider={chosenProvider} onConfirm={() => go("success")} />}
