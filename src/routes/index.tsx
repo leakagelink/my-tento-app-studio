@@ -6,6 +6,8 @@ import {
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
+import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, type Lang } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.jpg";
 import packagePremium from "@/assets/package-premium.jpg";
 import packageStandard from "@/assets/package-standard.jpg";
@@ -43,7 +45,7 @@ export const Route = createFileRoute("/")({
 });
 
 type ServiceName = "Tent" | "Decoration" | "Catering" | "Cab";
-type Step = "home" | "details" | "providers" | "providerDetail" | "payment" | "success" | "bookings" | "bookingDetail" | "wallet" | "profile" | "notifications" | "services";
+type Step = "home" | "details" | "providers" | "providerDetail" | "payment" | "success" | "bookings" | "bookingDetail" | "wallet" | "profile" | "notifications" | "services" | "combo" | "reviews";
 
 const services: { name: ServiceName; subtitle: string; icon: ElementType; tone: string }[] = [
   { name: "Tent", subtitle: "Tent, chairs & stage", icon: TentTree, tone: "bg-brand-soft text-primary" },
@@ -66,17 +68,25 @@ function Index() {
   const [location, setLocation] = useState("Lucknow, Uttar Pradesh");
   const [locationOpen, setLocationOpen] = useState(false);
   const [notificationsRead, setNotificationsRead] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
+  const [onboard, setOnboard] = useState(false);
+  const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
+  useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); }, []);
+  const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
   const chosenProvider = providers[provider] ?? providers[0];
 
   const go = (next: Step) => { setStep(next); window.scrollTo(0, 0); };
-  const beginBooking = (name: ServiceName) => { setService(name); go("details"); };
+  const beginBooking = (name: ServiceName) => { setService(name); setCombo(null); go("details"); };
   const goBack = () => {
-    const previous: Partial<Record<Step, Step>> = { details: "home", providers: "details", providerDetail: "providers", payment: "providers", success: "home", bookings: "home", bookingDetail: "bookings", wallet: "home", profile: "home", notifications: "home", services: "home" };
+    const previous: Partial<Record<Step, Step>> = { details: "home", providers: "details", providerDetail: "providers", payment: combo ? "combo" : "providers", success: "home", bookings: "home", bookingDetail: "bookings", wallet: "home", profile: "home", notifications: "home", services: "home", combo: "home", reviews: "providerDetail" };
     go(previous[step] ?? "home");
   };
+  const t = useT(), _unused = null; void _unused;
   const tab = step === "bookings" || step === "bookingDetail" ? "bookings" : step === "wallet" ? "wallet" : step === "profile" ? "profile" : "home";
 
   return (
+    <LangContext.Provider value={{ lang, setLang: changeLang }}>
+    {onboard && <Onboarding onDone={() => { setOnboard(false); localStorage.setItem("mt-onboarded", "1"); }} />}
     <div className="min-h-screen bg-background pb-24 sm:py-6">
       <div className="mx-auto min-h-screen max-w-md overflow-hidden bg-card sm:min-h-[calc(100vh-3rem)] sm:rounded-lg sm:border sm:border-border sm:shadow-panel">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
@@ -94,39 +104,43 @@ function Index() {
         </div>
       </header>
 
-      <main className={step === "details" ? "" : "px-4 py-6"}>
-        {step === "home" && <HomeScreen onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} />}
+      <main className={step === "details" ? "" : step === "combo" ? "px-4 py-4" : "px-4 py-6"}>
+        {step === "home" && <HomeScreen onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} onCombo={() => go("combo")} />}
+        {step === "combo" && <ComboScreen onContinue={(name, price) => { setCombo({ name, price }); go("payment"); }} />}
+        {step === "reviews" && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
         {step === "details" && service === "Cab" && <CabScreen onContinue={() => go("payment")} />}
         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
         {step === "providers" && <ProvidersScreen selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
-        {step === "providerDetail" && chosenProvider && <ProviderDetail provider={chosenProvider} onBook={() => go("details")} />}
-        {step === "payment" && chosenProvider && <PaymentScreen service={service} guests={guests} provider={chosenProvider} onConfirm={() => go("success")} />}
+        {step === "providerDetail" && chosenProvider && <ProviderDetailFull provider={chosenProvider} onBook={() => go("details")} onReviews={() => go("reviews")} />}
+        {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} onConfirm={() => go("success")} />}
         {step === "success" && chosenProvider && <SuccessScreen provider={chosenProvider} onHome={() => go("home")} />}
         {step === "bookings" && <BookingsScreen onTrack={() => go("bookingDetail")} />}
-        {step === "bookingDetail" && <BookingDetail />}
+        {step === "bookingDetail" && <BookingTracker />}
         {step === "wallet" && <WalletScreen />}
         {step === "profile" && <ProfileScreen />}
         {step === "notifications" && <NotificationsScreen read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
       </main>
 
-      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
-        <NavItem icon={Home} label="Home" active={tab === "home"} onClick={() => go("home")} />
-        <NavItem icon={TentTree} label="Tent" active={false} onClick={() => beginBooking("Tent")} />
-        <NavItem icon={Sparkles} label="Decoration" active={false} onClick={() => beginBooking("Decoration")} />
-        <NavItem icon={UtensilsCrossed} label="Catering" active={false} onClick={() => beginBooking("Catering")} />
-        <NavItem icon={Car} label="Cab" active={false} onClick={() => beginBooking("Cab")} />
+      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services", "combo", "reviews"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
+        <NavItem icon={Home} label={t("home")} active={tab === "home"} onClick={() => go("home")} />
+        <NavItem icon={TentTree} label={t("tent")} active={false} onClick={() => beginBooking("Tent")} />
+        <NavItem icon={Sparkles} label={t("decoration")} active={false} onClick={() => beginBooking("Decoration")} />
+        <NavItem icon={UtensilsCrossed} label={t("catering")} active={false} onClick={() => beginBooking("Catering")} />
+        <NavItem icon={Car} label={t("cab")} active={false} onClick={() => beginBooking("Cab")} />
       </div></nav>}
       </div>
     </div>
+    </LangContext.Provider>
   );
 }
 
-function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocation, onServices, onProviders, onProvider }: { onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
+function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocation, onServices, onProviders, onProvider, onCombo }: { onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
+  const t = useT();
   return <div className="animate-rise-in">
     <section className="relative mb-6">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60">Good morning</p>
-      <h1 className="mt-1 font-display text-2xl font-bold text-primary">Hello, Dheeraj!</h1>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60">{t("greeting")}</p>
+      <h1 className="mt-1 font-display text-2xl font-bold text-primary">{t("hello")}</h1>
       <div className="relative mt-4">
         <Button variant="outline" onClick={() => setLocationOpen(!locationOpen)} className="h-auto w-fit gap-2 rounded-2xl border-border/60 bg-card px-4 py-2.5 shadow-sm"><MapPin className="size-4 text-primary" /><span className="text-xs font-bold text-primary">{location}</span><ChevronDown className="size-3 text-primary" /></Button>
         {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-card p-2 shadow-lg">{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
@@ -137,20 +151,22 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
       <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/75 to-primary/30" />
       <div className="relative z-10 p-6">
-        <span className="rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-accent-foreground">Special offer</span>
-        <h2 className="mt-3 w-3/4 font-display text-lg font-bold leading-tight">Wedding Season Spectacular Deals</h2>
-        <p className="mt-2 text-[11px] text-primary-foreground/80">Get up to 20% off on your first booking</p>
-        <Button onClick={() => onBook("Tent")} className="mt-4 rounded-xl bg-card px-5 py-2.5 text-[11px] font-bold text-primary shadow-lg hover:bg-secondary">Explore now</Button>
+        <span className="rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-accent-foreground">{t("offer")}</span>
+        <h2 className="mt-3 w-3/4 font-display text-lg font-bold leading-tight">{t("offerTitle")}</h2>
+        <p className="mt-2 text-[11px] text-primary-foreground/80">{t("offerSub")}</p>
+        <Button onClick={() => onBook("Tent")} className="mt-4 rounded-xl bg-card px-5 py-2.5 text-[11px] font-bold text-primary shadow-lg hover:bg-secondary">{t("explore")}</Button>
       </div>
     </section>
 
     <section className="mb-8">
-      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-sm font-black uppercase tracking-wider text-primary">Our services</h2><Button variant="ghost" size="sm" onClick={onServices} className="text-[10px] font-bold text-primary">View all</Button></div>
+      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-sm font-black uppercase tracking-wider text-primary">{t("services")}</h2><Button variant="ghost" size="sm" onClick={onServices} className="text-[10px] font-bold text-primary">View all</Button></div>
       <div className="grid grid-cols-2 gap-4">{services.map(({ name, subtitle }) => <Button variant="outline" key={name} onClick={() => onBook(name)} className="group h-auto flex-col items-stretch overflow-hidden rounded-[24px] border-border/50 bg-card p-0 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"><span className="relative block h-24 w-full overflow-hidden"><img src={serviceImages[name]} alt={name} loading="lazy" width={1024} height={768} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /></span><span className="block p-4"><span className="block text-sm font-bold text-primary">{name}</span><span className="mt-1 block text-[11px] font-medium leading-4 text-muted-foreground">{subtitle}</span></span></Button>)}</div>
     </section>
 
+    <section className="mb-8"><Button onClick={onCombo} className="h-auto w-full justify-start gap-4 rounded-[24px] bg-accent p-4 text-left text-accent-foreground shadow-action hover:bg-accent/90"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-card/20"><PartyPopper className="size-6" /></span><span className="flex-1"><span className="block font-display text-base font-extrabold">{t("combo")}</span><span className="block whitespace-normal text-[11px] font-medium opacity-90">{t("comboSub")}</span></span><ChevronRight className="size-5" /></Button></section>
+
     <section>
-      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-sm font-black uppercase tracking-wider text-primary">Top rated</h2><Button variant="ghost" size="sm" onClick={onProviders} className="text-[10px] font-bold text-primary">View all</Button></div>
+      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-sm font-black uppercase tracking-wider text-primary">{t("topRated")}</h2><Button variant="ghost" size="sm" onClick={onProviders} className="text-[10px] font-bold text-primary">View all</Button></div>
       <div className="space-y-3">{providers.map((item, i) => <Button variant="outline" key={item.name} onClick={() => onProvider(i)} className="h-auto w-full items-center gap-4 rounded-[22px] border-border/50 bg-card p-3.5 text-left shadow-sm"><span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-brand-soft font-display text-sm font-bold text-primary">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-primary">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-accent text-accent" /> {item.rating} · Lucknow</span><span className="mt-2 inline-block rounded-full bg-brand-soft px-2 py-0.5 text-[8px] font-bold uppercase text-primary">Verified</span></span><span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-primary"><ChevronRight className="size-5" /></span></Button>)}</div>
     </section>
   </div>;
@@ -168,7 +184,7 @@ function BookingDetail() { return <div className="mx-auto max-w-2xl animate-rise
 
 function WalletScreen() { const [added, setAdded] = useState(false); return <div className="animate-rise-in"><PageTitle title="My wallet" subtitle="Payments, refunds and offers" /><div className="rounded-lg bg-primary p-6 text-primary-foreground"><p className="text-sm text-primary-foreground/70">Available balance</p><p className="mt-1 font-display text-3xl font-extrabold">₹1,250</p><Button onClick={() => setAdded(true)} className="mt-5 bg-accent text-accent-foreground hover:bg-accent/90">{added ? <><Check className="size-4" /> Money added</> : <><Plus className="size-4" /> Add money</>}</Button></div><section className="mt-6"><h2 className="mb-3 font-bold">Recent transactions</h2><div className="rounded-lg border border-border bg-card p-4"><Summary label="Booking advance · Royal Tent" value="− ₹5,000" /><Summary label="Refund · Cancelled cab" value="+ ₹450" /><Summary label="Wallet cashback" value="+ ₹200" /></div></section><section className="mt-6"><h2 className="mb-3 font-bold">Payment methods</h2><div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"><CreditCard className="size-5 text-primary" /><div className="flex-1"><p className="text-sm font-bold">UPI & Cards</p><p className="text-xs text-muted-foreground">Secure mock checkout</p></div><ChevronRight className="size-5" /></div></section></div>; }
 
-function ProfileScreen() { const [editing, setEditing] = useState(false); const [help, setHelp] = useState(false); return <div className="animate-rise-in"><PageTitle title="Profile" subtitle="Your account and preferences" /><div className="flex items-center gap-4 rounded-lg border border-border bg-card p-5"><span className="grid size-16 place-items-center rounded-full bg-brand-soft font-display text-xl font-bold text-primary">DT</span><div className="flex-1"><h2 className="font-bold">Dheeraj Tagde</h2><p className="text-sm text-muted-foreground">+91 98••• ••210</p></div><Button variant="outline" size="sm" onClick={() => setEditing(!editing)}>{editing ? "Saved" : "Edit"}</Button></div>{editing && <div className="mt-3 rounded-lg border border-border bg-card p-4"><label className="text-xs font-bold text-muted-foreground">DISPLAY NAME</label><input aria-label="Display name" defaultValue="Dheeraj Tagde" className="mt-2 w-full rounded-md border border-border bg-background p-3 text-sm outline-none focus:border-primary" /></div>}<div className="mt-6 space-y-2">{[{icon:MapPin,label:"Saved addresses"},{icon:Settings,label:"App settings"},{icon:Headphones,label:"Help & support"}].map(({icon:Icon,label})=><Button key={label} variant="outline" onClick={() => label === "Help & support" && setHelp(!help)} className="h-auto w-full justify-start gap-3 p-4"><Icon className="size-5 text-primary"/><span className="flex-1 text-left">{label}</span><ChevronRight className="size-5"/></Button>)}</div><p className="mt-6 mb-2 text-xs font-extrabold uppercase text-muted-foreground">Demo panels</p><div className="space-y-2"><Button variant="outline" asChild className="h-auto w-full justify-start gap-3 p-4"><Link to="/provider"><Store className="size-5 text-primary"/><span className="flex-1 text-left">Provider panel <span className="block text-xs font-normal text-muted-foreground">Bookings, calendar & earnings — demo</span></span><ChevronRight className="size-5"/></Link></Button><Button variant="outline" asChild className="h-auto w-full justify-start gap-3 p-4"><Link to="/admin"><ShieldCheck className="size-5 text-primary"/><span className="flex-1 text-left">Admin dashboard <span className="block text-xs font-normal text-muted-foreground">Platform overview & management — demo</span></span><ChevronRight className="size-5"/></Link></Button></div>{help && <div className="mt-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><p className="font-bold">My Tento Support</p><p className="mt-1">Call or chat support will be available here in the live app.</p></div>}</div>; }
+function ProfileScreen() { const [editing, setEditing] = useState(false); const [help, setHelp] = useState(false); return <div className="animate-rise-in"><PageTitle title="Profile" subtitle="Your account and preferences" /><div className="flex items-center gap-4 rounded-lg border border-border bg-card p-5"><span className="grid size-16 place-items-center rounded-full bg-brand-soft font-display text-xl font-bold text-primary">DT</span><div className="flex-1"><h2 className="font-bold">Dheeraj Tagde</h2><p className="text-sm text-muted-foreground">+91 98••• ••210</p></div><Button variant="outline" size="sm" onClick={() => setEditing(!editing)}>{editing ? "Saved" : "Edit"}</Button></div>{editing && <div className="mt-3 rounded-lg border border-border bg-card p-4"><label className="text-xs font-bold text-muted-foreground">DISPLAY NAME</label><input aria-label="Display name" defaultValue="Dheeraj Tagde" className="mt-2 w-full rounded-md border border-border bg-background p-3 text-sm outline-none focus:border-primary" /></div>}<div className="mt-6 space-y-2">{[{icon:MapPin,label:"Saved addresses"},{icon:Settings,label:"App settings"},{icon:Headphones,label:"Help & support"}].map(({icon:Icon,label})=><Button key={label} variant="outline" onClick={() => label === "Help & support" && setHelp(!help)} className="h-auto w-full justify-start gap-3 p-4"><Icon className="size-5 text-primary"/><span className="flex-1 text-left">{label}</span><ChevronRight className="size-5"/></Button>)}</div><p className="mt-6 mb-2 text-xs font-extrabold uppercase text-muted-foreground">Demo panels</p><div className="space-y-2"><Button variant="outline" asChild className="h-auto w-full justify-start gap-3 p-4"><Link to="/provider"><Store className="size-5 text-primary"/><span className="flex-1 text-left">Provider panel <span className="block text-xs font-normal text-muted-foreground">Bookings, calendar & earnings — demo</span></span><ChevronRight className="size-5"/></Link></Button><Button variant="outline" asChild className="h-auto w-full justify-start gap-3 p-4"><Link to="/admin"><ShieldCheck className="size-5 text-primary"/><span className="flex-1 text-left">Admin dashboard <span className="block text-xs font-normal text-muted-foreground">Platform overview & management — demo</span></span><ChevronRight className="size-5"/></Link></Button></div><LanguageToggle />{help && <div className="mt-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><p className="font-bold">My Tento Support</p><p className="mt-1">Call or chat support will be available here in the live app.</p></div>}</div>; }
 
 function NotificationsScreen({ read, onRead, onBooking }: { read: boolean; onRead: () => void; onBooking: () => void }) { return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and offer updates" /><Button variant="ghost" size="sm" onClick={onRead}>{read ? "All read" : "Mark all read"}</Button></div><div className="space-y-3"><Button variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${read ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">Booking confirmed</span><span className="text-xs font-normal text-muted-foreground">Royal Tent House accepted your booking.</span></span></Button><div className="rounded-lg border border-border bg-card p-4"><p className="font-bold">Wedding season offer</p><p className="mt-1 text-xs text-muted-foreground">Save on event combos booked this week.</p></div></div></div>; }
 
@@ -271,10 +287,12 @@ function ProvidersScreen({ selected, setSelected, onContinue, onView }: { select
   return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="2 of 3" title="Choose a provider" subtitle="3 trusted providers available" /><div className="space-y-3">{providers.map((item, index) => <button key={item.name} onClick={() => setSelected(index)} className={`flex w-full items-center gap-4 rounded-lg border bg-card p-4 text-left transition ${selected === index ? "border-primary ring-2 ring-primary/15" : "border-border"}`}><span className="grid size-14 shrink-0 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary">{item.initials}</span><span className="min-w-0 flex-1"><span className="block font-bold">{item.name}</span><span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Star className="size-3 fill-accent text-accent" /> {item.rating} · Verified provider</span><span className="mt-2 block text-xs text-muted-foreground">Tent, chairs, tables & shamiyana</span></span><span className="text-right"><span className="block font-display font-bold text-primary">{item.price}</span><span className="text-xs text-muted-foreground">package</span>{selected === index && <Check className="ml-auto mt-2 size-5 text-success" />}</span></button>)}</div><div className="mt-5 grid grid-cols-2 gap-3"><Button variant="outline" onClick={onView}>View details</Button><Button onClick={onContinue}>Continue to payment</Button></div></div>;
 }
 
-function PaymentScreen({ service, guests, provider, onConfirm }: { service: ServiceName; guests: number; provider: (typeof providers)[number]; onConfirm: () => void }) {
+function PaymentScreen({ service, amount, guests, provider, onConfirm }: { service: string; amount: number; guests: number; provider: (typeof providers)[number]; onConfirm: () => void }) {
   const [pay, setPay] = useState("advance");
+  const [coupon, setCoupon] = useState<string | null>(null);
+  const off = discountFor(coupon, amount); const final = amount - off; const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const methods = [{ id: "online", label: "Pay full online (UPI / Card)" }, { id: "advance", label: "Pay 20% advance online" }, { id: "cash", label: "Cash / pay provider" }];
-  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="3 of 3" title="Confirm & pay" subtitle="Review your booking details" /><div className="rounded-lg border border-border bg-card p-5"><h3 className="mb-4 font-bold">Booking summary</h3><Summary label="Service" value={service} /><Summary label="Provider" value={provider.name} /><Summary label="Date & time" value="25 Dec 2026 · 6:00 PM" /><Summary label="Guests" value={`${guests}`} /><div className="mt-4 border-t border-border pt-4"><Summary label="Package total" value={provider.price} strong /></div></div><div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="mb-3 font-bold">Payment method</h3>{methods.map(({ id, label }) => <button key={id} onClick={() => setPay(id)} className={`mb-2 flex w-full items-center gap-3 rounded-lg border p-3 text-left text-sm font-semibold ${pay === id ? "border-primary bg-secondary" : "border-border"}`}><span className={`grid size-5 place-items-center rounded-full border ${pay === id ? "border-primary" : "border-border"}`}>{pay === id && <span className="size-2.5 rounded-full bg-primary" />}</span>{label}</button>)}</div><div className="mt-4 flex gap-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" /><p>Your booking is protected. Provider details are shared after confirmation.</p></div><Button onClick={onConfirm} className="mt-5 w-full">Confirm booking</Button></div>;
+  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="3 of 3" title="Confirm & pay" subtitle="Review your booking details" /><div className="rounded-lg border border-border bg-card p-5"><h3 className="mb-4 font-bold">Booking summary</h3><Summary label="Service" value={service} /><Summary label="Provider" value={provider.name} /><Summary label="Date & time" value="25 Dec 2026 · 6:00 PM" /><Summary label="Guests" value={`${guests}`} /><div className="mt-4 border-t border-border pt-4"><Summary label="Package price" value={fmt(amount)} />{off > 0 && <Summary label={`Coupon (${coupon})`} value={`− ${fmt(off)}`} />}<Summary label="Total payable" value={fmt(final)} strong />{pay === "advance" && <Summary label="Pay now (20%)" value={fmt(Math.round(final * 0.2))} />}</div></div><CouponBox applied={coupon} setApplied={setCoupon} /><div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="mb-3 font-bold">Payment method</h3>{methods.map(({ id, label }) => <button key={id} onClick={() => setPay(id)} className={`mb-2 flex w-full items-center gap-3 rounded-lg border p-3 text-left text-sm font-semibold ${pay === id ? "border-primary bg-secondary" : "border-border"}`}><span className={`grid size-5 place-items-center rounded-full border ${pay === id ? "border-primary" : "border-border"}`}>{pay === id && <span className="size-2.5 rounded-full bg-primary" />}</span>{label}</button>)}</div><div className="mt-4 flex gap-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" /><p>Your booking is protected. Provider details are shared after confirmation.</p></div><Button onClick={onConfirm} className="mt-5 w-full">Confirm booking</Button></div>;
 }
 
 function SuccessScreen({ provider, onHome }: { provider: (typeof providers)[number]; onHome: () => void }) {
