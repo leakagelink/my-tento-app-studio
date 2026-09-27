@@ -20,7 +20,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminApp,
 });
 
-type Tab = "overview" | "providers" | "bookings" | "users";
+type Tab = "overview" | "providers" | "bookings" | "users" | "payments" | "offers";
 
 type AdminBooking = { id: string; customer: string; provider: string; service: string; date: string; amount: string; status: "confirmed" | "completed" | "pending" };
 type AdminProvider = { name: string; service: string; city: string; rating: string; verified: boolean; initials: string };
@@ -64,7 +64,7 @@ function AdminApp() {
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
         <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 sm:px-6">
-          {([["overview", "Overview"], ["providers", "Providers"], ["bookings", "Bookings"], ["users", "Users"]] as [Tab, string][]).map(([id, label]) => (
+          {([["overview", "Overview"], ["providers", "Providers"], ["bookings", "Bookings"], ["users", "Users"], ["payments", "Payments"], ["offers", "Offers"]] as [Tab, string][]).map(([id, label]) => (
             <Button key={id} variant="ghost" size="sm" onClick={() => go(id)} className={`rounded-b-none border-b-2 ${tab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{label}</Button>
           ))}
         </div>
@@ -75,6 +75,8 @@ function AdminApp() {
         {tab === "providers" && <Providers providers={providers} onToggle={toggle} />}
         {tab === "bookings" && <Bookings />}
         {tab === "users" && <Users />}
+        {tab === "payments" && <Payments />}
+        {tab === "offers" && <Offers />}
       </main>
     </div>
   );
@@ -163,6 +165,72 @@ function Users() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+type Payment = { id: string; booking: string; customer: string; method: string; amount: string; status: "paid" | "advance" | "refund" };
+
+const payments: Payment[] = [
+  { id: "PAY-9021", booking: "MT-261225-48", customer: "Dheeraj Tagde", method: "UPI · advance 20%", amount: "₹5,000", status: "advance" },
+  { id: "PAY-8990", booking: "MT-261018-09", customer: "Sandeep Yadav", method: "UPI · full", amount: "₹18,000", status: "paid" },
+  { id: "PAY-8974", booking: "MT-261005-77", customer: "Pooja Singh", method: "Card · full", amount: "₹32,000", status: "paid" },
+  { id: "PAY-8932", booking: "MT-260912-14", customer: "Rahul Gupta", method: "Refund · cancelled", amount: "− ₹3,000", status: "refund" },
+];
+
+function Payments() {
+  return (
+    <div className="animate-rise-in">
+      <div className="mb-6"><h1 className="text-2xl font-extrabold">Payments</h1><p className="mt-1 text-sm text-muted-foreground">Customer payments, advances and refunds</p></div>
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <Stat icon={IndianRupee} label="Collected (Sept)" value="₹9.4L" tone="text-primary" />
+        <Stat icon={TrendingUp} label="Platform fee (8%)" value="₹75K" tone="text-success" />
+        <Stat icon={X} label="Refunds" value="₹12K" tone="text-accent" />
+      </div>
+      <div className="space-y-3">
+        {payments.map((p) => (
+          <div key={p.id} className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-secondary text-primary"><IndianRupee className="size-6" /></span>
+            <div className="min-w-0 flex-1">
+              <p className={`text-xs font-bold ${p.status === "refund" ? "text-accent" : "text-success"}`}>{p.status.toUpperCase()}</p>
+              <p className="mt-0.5 truncate text-sm font-bold">{p.customer} · {p.booking}</p>
+              <p className="text-xs text-muted-foreground">{p.method} · {p.id}</p>
+            </div>
+            <span className="font-display text-sm font-extrabold text-primary">{p.amount}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type Offer = { code: string; desc: string; used: number; active: boolean };
+
+function Offers() {
+  const [offers, setOffers] = useState<Offer[]>([
+    { code: "MYTENTO20", desc: "20% off up to ₹5,000 · all services", used: 142, active: true },
+    { code: "WEDDING10", desc: "10% off up to ₹10,000 · marriage combo", used: 38, active: true },
+    { code: "FESTIVE500", desc: "Flat ₹500 off · catering", used: 87, active: false },
+  ]);
+  const toggle = (code: string) => setOffers((list) => list.map((o) => (o.code === code ? { ...o, active: !o.active } : o)));
+  return (
+    <div className="animate-rise-in">
+      <div className="mb-6"><h1 className="text-2xl font-extrabold">Offers & coupons</h1><p className="mt-1 text-sm text-muted-foreground">Discount codes customers can apply at payment</p></div>
+      <div className="space-y-3">
+        {offers.map((o) => (
+          <div key={o.code} className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display text-xs font-bold text-primary">%</span>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold">{o.code}</p>
+              <p className="text-xs text-muted-foreground">{o.desc} · used {o.used} times</p>
+            </div>
+            <Button variant={o.active ? "default" : "outline"} size="sm" onClick={() => toggle(o.code)}>
+              {o.active ? <><Check className="size-4" /> Active</> : "Paused"}
+            </Button>
+          </div>
+        ))}
+      </div>
+      <Button variant="outline" className="mt-4">+ Create new offer</Button>
     </div>
   );
 }

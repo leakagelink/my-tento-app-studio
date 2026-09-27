@@ -20,11 +20,11 @@ export const Route = createFileRoute("/provider")({
   component: ProviderApp,
 });
 
-type Tab = "dashboard" | "bookings" | "calendar" | "earnings";
+type Tab = "dashboard" | "bookings" | "calendar" | "earnings" | "profile";
 
 type ProviderBooking = {
   id: string; customer: string; phone: string; service: string; detail: string;
-  date: string; time: string; area: string; amount: string; status: "new" | "confirmed" | "team" | "setup" | "done";
+  date: string; time: string; area: string; amount: string; status: "new" | "confirmed" | "team" | "setup" | "done" | "declined";
 };
 
 const initialBookings: ProviderBooking[] = [
@@ -34,8 +34,14 @@ const initialBookings: ProviderBooking[] = [
 ];
 
 const statusLabel: Record<ProviderBooking["status"], string> = {
-  new: "NEW REQUEST", confirmed: "CONFIRMED", team: "TEAM ASSIGNED", setup: "SETUP STARTED", done: "COMPLETED",
+  new: "NEW REQUEST", confirmed: "CONFIRMED", team: "TEAM ASSIGNED", setup: "SETUP STARTED", done: "COMPLETED", declined: "DECLINED",
 };
+
+const providerReviews = [
+  { name: "Dheeraj Tagde", rating: 5, text: "Shamiyana aur stage setup time par ho gaya. Team bahut professional thi.", date: "Sep 2026" },
+  { name: "Anita Verma", rating: 5, text: "Decoration bilkul photos jaisi thi. Guests ne bahut tareef ki!", date: "Aug 2026" },
+  { name: "Sandeep Yadav", rating: 4, text: "Achha kaam, bas chairs thodi der se aayi. Overall satisfied.", date: "Jul 2026" },
+];
 
 function ProviderApp() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -71,25 +77,28 @@ function ProviderApp() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {open ? (
-          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) update(open.id, n.next); else setOpenId(null); }} onClose={() => setOpenId(null)} />
+          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) update(open.id, n.next); else setOpenId(null); }} onDecline={() => { update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
           <Dashboard bookings={bookings} onOpen={(id) => setOpenId(id)} />
         ) : tab === "bookings" ? (
           <Bookings bookings={bookings} onOpen={(id) => setOpenId(id)} />
         ) : tab === "calendar" ? (
           <Calendar availability={availability} setAvailability={setAvailability} />
-        ) : (
+        ) : tab === "earnings" ? (
           <Earnings paidOut={paidOut} onPayout={() => setPaidOut(true)} />
+        ) : (
+          <Profile />
         )}
       </main>
 
       {!open && (
         <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card">
-          <div className="mx-auto grid h-18 max-w-md grid-cols-4">
+          <div className="mx-auto grid h-18 max-w-md grid-cols-5">
             <NavItem icon={HomeIcon} label="Dashboard" active={tab === "dashboard"} onClick={() => go("dashboard")} />
             <NavItem icon={CalendarDays} label="Bookings" active={tab === "bookings"} onClick={() => go("bookings")} />
             <NavItem icon={Clock3} label="Calendar" active={tab === "calendar"} onClick={() => go("calendar")} />
             <NavItem icon={WalletCards} label="Earnings" active={tab === "earnings"} onClick={() => go("earnings")} />
+            <NavItem icon={Store} label="Profile" active={tab === "profile"} onClick={() => go("profile")} />
           </div>
         </nav>
       )}
@@ -149,7 +158,7 @@ function RequestCard({ booking, onOpen }: { booking: ProviderBooking; onOpen: ()
   );
 }
 
-function BookingDetail({ booking, onNext, onClose }: { booking: ProviderBooking; onNext: () => void; onClose: () => void }) {
+function BookingDetail({ booking, onNext, onDecline, onClose }: { booking: ProviderBooking; onNext: () => void; onDecline: () => void; onClose: () => void }) {
   const action = { new: { label: "Accept booking", next: "CONFIRMED" }, confirmed: { label: "Assign team", next: "TEAM ASSIGNED" }, team: { label: "Start setup", next: "SETUP STARTED" }, setup: { label: "Mark completed", next: "COMPLETED" } }[booking.status as "new" | "confirmed" | "team" | "setup"];
   const stages: ProviderBooking["status"][] = ["confirmed", "team", "setup", "done"];
   return (
@@ -173,7 +182,7 @@ function BookingDetail({ booking, onNext, onClose }: { booking: ProviderBooking;
           </div>
         )}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Button variant="outline" onClick={onClose}>{booking.status === "new" ? "Decline" : "Close"}</Button>
+          <Button variant="outline" onClick={booking.status === "new" ? onDecline : onClose}>{booking.status === "new" ? "Decline request" : "Close"}</Button>
           <Button onClick={onNext}>{action ? action.label : "Completed"}</Button>
         </div>
       </div>
@@ -215,6 +224,53 @@ function Earnings({ paidOut, onPayout }: { paidOut: boolean; onPayout: () => voi
           <Summary label="Booking MT-261225-48 · advance" value="+ ₹5,000" />
           <Summary label="Booking MT-261018-09 · full payment" value="+ ₹18,000" />
           <Summary label="Payout to bank ••4321" value="− ₹40,000" />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function Profile() {
+  const [services, setServices] = useState([
+    { name: "Royal Shamiyana package", price: "₹30,000", active: true },
+    { name: "Standard tent package", price: "₹18,000", active: true },
+    { name: "Stage decoration", price: "₹12,000", active: true },
+    { name: "DJ + night lighting", price: "₹6,000", active: false },
+  ]);
+  const [saved, setSaved] = useState(false);
+  const toggleService = (name: string) => { setServices((list) => list.map((s) => (s.name === name ? { ...s, active: !s.active } : s))); setSaved(false); };
+  return (
+    <div className="animate-rise-in">
+      <PageTitle title="My profile" subtitle="How customers see Royal Tent House on myTento" />
+      <div className="rounded-lg border border-border bg-card p-5">
+        <div className="flex items-center gap-4">
+          <span className="grid size-14 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary">RT</span>
+          <div className="flex-1"><p className="font-bold">Royal Tent House</p><p className="text-xs text-muted-foreground">Gomti Nagar, Lucknow · +91 94150 12345</p></div>
+          <span className="rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-success">Verified</span>
+        </div>
+      </div>
+      <section className="mt-6">
+        <h2 className="mb-3 font-bold">My services & prices</h2>
+        <div className="space-y-3">
+          {services.map((s) => (
+            <button key={s.name} onClick={() => toggleService(s.name)} className={`flex w-full items-center gap-4 rounded-lg border p-4 text-left transition ${s.active ? "border-primary bg-secondary" : "border-border bg-card"}`}>
+              <span className={`grid size-6 place-items-center rounded-full ${s.active ? "bg-primary text-primary-foreground" : "border border-border"}`}>{s.active && <Check className="size-4" />}</span>
+              <span className="flex-1 text-sm font-bold">{s.name}</span>
+              <span className="font-display font-extrabold text-primary">{s.price}</span>
+            </button>
+          ))}
+        </div>
+        <Button onClick={() => setSaved(true)} className="mt-4 w-full sm:w-auto">{saved ? <><Check className="size-4" /> Saved</> : "Save changes"}</Button>
+      </section>
+      <section className="mt-8">
+        <h2 className="mb-3 font-bold">Customer reviews</h2>
+        <div className="space-y-3">
+          {providerReviews.map((r) => (
+            <div key={r.name} className="rounded-lg border border-border bg-card p-4">
+              <div className="flex items-center justify-between"><p className="text-sm font-bold">{r.name}</p><span className="flex items-center gap-1 text-xs font-bold text-accent"><Star className="size-3 fill-accent" /> {r.rating}.0 · {r.date}</span></div>
+              <p className="mt-2 text-sm text-muted-foreground">{r.text}</p>
+            </div>
+          ))}
         </div>
       </section>
     </div>
