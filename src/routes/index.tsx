@@ -10,6 +10,13 @@ import decorationHero from "@/assets/decoration-hero.jpg";
 import packagePremium from "@/assets/package-premium.jpg";
 import packageStandard from "@/assets/package-standard.jpg";
 import packageBasic from "@/assets/package-basic.jpg";
+import vehicleCab from "@/assets/vehicle-cab.png";
+import vehicleAuto from "@/assets/vehicle-auto.png";
+import vehicleToto from "@/assets/vehicle-toto.png";
+import vehicleSuv from "@/assets/vehicle-suv.png";
+
+const vehicleImages: Record<string, string> = { Cab: vehicleCab, Auto: vehicleAuto, Toto: vehicleToto, SUV: vehicleSuv };
+const premiumImages: Record<string, string> = { "Toyota Fortuner": vehicleSuv, Scorpio: vehicleSuv, "Innova Crysta": vehicleSuv, "Toyota Camry": vehicleCab };
 
 // No head() here: the home route inherits title/description/og/twitter from
 // __root.tsx, and ships no og:image so serve-time hosting can inject the
@@ -236,7 +243,7 @@ function CabScreen({ onContinue }: { onContinue: () => void }) {
       <div className="mt-4 space-y-5 rounded-lg border border-border bg-card p-4">
         {mode === "daily" ? (
           <section><h2 className="font-bold">1. Select Vehicle Type</h2><p className="text-xs text-muted-foreground">Choose the vehicle you need for your daily ride</p>
-            <div className="mt-3 grid grid-cols-4 gap-2">{["Cab", "Auto", "Toto", "SUV"].map((v) => <Button key={v} variant={vehicle === v ? "default" : "outline"} onClick={() => setVehicle(v)} className="h-20 flex-col gap-1"><Car className="size-6" />{v}</Button>)}</div></section>
+            <div className="mt-3 grid grid-cols-4 gap-2">{["Cab", "Auto", "Toto", "SUV"].map((v) => <Button key={v} variant={vehicle === v ? "default" : "outline"} onClick={() => setVehicle(v)} className="h-24 flex-col gap-1 p-2"><img src={vehicleImages[v]} alt={v} loading="lazy" className="h-14 w-full object-contain" />{v}</Button>)}</div></section>
         ) : (
           <section><h2 className="font-bold">1. Select Number of Vehicles</h2><p className="text-xs text-muted-foreground">How many vehicles do you need for your function?</p>
             <div className="mt-3 grid grid-cols-5 gap-2">{["5", "6", "7", "8", "10+"].map((v) => <Button key={v} variant={count === v ? "default" : "outline"} onClick={() => setCount(v)}>{v}</Button>)}</div></section>
@@ -252,7 +259,7 @@ function CabScreen({ onContinue }: { onContinue: () => void }) {
           <>
             <label className="block"><span className="flex items-center gap-2 text-sm font-bold"><Clock3 className="size-4 text-primary" /> 4. Function Duration</span><select aria-label="Function duration" defaultValue="4 Hours" className={`mt-2 ${field}`}>{["2 Hours", "4 Hours", "6 Hours", "8 Hours", "Full Day"].map((d) => <option key={d}>{d}</option>)}</select></label>
             <section className="rounded-lg bg-brand-soft p-3"><h2 className="text-sm font-bold">Select Premium Vehicles (Marriage Function)</h2><p className="text-xs text-muted-foreground">Luxury cars for your special day</p>
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{([["Toyota Fortuner", "7 Seater"], ["Scorpio", "7 Seater"], ["Innova Crysta", "7 Seater"], ["Toyota Camry", "5 Seater"]] as const).map(([n, s]) => <Button key={n} variant={premium === n ? "default" : "outline"} onClick={() => setPremium(n)} className="h-auto flex-col gap-1 p-3"><Car className="size-6" /><span className="text-xs font-bold">{n}</span><span className="text-[10px] opacity-80">({s}) · Premium</span></Button>)}</div></section>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{([["Toyota Fortuner", "7 Seater"], ["Scorpio", "7 Seater"], ["Innova Crysta", "7 Seater"], ["Toyota Camry", "5 Seater"]] as const).map(([n, s]) => <Button key={n} variant={premium === n ? "default" : "outline"} onClick={() => setPremium(n)} className="h-auto flex-col gap-1 p-3"><img src={premiumImages[n]} alt={n} loading="lazy" className="h-12 w-full object-contain" /><span className="text-xs font-bold">{n}</span><span className="text-[10px] opacity-80">({s}) · Premium</span></Button>)}</div></section>
           </>
         )}
         <Button onClick={onContinue} className="w-full" size="lg"><Car className="size-4" /> {mode === "daily" ? "Book Ride" : "Book Marriage Function"} <ChevronRight className="size-4" /></Button>
