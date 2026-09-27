@@ -17,6 +17,7 @@ const dict = {
 } as const;
 export type TKey = keyof (typeof dict)["en"];
 export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "en", setLang: () => {} });
+export function tr(lang: Lang, k: TKey) { return dict[lang][k]; }
 export function useT() { const { lang } = useContext(LangContext); return (k: TKey) => dict[lang][k]; }
 
 export function LanguageToggle() {
@@ -35,7 +36,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
   useEffect(() => { const t = setTimeout(() => setSplash(false), 1400); return () => clearTimeout(t); }, []);
   if (splash) return <div className="fixed inset-0 z-50 grid place-items-center bg-primary text-primary-foreground"><div className="animate-rise-in text-center"><span className="mx-auto grid size-20 place-items-center rounded-2xl bg-card text-primary shadow-panel"><TentTree className="size-11" /></span><p className="mt-5 font-display text-3xl font-extrabold">My<span className="text-accent">Tento</span></p><p className="mt-1 text-xs font-bold uppercase tracking-widest text-primary-foreground/70">Plan. Book. Celebrate.</p></div></div>;
-  const s = slides[i];
+  const s = slides[i] ?? slides[0]!;
   const last = i === slides.length - 1;
   return <div className="fixed inset-0 z-50 flex justify-center bg-background"><div className="flex w-full max-w-md flex-col bg-card">
     <div className="relative h-[55vh] overflow-hidden"><img key={s.img} src={s.img} alt={s.title} className="h-full w-full animate-rise-in object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" /><Button variant="ghost" size="sm" onClick={onDone} className="absolute right-4 top-4 rounded-full bg-card/80">Skip</Button></div>
@@ -55,7 +56,7 @@ export function ComboScreen({ onContinue }: { onContinue: (name: string, price: 
   const [sel, setSel] = useState(1);
   const [date, setDate] = useState("2026-12-25");
   const [guests, setGuests] = useState(400);
-  const c = combos[sel];
+  const c = combos[sel] ?? combos[1]!;
   return <div className="animate-rise-in pb-28">
     <div className="relative mb-5 overflow-hidden rounded-[24px] text-primary-foreground"><img src={homeBanner} alt="Wedding combo" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-r from-primary/95 to-primary/40" /><div className="relative p-5"><span className="rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase text-accent-foreground">Save up to 15%</span><h1 className="mt-3 font-display text-2xl font-extrabold">Marriage Combo</h1><p className="mt-1 text-xs text-primary-foreground/80">Tent + Decoration + Catering — one booking, one provider team</p><div className="mt-3 flex gap-2">{[TentTree, Sparkles, UtensilsCrossed].map((I, n) => <span key={n} className="grid size-9 place-items-center rounded-full bg-card/20"><I className="size-4" /></span>)}</div></div></div>
     <div className="mb-5 grid grid-cols-2 gap-3"><label className="rounded-lg border border-border p-3"><span className="text-[10px] font-bold uppercase text-muted-foreground">Event date</span><input aria-label="Combo date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full bg-transparent text-sm font-bold outline-none" /></label><div className="rounded-lg border border-border p-3"><span className="text-[10px] font-bold uppercase text-muted-foreground">Guests</span><div className="mt-1 flex items-center justify-between"><button aria-label="Fewer guests" onClick={() => setGuests(Math.max(100, guests - 50))} className="font-bold text-primary">−</button><span className="text-sm font-bold">{guests}</span><button aria-label="More guests" onClick={() => setGuests(guests + 50)} className="font-bold text-primary">+</button></div></div></div>
@@ -85,7 +86,7 @@ export function ProviderDetailFull({ provider, onBook, onReviews }: { provider: 
     <h2 className="mb-2 mt-6 flex items-center gap-2 font-bold"><CalendarDays className="size-4 text-primary" /> Available dates · December 2026</h2>
     <div className="rounded-lg border border-border bg-card p-3"><div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-muted-foreground">{["M", "T", "W", "T", "F", "S", "S"].map((d, n) => <span key={n}>{d}</span>)}</div><div className="mt-1 grid grid-cols-7 gap-1">{Array.from({ length: 31 }, (_, n) => n + 1).map((d) => { const b = booked.includes(d); return <button key={d} disabled={b} onClick={() => setDay(d)} className={`aspect-square rounded-md text-xs font-bold ${b ? "bg-muted text-muted-foreground line-through" : day === d ? "bg-primary text-primary-foreground" : "bg-brand-soft text-primary"}`}>{d}</button>; })}</div><div className="mt-3 flex gap-4 text-[10px] text-muted-foreground"><span className="flex items-center gap-1"><span className="size-2.5 rounded bg-brand-soft" /> Available</span><span className="flex items-center gap-1"><span className="size-2.5 rounded bg-muted" /> Booked</span>{day && <span className="font-bold text-primary">Selected: {day} Dec</span>}</div></div>
     <div className="mb-2 mt-6 flex items-center justify-between"><h2 className="font-bold">Ratings & reviews</h2><Button variant="ghost" size="sm" onClick={onReviews}>See all <ChevronRight className="size-4" /></Button></div>
-    <ReviewCard r={reviews[0]} />
+    <ReviewCard r={reviews[0]!} />
     <div className="mt-4 space-y-2 rounded-lg border border-border bg-card p-4 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Capacity</span><b>{provider.detail}</b></div><div className="flex justify-between"><span className="text-muted-foreground">Starting price</span><b className="text-primary">{provider.price}</b></div></div>
     <div className="mt-4 flex gap-2 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" />Identity and service details verified by My Tento.</div>
     <Button onClick={onBook} className="mt-4 w-full" size="lg">Book this provider</Button>
@@ -137,7 +138,7 @@ export function BookingTracker() {
   const [done, setDone] = useState(2);
   const pct = Math.round(((done - 1) / (stages.length - 1)) * 100);
   return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Booking details</h1><p className="mb-5 text-sm text-muted-foreground">MT-261225-48</p>
-    <div className="rounded-lg border border-border bg-card p-5"><span className="rounded-full bg-success/15 px-2.5 py-1 text-[10px] font-bold uppercase text-success">{stages[done - 1].title}</span><h2 className="mt-3 text-xl font-bold">Royal Tent House</h2><p className="text-sm text-muted-foreground">25 Dec 2026 · 6:00 PM · Gomti Nagar</p>
+    <div className="rounded-lg border border-border bg-card p-5"><span className="rounded-full bg-success/15 px-2.5 py-1 text-[10px] font-bold uppercase text-success">{stages[done - 1]?.title}</span><h2 className="mt-3 text-xl font-bold">Royal Tent House</h2><p className="text-sm text-muted-foreground">25 Dec 2026 · 6:00 PM · Gomti Nagar</p>
       <div className="mt-5"><div className="mb-1 flex justify-between text-xs font-bold"><span>Live progress</span><span className="text-primary">{pct}%</span></div><div className="h-2.5 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-700" style={{ width: `${pct}%` }} /></div></div>
       <div className="mt-6 space-y-0">{stages.map((s, n) => { const ok = n < done; const cur = n === done - 1; const I = s.icon; return <div key={s.title} className="flex gap-3"><div className="flex flex-col items-center"><span className={`grid size-9 place-items-center rounded-full ${ok ? "bg-success text-primary-foreground" : "bg-secondary text-muted-foreground"} ${cur ? "ring-4 ring-success/25" : ""}`}><I className="size-4" /></span>{n < stages.length - 1 && <span className={`h-8 w-0.5 ${n < done - 1 ? "bg-success" : "bg-border"}`} />}</div><div className="pt-1.5"><p className={`text-sm font-bold ${ok ? "" : "text-muted-foreground"}`}>{s.title}</p><p className="text-xs text-muted-foreground">{ok ? s.sub : "Pending"}</p></div></div>; })}</div>
       <Button variant="outline" className="mt-5 w-full" disabled={done === stages.length} onClick={() => setDone(done + 1)}>{done === stages.length ? "Event ready ✓" : "Simulate next update (demo)"}</Button>
