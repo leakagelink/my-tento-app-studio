@@ -158,7 +158,7 @@ function RequestCard({ booking, onOpen }: { booking: ProviderBooking; onOpen: ()
   );
 }
 
-function BookingDetail({ booking, onNext, onClose }: { booking: ProviderBooking; onNext: () => void; onClose: () => void }) {
+function BookingDetail({ booking, onNext, onDecline, onClose }: { booking: ProviderBooking; onNext: () => void; onDecline: () => void; onClose: () => void }) {
   const action = { new: { label: "Accept booking", next: "CONFIRMED" }, confirmed: { label: "Assign team", next: "TEAM ASSIGNED" }, team: { label: "Start setup", next: "SETUP STARTED" }, setup: { label: "Mark completed", next: "COMPLETED" } }[booking.status as "new" | "confirmed" | "team" | "setup"];
   const stages: ProviderBooking["status"][] = ["confirmed", "team", "setup", "done"];
   return (
@@ -182,7 +182,7 @@ function BookingDetail({ booking, onNext, onClose }: { booking: ProviderBooking;
           </div>
         )}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Button variant="outline" onClick={onClose}>{booking.status === "new" ? "Decline" : "Close"}</Button>
+          <Button variant="outline" onClick={booking.status === "new" ? onDecline : onClose}>{booking.status === "new" ? "Decline request" : "Close"}</Button>
           <Button onClick={onNext}>{action ? action.label : "Completed"}</Button>
         </div>
       </div>
