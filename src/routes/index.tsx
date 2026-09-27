@@ -6,6 +6,10 @@ import {
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import decorationHero from "@/assets/decoration-hero.jpg";
+import packagePremium from "@/assets/package-premium.jpg";
+import packageStandard from "@/assets/package-standard.jpg";
+import packageBasic from "@/assets/package-basic.jpg";
 
 // No head() here: the home route inherits title/description/og/twitter from
 // __root.tsx, and ships no og:image so serve-time hosting can inject the
@@ -59,19 +63,20 @@ function Index() {
   const tab = step === "bookings" || step === "bookingDetail" ? "bookings" : step === "wallet" ? "wallet" : step === "profile" ? "profile" : "home";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 sm:py-6">
+      <div className="mx-auto min-h-screen max-w-md overflow-hidden bg-card sm:min-h-[calc(100vh-3rem)] sm:rounded-lg sm:border sm:border-border sm:shadow-panel">
       <header className="sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="flex h-16 items-center justify-between px-4">
           <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto gap-3 px-0 hover:bg-transparent">
             {step !== "home" && <ArrowLeft className="size-5 text-foreground" />}
             <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground"><TentTree className="size-6" /></span>
-            <span className="font-display text-xl font-extrabold text-primary">my<span className="text-accent">Tento</span></span>
+            <span><span className="block font-display text-xl font-extrabold text-primary">My<span className="text-accent">Tento</span></span><span className="block text-[9px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
           </Button>
           <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+      <main className={step === "details" ? "" : "px-4 py-6"}>
         {step === "home" && <HomeScreen onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
         {step === "details" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
@@ -86,12 +91,13 @@ function Index() {
         {step === "notifications" && <NotificationsScreen read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
       </main>
 
-      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card"><div className="mx-auto grid h-18 max-w-md grid-cols-4">
+      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-4">
         <NavItem icon={Home} label="Home" active={tab === "home"} onClick={() => go("home")} />
         <NavItem icon={CalendarDays} label="Bookings" active={tab === "bookings"} onClick={() => go("bookings")} />
         <NavItem icon={WalletCards} label="Wallet" active={tab === "wallet"} onClick={() => go("wallet")} />
         <NavItem icon={UserRound} label="Profile" active={tab === "profile"} onClick={() => go("profile")} />
       </div></nav>}
+      </div>
     </div>
   );
 }
@@ -128,10 +134,66 @@ function ProfileScreen() { const [editing, setEditing] = useState(false); const 
 function NotificationsScreen({ read, onRead, onBooking }: { read: boolean; onRead: () => void; onBooking: () => void }) { return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and offer updates" /><Button variant="ghost" size="sm" onClick={onRead}>{read ? "All read" : "Mark all read"}</Button></div><div className="space-y-3"><Button variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${read ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">Booking confirmed</span><span className="text-xs font-normal text-muted-foreground">Royal Tent House accepted your booking.</span></span></Button><div className="rounded-lg border border-border bg-card p-4"><p className="font-bold">Wedding season offer</p><p className="mt-1 text-xs text-muted-foreground">Save on event combos booked this week.</p></div></div></div>; }
 
 function DetailsScreen({ service, guests, setGuests, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; onContinue: () => void }) {
-  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="1 of 3" title={`${service} booking`} subtitle="Tell us about your event" />
-    <div className="space-y-5 rounded-lg border border-border bg-card p-5 shadow-sm sm:p-7"><Field icon={MapPin} label="Event location"><div className="font-semibold">Gomti Nagar, Lucknow</div></Field><div className="grid gap-4 sm:grid-cols-2"><Field icon={CalendarDays} label="Event date"><input aria-label="Event date" type="date" defaultValue="2026-12-25" className="w-full bg-transparent font-semibold outline-none" /></Field><Field icon={Clock3} label="Start time"><input aria-label="Start time" type="time" defaultValue="18:00" className="w-full bg-transparent font-semibold outline-none" /></Field></div><div><label className="mb-2 block text-sm font-bold">Number of guests</label><div className="flex items-center justify-between rounded-lg border border-border p-3"><div><p className="font-bold">{guests} guests</p><p className="text-xs text-muted-foreground">We’ll show suitable packages</p></div><div className="flex items-center gap-3"><button aria-label="Remove guests" onClick={() => setGuests(Math.max(50, guests - 50))} className="grid size-9 place-items-center rounded-md bg-secondary text-primary"><Minus className="size-4" /></button><button aria-label="Add guests" onClick={() => setGuests(guests + 50)} className="grid size-9 place-items-center rounded-md bg-primary text-primary-foreground"><Plus className="size-4" /></button></div></div></div><Button onClick={onContinue} className="w-full">Find available providers <Search className="size-4" /></Button></div>
+  const packages = [
+    { name: "Premium", detail: "Full setup + grand stage", price: 25000, image: packagePremium },
+    { name: "Standard", detail: "Stage + main hall", price: 15000, image: packageStandard },
+    { name: "Basic", detail: "Elegant stage only", price: 10000, image: packageBasic },
+  ];
+  const addOnOptions = [{ name: "Stage Setup", price: 5000 }, { name: "Lighting Setup", price: 3000 }, { name: "Flower Decoration", price: 4000 }, { name: "DJ / Sound", price: 6000 }];
+  const [selectedPackage, setSelectedPackage] = useState(0);
+  const [addOns, setAddOns] = useState<string[]>(["Stage Setup"]);
+  const selected = packages[selectedPackage] ?? packages[0];
+  const addOnTotal = addOnOptions.filter((item) => addOns.includes(item.name)).reduce((total, item) => total + item.price, 0);
+  const total = (selected?.price ?? 0) + addOnTotal;
+  const toggleAddOn = (name: string) => setAddOns((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
+
+  return <div className="animate-rise-in pb-40">
+    <section className="relative h-56 overflow-hidden bg-primary">
+      <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/35 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground">
+        <span className="mb-3 grid size-11 place-items-center rounded-lg border border-primary-foreground/20 bg-primary-foreground/10 backdrop-blur"><Sparkles className="size-5" /></span>
+        <h1 className="text-2xl font-extrabold">{service}</h1>
+        <p className="mt-1 max-w-xs text-xs leading-5 text-primary-foreground/80">Make your event unforgettable with trusted professionals and beautiful setups.</p>
+      </div>
+    </section>
+
+    <div className="space-y-8 px-5 py-6">
+      <section>
+        <SectionHeading number="1" title="Event Details" subtitle="Tell us about your event" />
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="col-span-2 flex items-center gap-3 rounded-lg border border-border bg-muted p-3"><span className="grid size-9 place-items-center rounded-md bg-card text-primary shadow-sm"><MapPin className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Location</p><p className="truncate text-sm font-bold">Gomti Nagar, Lucknow</p></div><ChevronDown className="size-4 text-muted-foreground" /></div>
+          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><CalendarDays className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Date</span><input aria-label="Event date" type="date" defaultValue="2026-12-25" className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
+          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><Clock3 className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Time</span><input aria-label="Start time" type="time" defaultValue="18:00" className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
+          <div className="col-span-2 flex items-center justify-between rounded-lg border border-border bg-muted p-3"><div><p className="text-[10px] font-bold uppercase text-muted-foreground">Number of guests</p><p className="text-sm font-bold">{guests} guests</p></div><div className="flex items-center gap-2"><Button variant="outline" size="icon" aria-label="Remove guests" onClick={() => setGuests(Math.max(50, guests - 50))} className="size-8 min-h-8"><Minus className="size-4" /></Button><Button size="icon" aria-label="Add guests" onClick={() => setGuests(guests + 50)} className="size-8 min-h-8"><Plus className="size-4" /></Button></div></div>
+        </div>
+      </section>
+
+      <section>
+        <SectionHeading number="2" title={`Choose ${service} Package`} subtitle="Select your preferred style" />
+        <div className="-mx-1 mt-4 flex snap-x gap-3 overflow-x-auto px-1 pb-4">
+          {packages.map((item, index) => <Button key={item.name} variant="outline" onClick={() => setSelectedPackage(index)} className={`h-auto min-w-44 snap-start flex-col items-stretch overflow-hidden p-1.5 text-left ${selectedPackage === index ? "border-primary ring-4 ring-secondary" : "border-border"}`}>
+            <span className="relative block h-28 overflow-hidden rounded-md"><img src={item.image} alt={`${item.name} decoration package`} loading="lazy" width={1024} height={768} className="h-full w-full object-cover" />{selectedPackage === index && <span className="absolute left-2 top-2 grid size-5 place-items-center rounded-full border-2 border-primary-foreground bg-primary text-primary-foreground"><Check className="size-3" /></span>}</span>
+            <span className="block w-full px-2 pb-2 pt-2"><span className="block text-xs font-extrabold">{item.name} {service}</span><span className="mt-0.5 block text-[10px] font-medium text-muted-foreground">{item.detail}</span><span className="mt-2 block font-display text-sm font-extrabold text-primary">₹ {item.price.toLocaleString("en-IN")}</span></span>
+          </Button>)}
+        </div>
+      </section>
+
+      <section>
+        <SectionHeading number="+" title="Add-on Services" subtitle="Enhance your event experience" muted />
+        <div className="mt-4 grid gap-2 rounded-lg bg-muted p-3">
+          {addOnOptions.map((item) => { const active = addOns.includes(item.name); return <Button key={item.name} variant="outline" onClick={() => toggleAddOn(item.name)} className={`h-auto justify-between p-3 ${active ? "border-primary bg-card ring-2 ring-secondary" : "bg-card"}`}><span className="flex items-center gap-3"><span className={`grid size-5 place-items-center rounded-sm border-2 ${active ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{active && <Check className="size-3" />}</span><span className="text-xs font-bold">{item.name}</span></span><span className="text-xs font-extrabold text-primary">+₹ {item.price.toLocaleString("en-IN")}</span></Button> })}
+        </div>
+      </section>
+    </div>
+
+    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 p-4 backdrop-blur sm:left-1/2 sm:max-w-md sm:-translate-x-1/2">
+      <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">Total amount</p><p className="font-display text-xl font-extrabold">₹ {total.toLocaleString("en-IN")}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">Book now <ChevronRight className="size-4" /></Button></div>
+    </div>
   </div>;
 }
+
+function SectionHeading({ number, title, subtitle, muted = false }: { number: string; title: string; subtitle: string; muted?: boolean }) { return <div className="flex items-center gap-3"><span className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-extrabold ${muted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground shadow-action"}`}>{number}</span><div><h2 className="text-base font-extrabold leading-none">{title}</h2><p className="mt-1 text-[10px] font-bold uppercase text-muted-foreground">{subtitle}</p></div></div>; }
 
 function ProvidersScreen({ selected, setSelected, onContinue, onView }: { selected: number; setSelected: (n: number) => void; onContinue: () => void; onView: () => void }) {
   return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="2 of 3" title="Choose a provider" subtitle="3 trusted providers available" /><div className="space-y-3">{providers.map((item, index) => <button key={item.name} onClick={() => setSelected(index)} className={`flex w-full items-center gap-4 rounded-lg border bg-card p-4 text-left transition ${selected === index ? "border-primary ring-2 ring-primary/15" : "border-border"}`}><span className="grid size-14 shrink-0 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary">{item.initials}</span><span className="min-w-0 flex-1"><span className="block font-bold">{item.name}</span><span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Star className="size-3 fill-accent text-accent" /> {item.rating} · Verified provider</span><span className="mt-2 block text-xs text-muted-foreground">Tent, chairs, tables & shamiyana</span></span><span className="text-right"><span className="block font-display font-bold text-primary">{item.price}</span><span className="text-xs text-muted-foreground">package</span>{selected === index && <Check className="ml-auto mt-2 size-5 text-success" />}</span></button>)}</div><div className="mt-5 grid grid-cols-2 gap-3"><Button variant="outline" onClick={onView}>View details</Button><Button onClick={onContinue}>Continue to payment</Button></div></div>;
