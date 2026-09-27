@@ -79,7 +79,11 @@ function Index() {
             <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground"><TentTree className="size-6" /></span>
             <span><span className="block font-display text-xl font-extrabold text-primary">My<span className="text-accent">Tento</span></span><span className="block text-[9px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
+            <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
+            <Button variant="ghost" size="icon" aria-label="Profile" onClick={() => go("profile")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><UserRound className="size-5" /></Button>
+          </div>
         </div>
       </header>
 
@@ -99,11 +103,12 @@ function Index() {
         {step === "notifications" && <NotificationsScreen read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
       </main>
 
-      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-4">
+      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
         <NavItem icon={Home} label="Home" active={tab === "home"} onClick={() => go("home")} />
-        <NavItem icon={CalendarDays} label="Bookings" active={tab === "bookings"} onClick={() => go("bookings")} />
-        <NavItem icon={WalletCards} label="Wallet" active={tab === "wallet"} onClick={() => go("wallet")} />
-        <NavItem icon={UserRound} label="Profile" active={tab === "profile"} onClick={() => go("profile")} />
+        <NavItem icon={TentTree} label="Tent" active={false} onClick={() => beginBooking("Tent")} />
+        <NavItem icon={Sparkles} label="Decoration" active={false} onClick={() => beginBooking("Decoration")} />
+        <NavItem icon={UtensilsCrossed} label="Catering" active={false} onClick={() => beginBooking("Catering")} />
+        <NavItem icon={Car} label="Cab" active={false} onClick={() => beginBooking("Cab")} />
       </div></nav>}
       </div>
     </div>
@@ -141,18 +146,51 @@ function ProfileScreen() { const [editing, setEditing] = useState(false); const 
 
 function NotificationsScreen({ read, onRead, onBooking }: { read: boolean; onRead: () => void; onBooking: () => void }) { return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and offer updates" /><Button variant="ghost" size="sm" onClick={onRead}>{read ? "All read" : "Mark all read"}</Button></div><div className="space-y-3"><Button variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${read ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">Booking confirmed</span><span className="text-xs font-normal text-muted-foreground">Royal Tent House accepted your booking.</span></span></Button><div className="rounded-lg border border-border bg-card p-4"><p className="font-bold">Wedding season offer</p><p className="mt-1 text-xs text-muted-foreground">Save on event combos booked this week.</p></div></div></div>; }
 
-function DetailsScreen({ service, guests, setGuests, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; onContinue: () => void }) {
-  const packages = [
+const servicePackages: Record<Exclude<ServiceName, "Cab">, { name: string; detail: string; price: number; image?: string }[]> = {
+  Decoration: [
     { name: "Premium", detail: "Full setup + grand stage", price: 25000, image: packagePremium },
     { name: "Standard", detail: "Stage + main hall", price: 15000, image: packageStandard },
     { name: "Basic", detail: "Elegant stage only", price: 10000, image: packageBasic },
-  ];
-  const addOnOptions = [{ name: "Stage Setup", price: 5000 }, { name: "Lighting Setup", price: 3000 }, { name: "Flower Decoration", price: 4000 }, { name: "DJ / Sound", price: 6000 }];
+    { name: "Custom", detail: "As per your need", price: 0 },
+  ],
+  Tent: [
+    { name: "Royal Shamiyana", detail: "Premium tent + full setup", price: 30000, image: packagePremium },
+    { name: "Standard Tent", detail: "Tent + chairs + tables", price: 18000, image: packageStandard },
+    { name: "Basic Canopy", detail: "Simple tent setup", price: 12000, image: packageBasic },
+    { name: "Custom", detail: "Type, size, design & colour", price: 0 },
+  ],
+  Catering: [
+    { name: "Full Catering", detail: "Food, snacks, drinks & staff", price: 20000, image: packagePremium },
+    { name: "Cooking Master", detail: "Experienced cook only", price: 8000, image: packageStandard },
+    { name: "Bartan Only", detail: "Utensils & serving items", price: 6000, image: packageBasic },
+    { name: "Custom", detail: "Menu as per your need", price: 0 },
+  ],
+};
+
+const serviceAddOns: Record<Exclude<ServiceName, "Cab">, { name: string; price: number }[]> = {
+  Decoration: [
+    { name: "Stage Setup", price: 5000 }, { name: "Lighting Setup", price: 3000 }, { name: "Flower Decoration", price: 4000 },
+    { name: "DJ / Sound System", price: 6000 }, { name: "Photography", price: 5000 }, { name: "LED Screen", price: 7000 },
+  ],
+  Tent: [
+    { name: "DJ Sound + Light Setup", price: 6000 }, { name: "Night Light + Gate Light", price: 3500 }, { name: "Mineral Water (Branded / Normal)", price: 2000 },
+    { name: "Normal Decoration", price: 4000 }, { name: "All Catering Facility", price: 15000 }, { name: "Catering Staff Only", price: 5000 },
+  ],
+  Catering: [
+    { name: "Mineral Water (Branded / Normal)", price: 2000 }, { name: "DJ Speakers", price: 5000 }, { name: "Extra Serving Staff", price: 3000 }, { name: "Snacks & Drinks Counter", price: 4000 },
+  ],
+};
+
+function DetailsScreen({ service, guests, setGuests, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; onContinue: () => void }) {
+  const key = (service === "Cab" ? "Tent" : service) as Exclude<ServiceName, "Cab">;
+  const packages = servicePackages[key];
+  const addOnOptions = serviceAddOns[key];
   const [selectedPackage, setSelectedPackage] = useState(0);
-  const [addOns, setAddOns] = useState<string[]>(["Stage Setup"]);
+  const [addOns, setAddOns] = useState<string[]>([addOnOptions[0]?.name ?? ""]);
   const selected = packages[selectedPackage] ?? packages[0];
   const addOnTotal = addOnOptions.filter((item) => addOns.includes(item.name)).reduce((total, item) => total + item.price, 0);
   const total = (selected?.price ?? 0) + addOnTotal;
+  const isQuote = (selected?.price ?? 0) === 0;
   const toggleAddOn = (name: string) => setAddOns((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
 
   return <div className="animate-rise-in pb-40">
@@ -181,8 +219,8 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
         <SectionHeading number="2" title={`Choose ${service} Package`} subtitle="Select your preferred style" />
         <div className="-mx-1 mt-4 flex snap-x gap-3 overflow-x-auto px-1 pb-4">
           {packages.map((item, index) => <Button key={item.name} variant="outline" onClick={() => setSelectedPackage(index)} className={`h-auto min-w-44 snap-start flex-col items-stretch overflow-hidden p-1.5 text-left ${selectedPackage === index ? "border-primary ring-4 ring-secondary" : "border-border"}`}>
-            <span className="relative block h-28 overflow-hidden rounded-md"><img src={item.image} alt={`${item.name} decoration package`} loading="lazy" width={1024} height={768} className="h-full w-full object-cover" />{selectedPackage === index && <span className="absolute left-2 top-2 grid size-5 place-items-center rounded-full border-2 border-primary-foreground bg-primary text-primary-foreground"><Check className="size-3" /></span>}</span>
-            <span className="block w-full px-2 pb-2 pt-2"><span className="block text-xs font-extrabold">{item.name} {service}</span><span className="mt-0.5 block text-[10px] font-medium text-muted-foreground">{item.detail}</span><span className="mt-2 block font-display text-sm font-extrabold text-primary">₹ {item.price.toLocaleString("en-IN")}</span></span>
+            <span className="relative block h-28 overflow-hidden rounded-md">{item.image ? <img src={item.image} alt={`${item.name} ${service} package`} loading="lazy" width={1024} height={768} className="h-full w-full object-cover" /> : <span className="grid h-full w-full place-items-center bg-brand-soft"><Sparkles className="size-8 text-primary" /></span>}{selectedPackage === index && <span className="absolute left-2 top-2 grid size-5 place-items-center rounded-full border-2 border-primary-foreground bg-primary text-primary-foreground"><Check className="size-3" /></span>}</span>
+            <span className="block w-full px-2 pb-2 pt-2"><span className="block text-xs font-extrabold">{item.name} {service}</span><span className="mt-0.5 block text-[10px] font-medium text-muted-foreground">{item.detail}</span><span className="mt-2 block font-display text-sm font-extrabold text-primary">{item.price === 0 ? "Get Quote" : `₹ ${item.price.toLocaleString("en-IN")}`}</span></span>
           </Button>)}
         </div>
       </section>
@@ -196,7 +234,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
     </div>
 
     <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 p-4 backdrop-blur sm:left-1/2 sm:max-w-md sm:-translate-x-1/2">
-      <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">Total amount</p><p className="font-display text-xl font-extrabold">₹ {total.toLocaleString("en-IN")}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">Book now <ChevronRight className="size-4" /></Button></div>
+      <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">{isQuote ? "Custom package" : "Total amount"}</p><p className="font-display text-xl font-extrabold">{isQuote ? "Get Quote" : `₹ ${total.toLocaleString("en-IN")}`}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">{isQuote ? "Request quote" : "Book now"} <ChevronRight className="size-4" /></Button></div>
     </div>
   </div>;
 }
@@ -209,12 +247,12 @@ function ProvidersScreen({ selected, setSelected, onContinue, onView }: { select
 
 function PaymentScreen({ service, guests, provider, onConfirm }: { service: ServiceName; guests: number; provider: (typeof providers)[number]; onConfirm: () => void }) {
   const [pay, setPay] = useState("advance");
-  const methods = [{ id: "advance", label: "Pay 20% advance online" }, { id: "cash", label: "Cash / pay provider" }];
+  const methods = [{ id: "online", label: "Pay full online (UPI / Card)" }, { id: "advance", label: "Pay 20% advance online" }, { id: "cash", label: "Cash / pay provider" }];
   return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="3 of 3" title="Confirm & pay" subtitle="Review your booking details" /><div className="rounded-lg border border-border bg-card p-5"><h3 className="mb-4 font-bold">Booking summary</h3><Summary label="Service" value={service} /><Summary label="Provider" value={provider.name} /><Summary label="Date & time" value="25 Dec 2026 · 6:00 PM" /><Summary label="Guests" value={`${guests}`} /><div className="mt-4 border-t border-border pt-4"><Summary label="Package total" value={provider.price} strong /></div></div><div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="mb-3 font-bold">Payment method</h3>{methods.map(({ id, label }) => <button key={id} onClick={() => setPay(id)} className={`mb-2 flex w-full items-center gap-3 rounded-lg border p-3 text-left text-sm font-semibold ${pay === id ? "border-primary bg-secondary" : "border-border"}`}><span className={`grid size-5 place-items-center rounded-full border ${pay === id ? "border-primary" : "border-border"}`}>{pay === id && <span className="size-2.5 rounded-full bg-primary" />}</span>{label}</button>)}</div><div className="mt-4 flex gap-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" /><p>Your booking is protected. Provider details are shared after confirmation.</p></div><Button onClick={onConfirm} className="mt-5 w-full">Confirm booking</Button></div>;
 }
 
 function SuccessScreen({ provider, onHome }: { provider: (typeof providers)[number]; onHome: () => void }) {
-  return <div className="mx-auto max-w-lg animate-rise-in py-10 text-center"><span className="mx-auto grid size-20 place-items-center rounded-full bg-success text-primary-foreground"><Check className="size-10" /></span><p className="mt-6 text-sm font-bold text-success">BOOKING CONFIRMED</p><h1 className="mt-2 text-3xl font-extrabold">Your event is in good hands.</h1><p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">{provider.name} has received your booking. Confirmation was sent by WhatsApp, SMS and app notification.</p><div className="mt-7 rounded-lg border border-border bg-card p-5 text-left"><Summary label="Booking ID" value="MT-261225-48" /><Summary label="Provider" value={provider.name} /><Summary label="Event date" value="25 Dec 2026" /></div><Button onClick={onHome} className="mt-5 w-full">Back to home</Button></div>;
+  return <div className="mx-auto max-w-lg animate-rise-in py-10 text-center"><span className="mx-auto grid size-20 place-items-center rounded-full bg-success text-primary-foreground"><Check className="size-10" /></span><p className="mt-6 text-sm font-bold text-success">BOOKING CONFIRMED</p><h1 className="mt-2 text-3xl font-extrabold">Your event is in good hands.</h1><p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">{provider.name} has received your booking. Confirmation was sent by WhatsApp, SMS and app notification.</p><div className="mt-7 rounded-lg border border-border bg-card p-5 text-left"><Summary label="Booking ID" value="MT-261225-48" /><Summary label="Provider" value={provider.name} /><Summary label="Event date" value="25 Dec 2026" /><div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-brand-soft p-3"><div><p className="text-[10px] font-bold uppercase text-muted-foreground">Provider contact</p><p className="text-sm font-extrabold text-primary">+91 94150 12345</p></div><Button size="sm" asChild><a href="tel:+919415012345"><Headphones className="size-4" /> Call now</a></Button></div></div><Button onClick={onHome} className="mt-5 w-full">Back to home</Button></div>;
 }
 
 function StepTitle({ step, title, subtitle }: { step: string; title: string; subtitle: string }) { return <div className="mb-6"><p className="text-xs font-extrabold uppercase text-accent">{step}</p><h1 className="mt-1 text-2xl font-extrabold">{title}</h1><p className="mt-1 text-sm text-muted-foreground">{subtitle}</p><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-secondary"><div className={`h-full bg-primary ${step.startsWith("1") ? "w-1/3" : step.startsWith("2") ? "w-2/3" : "w-full"}`} /></div></div>; }
