@@ -133,20 +133,20 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
       </div>
     </section>
 
-    <section className="relative mb-8 overflow-hidden rounded-[28px] bg-primary p-6 text-primary-foreground">
-      <div className="relative z-10">
+    <section className="relative mb-8 overflow-hidden rounded-[28px] text-primary-foreground">
+      <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/75 to-primary/30" />
+      <div className="relative z-10 p-6">
         <span className="rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-accent-foreground">Special offer</span>
         <h2 className="mt-3 w-3/4 font-display text-lg font-bold leading-tight">Wedding Season Spectacular Deals</h2>
-        <p className="mt-2 text-[11px] text-primary-foreground/70">Get up to 20% off on your first booking</p>
+        <p className="mt-2 text-[11px] text-primary-foreground/80">Get up to 20% off on your first booking</p>
         <Button onClick={() => onBook("Tent")} className="mt-4 rounded-xl bg-card px-5 py-2.5 text-[11px] font-bold text-primary shadow-lg hover:bg-secondary">Explore now</Button>
       </div>
-      <div className="absolute -bottom-6 -right-6 size-36 rounded-full bg-primary-foreground/10 blur-2xl" />
-      <div className="absolute right-4 top-4 size-16 rounded-full border-[12px] border-primary-foreground/5" />
     </section>
 
     <section className="mb-8">
       <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-sm font-black uppercase tracking-wider text-primary">Our services</h2><Button variant="ghost" size="sm" onClick={onServices} className="text-[10px] font-bold text-primary">View all</Button></div>
-      <div className="grid grid-cols-2 gap-4">{services.map(({ name, subtitle, icon: Icon, tone }) => <Button variant="outline" key={name} onClick={() => onBook(name)} className="group h-auto flex-col items-start rounded-[24px] border-border/50 bg-card p-5 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"><span className={`mb-4 grid size-12 place-items-center rounded-2xl ${tone}`}><Icon className="size-6" /></span><span className="text-sm font-bold text-primary">{name}</span><span className="mt-1 text-[11px] font-medium leading-4 text-muted-foreground">{subtitle}</span></Button>)}</div>
+      <div className="grid grid-cols-2 gap-4">{services.map(({ name, subtitle }) => <Button variant="outline" key={name} onClick={() => onBook(name)} className="group h-auto flex-col items-stretch overflow-hidden rounded-[24px] border-border/50 bg-card p-0 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"><span className="relative block h-24 w-full overflow-hidden"><img src={serviceImages[name]} alt={name} loading="lazy" width={1024} height={768} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /></span><span className="block p-4"><span className="block text-sm font-bold text-primary">{name}</span><span className="mt-1 block text-[11px] font-medium leading-4 text-muted-foreground">{subtitle}</span></span></Button>)}</div>
     </section>
 
     <section>
