@@ -14,6 +14,13 @@ import vehicleCab from "@/assets/vehicle-cab.png";
 import vehicleAuto from "@/assets/vehicle-auto.png";
 import vehicleToto from "@/assets/vehicle-toto.png";
 import vehicleSuv from "@/assets/vehicle-suv.png";
+import homeBanner from "@/assets/home-banner.jpg";
+import serviceTent from "@/assets/service-tent.jpg";
+import serviceDecoration from "@/assets/service-decoration.jpg";
+import serviceCatering from "@/assets/service-catering.jpg";
+import serviceCab from "@/assets/service-cab.jpg";
+
+const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
 
 const vehicleImages: Record<string, string> = { Cab: vehicleCab, Auto: vehicleAuto, Toto: vehicleToto, SUV: vehicleSuv };
 const premiumImages: Record<string, string> = { "Toyota Fortuner": vehicleSuv, Scorpio: vehicleSuv, "Innova Crysta": vehicleSuv, "Toyota Camry": vehicleCab };
