@@ -34,8 +34,14 @@ const initialBookings: ProviderBooking[] = [
 ];
 
 const statusLabel: Record<ProviderBooking["status"], string> = {
-  new: "NEW REQUEST", confirmed: "CONFIRMED", team: "TEAM ASSIGNED", setup: "SETUP STARTED", done: "COMPLETED",
+  new: "NEW REQUEST", confirmed: "CONFIRMED", team: "TEAM ASSIGNED", setup: "SETUP STARTED", done: "COMPLETED", declined: "DECLINED",
 };
+
+const providerReviews = [
+  { name: "Dheeraj Tagde", rating: 5, text: "Shamiyana aur stage setup time par ho gaya. Team bahut professional thi.", date: "Sep 2026" },
+  { name: "Anita Verma", rating: 5, text: "Decoration bilkul photos jaisi thi. Guests ne bahut tareef ki!", date: "Aug 2026" },
+  { name: "Sandeep Yadav", rating: 4, text: "Achha kaam, bas chairs thodi der se aayi. Overall satisfied.", date: "Jul 2026" },
+];
 
 function ProviderApp() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -71,25 +77,28 @@ function ProviderApp() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {open ? (
-          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) update(open.id, n.next); else setOpenId(null); }} onClose={() => setOpenId(null)} />
+          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) update(open.id, n.next); else setOpenId(null); }} onDecline={() => update(open.id, "declined")} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
           <Dashboard bookings={bookings} onOpen={(id) => setOpenId(id)} />
         ) : tab === "bookings" ? (
           <Bookings bookings={bookings} onOpen={(id) => setOpenId(id)} />
         ) : tab === "calendar" ? (
           <Calendar availability={availability} setAvailability={setAvailability} />
-        ) : (
+        ) : tab === "earnings" ? (
           <Earnings paidOut={paidOut} onPayout={() => setPaidOut(true)} />
+        ) : (
+          <Profile />
         )}
       </main>
 
       {!open && (
         <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card">
-          <div className="mx-auto grid h-18 max-w-md grid-cols-4">
+          <div className="mx-auto grid h-18 max-w-md grid-cols-5">
             <NavItem icon={HomeIcon} label="Dashboard" active={tab === "dashboard"} onClick={() => go("dashboard")} />
             <NavItem icon={CalendarDays} label="Bookings" active={tab === "bookings"} onClick={() => go("bookings")} />
             <NavItem icon={Clock3} label="Calendar" active={tab === "calendar"} onClick={() => go("calendar")} />
             <NavItem icon={WalletCards} label="Earnings" active={tab === "earnings"} onClick={() => go("earnings")} />
+            <NavItem icon={Store} label="Profile" active={tab === "profile"} onClick={() => go("profile")} />
           </div>
         </nav>
       )}
