@@ -137,39 +137,44 @@ function Index() {
 
 function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocation, onServices, onProviders, onProvider, onCombo }: { onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
   const t = useT();
+  const tile = (name: ServiceName, label: string, sub: string, cls: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[28px] bg-secondary text-left ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-500 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" /><span className="absolute bottom-4 left-4 right-3"><span className="block font-display text-base font-bold text-foreground">{label}</span><span className="block text-[10px] text-foreground/70">{sub}</span></span></button>;
   return <div className="animate-rise-in">
     <section className="relative mb-6">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60">{t("greeting")}</p>
-      <h1 className="mt-1 font-display text-2xl font-bold text-primary">{t("hello")}</h1>
-      <div className="relative mt-4">
-        <Button variant="outline" onClick={() => setLocationOpen(!locationOpen)} className="h-auto max-w-full gap-2 rounded-2xl border-border/60 bg-card px-3 py-2.5 shadow-sm min-[360px]:px-4"><MapPin className="size-4 shrink-0 text-primary" /><span className="min-w-0 truncate text-xs font-bold text-primary">{location}</span><ChevronDown className="size-3 shrink-0 text-primary" /></Button>
-        {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-card p-2 shadow-lg">{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
+      <div className="relative">
+        <button type="button" onClick={() => setLocationOpen(!locationOpen)} className="flex max-w-full items-center gap-1.5 text-muted-foreground"><MapPin className="size-3.5 shrink-0 text-primary" /><span className="min-w-0 truncate text-xs font-medium uppercase tracking-wide">{location}</span><ChevronDown className="size-3 shrink-0" /></button>
+        {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-popover p-2 shadow-lg">{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
       </div>
+      <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("greeting")}</p>
+      <h1 className="mt-1 font-display text-2xl font-semibold text-foreground">{t("hello")}</h1>
     </section>
 
     <CabPriorityCard onOpen={() => onBook("Cab")} />
 
-    <section className="relative mb-8 overflow-hidden rounded-[28px] text-primary-foreground">
-      <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/75 to-primary/30" />
-      <div className="relative z-10 p-6">
-        <span className="rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-accent-foreground">{t("offer")}</span>
-        <h2 className="mt-3 w-3/4 font-display text-lg font-bold leading-tight">{t("offerTitle")}</h2>
-        <p className="mt-2 text-[11px] text-primary-foreground/80">{t("offerSub")}</p>
-        <Button onClick={() => onBook("Tent")} className="mt-4 rounded-xl bg-card px-5 py-2.5 text-[11px] font-bold text-primary shadow-lg hover:bg-secondary">{t("explore")}</Button>
+    <button type="button" onClick={() => onBook("Tent")} className="relative mb-8 block h-40 w-full overflow-hidden rounded-[32px] bg-secondary text-left">
+      <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover opacity-70" />
+      <span className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+      <span className="absolute bottom-5 left-6 right-6">
+        <span className="rounded bg-primary px-2 py-0.5 text-[9px] font-black uppercase text-primary-foreground">{t("offer")}</span>
+        <span className="mt-1.5 block font-display text-lg font-bold leading-tight text-foreground">{t("offerTitle")}</span>
+        <span className="block text-xs text-foreground/70">{t("offerSub")}</span>
+      </span>
+    </button>
+
+    <section className="mb-8">
+      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-lg font-bold text-foreground">{t("services")}</h2><button type="button" onClick={onServices} className="text-xs font-semibold text-primary">View all</button></div>
+      <div className="grid h-[300px] grid-cols-2 grid-rows-3 gap-3">
+        {tile("Tent", t("tent"), "Royal & Modern", "row-span-2")}
+        {tile("Decoration", t("decoration"), "Theme & Floral", "")}
+        {tile("Catering", t("catering"), "Lucknowi flavours", "")}
+        {tile("Cab", t("cab"), "Guest rides & baraat", "col-span-2 max-[359px]:col-span-2")}
       </div>
     </section>
 
-    <section className="mb-8">
-      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-sm font-black uppercase tracking-wider text-primary">{t("services")}</h2><Button variant="ghost" size="sm" onClick={onServices} className="text-[10px] font-bold text-primary">View all</Button></div>
-      <div className="grid grid-cols-2 gap-3 min-[380px]:gap-4">{services.map(({ name, subtitle }) => <Button variant="outline" key={name} onClick={() => onBook(name)} className="group h-auto min-w-0 flex-col items-stretch overflow-hidden rounded-[20px] border-border/50 bg-card p-0 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md min-[380px]:rounded-[24px]"><span className="relative block h-24 w-full overflow-hidden"><img src={serviceImages[name]} alt={name} loading="lazy" width={1024} height={768} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" /></span><span className="block min-w-0 whitespace-normal p-3 min-[380px]:p-4"><span className="block text-sm font-bold text-primary">{name}</span><span className="mt-1 block break-words text-[11px] font-medium leading-4 text-muted-foreground">{subtitle}</span></span></Button>)}</div>
-    </section>
-
-    <section className="mb-8"><Button onClick={onCombo} className="h-auto w-full justify-start gap-4 rounded-[24px] bg-accent p-4 text-left text-accent-foreground shadow-action hover:bg-accent/90"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-card/20"><PartyPopper className="size-6" /></span><span className="flex-1"><span className="block font-display text-base font-extrabold">{t("combo")}</span><span className="block whitespace-normal text-[11px] font-medium opacity-90">{t("comboSub")}</span></span><ChevronRight className="size-5" /></Button></section>
+    <section className="mb-8"><button type="button" onClick={onCombo} className="flex w-full items-center justify-between gap-4 rounded-[32px] bg-primary p-6 text-left text-primary-foreground shadow-action"><span className="min-w-0 flex-1"><span className="block font-display text-2xl font-bold leading-tight">{t("combo")}</span><span className="mt-2 block text-[11px] font-bold uppercase italic tracking-wide opacity-80">{t("comboSub")}</span></span><span className="grid size-12 shrink-0 place-items-center rounded-full bg-background text-primary"><ChevronRight className="size-6" /></span></button></section>
 
     <section>
-      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-sm font-black uppercase tracking-wider text-primary">{t("topRated")}</h2><Button variant="ghost" size="sm" onClick={onProviders} className="text-[10px] font-bold text-primary">View all</Button></div>
-      <div className="space-y-3">{providers.map((item, i) => <Button variant="outline" key={item.name} onClick={() => onProvider(i)} className="h-auto w-full min-w-0 items-center gap-3 rounded-[22px] border-border/50 bg-card p-3 text-left shadow-sm min-[380px]:gap-4 min-[380px]:p-3.5"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-soft font-display text-sm font-bold text-primary min-[380px]:size-14">{item.initials}</span><span className="min-w-0 flex-1 whitespace-normal"><span className="block break-words text-sm font-bold leading-5 text-primary">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-accent text-accent" /> {item.rating} · Lucknow</span><span className="mt-2 inline-block rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-bold uppercase text-primary">Verified</span></span><span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-primary min-[380px]:size-10"><ChevronRight className="size-5" /></span></Button>)}</div>
+      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-lg font-bold text-foreground">{t("topRated")}</h2><button type="button" onClick={onProviders} className="text-xs font-semibold text-primary">View all</button></div>
+      <div className="space-y-3">{providers.map((item, i) => <button type="button" key={item.name} onClick={() => onProvider(i)} className="flex w-full min-w-0 items-center gap-3 rounded-3xl border border-border bg-festive p-3.5 text-left"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary font-display text-sm font-bold text-primary-foreground">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-foreground">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-primary text-primary" /> {item.rating} · Lucknow · <ShieldCheck className="size-3 text-success" /> Verified</span></span><ChevronRight className="size-5 shrink-0 text-primary" /></button>)}</div>
     </section>
   </div>;
 }
