@@ -6,6 +6,7 @@ import {
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CabPriorityCard, ClientCabScreen } from "@/components/client-requirement-panels";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.jpg";
 import packagePremium from "@/assets/package-premium.jpg";
@@ -108,7 +109,7 @@ function Index() {
         {step === "combo" && <ComboScreen onContinue={(name, price) => { setCombo({ name, price }); go("payment"); }} />}
         {step === "reviews" && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
-        {step === "details" && service === "Cab" && <CabScreen onContinue={() => go("payment")} />}
+        {step === "details" && service === "Cab" && <ClientCabScreen />}
         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
         {step === "providers" && <ProvidersScreen selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
         {step === "providerDetail" && chosenProvider && <ProviderDetailFull provider={chosenProvider} onBook={() => go("details")} onReviews={() => go("reviews")} />}
@@ -145,6 +146,8 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
         {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-card p-2 shadow-lg">{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
       </div>
     </section>
+
+    <CabPriorityCard onOpen={() => onBook("Cab")} />
 
     <section className="relative mb-8 overflow-hidden rounded-[28px] text-primary-foreground">
       <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover" />
