@@ -58,10 +58,10 @@ function AdminApp() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Button variant="ghost" asChild className="h-auto gap-3 px-0 hover:bg-transparent">
-            <Link to="/"><ArrowLeft className="size-5 text-foreground" /><span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="size-6" /></span><span className="font-display text-xl font-extrabold text-primary">my<span className="text-accent">Tento</span> <span className="text-sm font-bold text-muted-foreground">Admin</span></span></Link>
+      <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
+        <div className="mx-auto grid min-h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:flex sm:px-6">
+          <Button variant="ghost" asChild className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
+            <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="size-6" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-primary sm:text-xl">my<span className="text-accent">Tento</span> <span className="text-xs font-bold text-muted-foreground sm:text-sm">Admin</span></span></Link>
           </Button>
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>

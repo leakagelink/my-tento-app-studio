@@ -89,14 +89,14 @@ function Index() {
     {onboard && <Onboarding onDone={() => { setOnboard(false); localStorage.setItem("mt-onboarded", "1"); }} />}
     <div className="min-h-screen bg-background pb-24 sm:py-6">
       <div className="mx-auto min-h-screen max-w-md overflow-hidden bg-card sm:min-h-[calc(100vh-3rem)] sm:rounded-lg sm:border sm:border-border sm:shadow-panel">
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
-        <div className="flex h-16 items-center justify-between px-4">
-          <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto gap-3 px-0 hover:bg-transparent">
+      <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
+        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-4">
+          <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
             {step !== "home" && <ArrowLeft className="size-5 text-foreground" />}
             <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground"><TentTree className="size-6" /></span>
-            <span><span className="block font-display text-xl font-extrabold text-primary">My<span className="text-accent">Tento</span></span><span className="block text-[9px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
+             <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-primary sm:text-xl">My<span className="text-accent">Tento</span></span><span className="block truncate text-[8px] font-bold uppercase text-muted-foreground sm:text-[9px]">Plan. Book. Celebrate.</span></span>
           </Button>
-          <div className="flex items-center gap-2">
+           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
             <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
             <Button variant="ghost" size="icon" aria-label="Profile" onClick={() => go("profile")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><UserRound className="size-5" /></Button>
@@ -122,7 +122,7 @@ function Index() {
         {step === "notifications" && <NotificationsScreen read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
       </main>
 
-      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services", "combo", "reviews"] as Step[]).includes(step) && <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
+      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services", "combo", "reviews"] as Step[]).includes(step) && <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
         <NavItem icon={Home} label={t("home")} active={tab === "home"} onClick={() => go("home")} />
         <NavItem icon={TentTree} label={t("tent")} active={false} onClick={() => beginBooking("Tent")} />
         <NavItem icon={Sparkles} label={t("decoration")} active={false} onClick={() => beginBooking("Decoration")} />
@@ -275,7 +275,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
       </section>
     </div>
 
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 p-4 backdrop-blur sm:left-1/2 sm:max-w-md sm:-translate-x-1/2">
+    <div className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 px-4 pb-4 pt-4 backdrop-blur sm:left-1/2 sm:max-w-md sm:-translate-x-1/2">
       <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">{isQuote ? "Custom package" : "Total amount"}</p><p className="font-display text-xl font-extrabold">{isQuote ? "Get Quote" : `₹ ${total.toLocaleString("en-IN")}`}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">{isQuote ? "Request quote" : "Book now"} <ChevronRight className="size-4" /></Button></div>
     </div>
   </div>;
