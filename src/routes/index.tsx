@@ -87,7 +87,7 @@ function Index() {
   return (
     <LangContext.Provider value={{ lang, setLang: changeLang }}>
     {onboard && <Onboarding onDone={() => { setOnboard(false); localStorage.setItem("mt-onboarded", "1"); }} />}
-    <div className="min-h-screen bg-background pb-24 sm:py-6">
+    <div className="min-h-screen bg-background pb-28 sm:py-6 sm:pb-28">
       <div className="mx-auto min-h-screen max-w-md overflow-hidden bg-card sm:min-h-[calc(100vh-3rem)] sm:rounded-lg sm:border sm:border-border sm:shadow-panel">
       <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-4">
@@ -104,7 +104,7 @@ function Index() {
         </div>
       </header>
 
-      <main className={step === "details" ? "" : step === "combo" ? "px-4 py-4" : "px-4 py-6"}>
+      <main className={step === "details" ? "pb-28" : step === "combo" ? "px-4 pb-28 pt-4" : "px-4 pb-28 pt-6"}>
         {step === "home" && <HomeScreen onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} onCombo={() => go("combo")} />}
         {step === "combo" && <ComboScreen onContinue={(name, price) => { setCombo({ name, price }); go("payment"); }} />}
         {step === "reviews" && <ReviewsScreen provider={chosenProvider} />}
@@ -122,13 +122,13 @@ function Index() {
         {step === "notifications" && <NotificationsScreen read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
       </main>
 
-      {!(["details", "providers", "providerDetail", "payment", "success", "notifications", "services", "combo", "reviews"] as Step[]).includes(step) && <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
+      <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
         <NavItem icon={Home} label={t("home")} active={tab === "home"} onClick={() => go("home")} />
         <NavItem icon={TentTree} label={t("tent")} active={false} onClick={() => beginBooking("Tent")} />
         <NavItem icon={Sparkles} label={t("decoration")} active={false} onClick={() => beginBooking("Decoration")} />
         <NavItem icon={UtensilsCrossed} label={t("catering")} active={false} onClick={() => beginBooking("Catering")} />
         <NavItem icon={Car} label={t("cab")} active={false} onClick={() => beginBooking("Cab")} />
-      </div></nav>}
+      </div></nav>
       </div>
     </div>
     </LangContext.Provider>
@@ -235,7 +235,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
   const isQuote = (selected?.price ?? 0) === 0;
   const toggleAddOn = (name: string) => setAddOns((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
 
-  return <div className="animate-rise-in pb-40">
+  return <div className="animate-rise-in pb-52">
     <section className="relative h-56 overflow-hidden bg-primary">
       <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/35 to-transparent" />
@@ -275,7 +275,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
       </section>
     </div>
 
-    <div className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-border bg-card/95 px-4 pb-4 pt-4 backdrop-blur sm:left-1/2 sm:max-w-md sm:-translate-x-1/2">
+    <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border bg-card/95 px-4 py-3 backdrop-blur">
       <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">{isQuote ? "Custom package" : "Total amount"}</p><p className="font-display text-xl font-extrabold">{isQuote ? "Get Quote" : `₹ ${total.toLocaleString("en-IN")}`}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">{isQuote ? "Request quote" : "Book now"} <ChevronRight className="size-4" /></Button></div>
     </div>
   </div>;
