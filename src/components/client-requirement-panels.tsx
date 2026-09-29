@@ -25,9 +25,9 @@ const vehicles: Vehicle[] = [
 ];
 
 export function CabPriorityCard({ onOpen }: { onOpen: () => void }) {
-  return <section className="mb-6 flex min-w-0 items-center justify-between gap-3 rounded-3xl border border-border bg-festive p-4">
-    <div className="flex min-w-0 items-center gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Navigation className="size-5" /></span><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Need a ride?</p><h2 className="truncate font-display text-sm font-bold text-foreground">Cab Quick Booking</h2></div></div>
-    <Button onClick={onOpen} variant="ghost" className="shrink-0 rounded-xl bg-foreground/5 px-4 text-xs font-bold text-primary hover:bg-foreground/10">Book <ChevronRight className="size-4" /></Button>
+  return <section className="mb-6 flex min-w-0 items-center justify-between gap-3 rounded-3xl bg-festive p-4">
+    <div className="flex min-w-0 items-center gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/15 text-white"><Navigation className="size-5" /></span><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Need a ride?</p><h2 className="truncate font-display text-sm font-bold text-white">Cab Quick Booking</h2></div></div>
+    <Button onClick={onOpen} variant="ghost" className="shrink-0 rounded-xl bg-white/15 px-4 text-xs font-bold text-white hover:bg-white/25">Book <ChevronRight className="size-4" /></Button>
   </section>;
 }
 
