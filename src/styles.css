@@ -151,8 +151,25 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    min-width: 320px;
-    overflow-x: hidden;
+    width: 100%;
+    min-width: 0;
+    min-height: 100svh;
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html {
+    width: 100%;
+    overflow-x: clip;
+  }
+
+  button, input, select, textarea {
+    max-width: 100%;
+  }
+
+  img, video {
+    max-width: 100%;
   }
 
   h1, h2, h3 {
@@ -176,6 +193,28 @@
 
 @utility safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility app-bottom-space {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+}
+
+@utility app-bottom-nav {
+  min-height: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@utility above-bottom-nav {
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 359px) {
+  .mobile-compact-label {
+    font-size: 0.625rem;
+  }
+
+  .mobile-compact-hide {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
