@@ -275,7 +275,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
       </section>
     </div>
 
-    <div className="fixed inset-x-0 bottom-18 z-20 border-t border-border bg-card/95 px-4 py-3 backdrop-blur sm:left-1/2 sm:max-w-md sm:-translate-x-1/2">
+    <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-20 border-t border-border bg-card/95 px-4 py-3 backdrop-blur">
       <div className="flex items-center justify-between rounded-lg bg-primary p-3 shadow-action"><div className="pl-2 text-primary-foreground"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">{isQuote ? "Custom package" : "Total amount"}</p><p className="font-display text-xl font-extrabold">{isQuote ? "Get Quote" : `₹ ${total.toLocaleString("en-IN")}`}</p></div><Button onClick={onContinue} className="bg-card px-5 text-primary shadow-none hover:bg-secondary">{isQuote ? "Request quote" : "Book now"} <ChevronRight className="size-4" /></Button></div>
     </div>
   </div>;
