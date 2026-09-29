@@ -65,9 +65,9 @@ function AdminApp() {
           </Button>
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
-        <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl gap-1 overflow-x-auto overscroll-x-contain px-3 sm:px-6">
           {([["overview", "Overview"], ["providers", "Providers"], ["bookings", "Bookings"], ["users", "Users"], ["payments", "Payments"], ["offers", "Offers"], ["content", "Content"], ["notifications", "Notifications"], ["reports", "Reports"], ["settings", "Settings"]] as [Tab, string][]).map(([id, label]) => (
-            <Button key={id} variant="ghost" size="sm" onClick={() => go(id)} className={`rounded-b-none border-b-2 ${tab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{label}</Button>
+            <Button key={id} variant="ghost" size="sm" onClick={() => go(id)} className={`shrink-0 rounded-b-none border-b-2 ${tab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{label}</Button>
           ))}
         </div>
       </header>
