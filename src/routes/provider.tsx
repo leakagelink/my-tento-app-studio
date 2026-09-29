@@ -66,11 +66,11 @@ function ProviderApp() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-bottom-space min-h-svh min-w-0 bg-background">
       <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="mx-auto grid min-h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:flex sm:px-6">
           <Button variant="ghost" asChild className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
-            <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground"><Store className="size-6" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-primary sm:text-xl">my<span className="text-accent">Tento</span> <span className="text-xs font-bold text-muted-foreground sm:text-sm">Provider</span></span></Link>
+            <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground max-[359px]:size-9"><Store className="size-6 max-[359px]:size-5" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-primary sm:text-xl">my<span className="text-accent">Tento</span> <span className="mobile-compact-hide text-xs font-bold text-muted-foreground sm:text-sm">Provider</span></span></Link>
           </Button>
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
@@ -93,7 +93,7 @@ function ProviderApp() {
       </main>
 
       {!open && (
-        <nav className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card">
+        <nav className="safe-bottom app-bottom-nav fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card">
           <div className="mx-auto grid h-18 max-w-md grid-cols-5">
             <NavItem icon={HomeIcon} label="Dashboard" active={tab === "dashboard"} onClick={() => go("dashboard")} />
             <NavItem icon={CalendarDays} label="Bookings" active={tab === "bookings"} onClick={() => go("bookings")} />
@@ -147,14 +147,14 @@ function Bookings({ bookings, onOpen }: { bookings: ProviderBooking[]; onOpen: (
 function RequestCard({ booking, onOpen }: { booking: ProviderBooking; onOpen: () => void }) {
   const tone = booking.status === "new" ? "text-accent" : booking.status === "done" ? "text-muted-foreground" : "text-success";
   return (
-    <button onClick={onOpen} className="flex w-full items-start gap-4 rounded-lg border border-border bg-card p-4 text-left transition hover:border-primary/40 hover:shadow-sm">
+    <button onClick={onOpen} className="grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-lg border border-border bg-card p-3 text-left transition hover:border-primary/40 hover:shadow-sm min-[380px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[380px]:gap-4 min-[380px]:p-4">
       <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-secondary text-primary"><TentTree className="size-6" /></span>
       <span className="min-w-0 flex-1">
         <span className={`text-xs font-bold ${tone}`}>{statusLabel[booking.status]}</span>
         <span className="mt-0.5 block font-bold">{booking.customer} · {booking.service}</span>
         <span className="mt-1 block text-xs text-muted-foreground">{booking.date} · {booking.time} · {booking.area}</span>
       </span>
-      <span className="text-right"><span className="block font-display font-bold text-primary">{booking.amount}</span><ChevronRight className="ml-auto mt-1 size-4 text-muted-foreground" /></span>
+      <span className="col-span-2 flex items-center justify-between text-right min-[380px]:col-span-1 min-[380px]:block"><span className="block font-display font-bold text-primary">{booking.amount}</span><ChevronRight className="ml-auto mt-1 size-4 text-muted-foreground" /></span>
     </button>
   );
 }
@@ -283,5 +283,5 @@ function Stat({ icon: Icon, label, value, tone }: { icon: ElementType; label: st
 }
 
 function PageTitle({ title, subtitle }: { title: string; subtitle: string }) { return <div className="mb-6"><h1 className="text-2xl font-extrabold">{title}</h1><p className="mt-1 text-sm text-muted-foreground">{subtitle}</p></div>; }
-function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className="flex items-center justify-between gap-4 py-2 text-sm"><span className="text-muted-foreground">{label}</span><span className={strong ? "font-display text-lg font-extrabold text-primary" : "text-right font-bold"}>{value}</span></div>; }
-function NavItem({ icon: Icon, label, active = false, onClick }: { icon: ElementType; label: string; active?: boolean; onClick: () => void }) { return <Button variant="ghost" onClick={onClick} className={`h-full rounded-none flex-col gap-1 text-[11px] ${active ? "text-primary" : "text-muted-foreground"}`}><Icon className="size-5" />{label}</Button>; }
+function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] items-start gap-3 py-2 text-sm"><span className="break-words text-muted-foreground">{label}</span><span className={`${strong ? "font-display text-base font-extrabold text-primary min-[360px]:text-lg" : "font-bold"} min-w-0 break-words text-right`}>{value}</span></div>; }
+function NavItem({ icon: Icon, label, active = false, onClick }: { icon: ElementType; label: string; active?: boolean; onClick: () => void }) { return <Button variant="ghost" onClick={onClick} className={`mobile-compact-label h-full min-w-0 rounded-none px-1 flex-col gap-1 text-[11px] ${active ? "text-primary" : "text-muted-foreground"}`}><Icon className="size-5 shrink-0" /><span className="max-w-full truncate">{label}</span></Button>; }

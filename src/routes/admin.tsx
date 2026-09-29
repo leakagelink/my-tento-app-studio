@@ -57,11 +57,11 @@ function AdminApp() {
   const go = (next: Tab) => { setTab(next); window.scrollTo(0, 0); };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-svh min-w-0 overflow-x-clip bg-background">
       <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="mx-auto grid min-h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:flex sm:px-6">
           <Button variant="ghost" asChild className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
-            <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="size-6" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-primary sm:text-xl">my<span className="text-accent">Tento</span> <span className="text-xs font-bold text-muted-foreground sm:text-sm">Admin</span></span></Link>
+            <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground max-[359px]:size-9"><ShieldCheck className="size-6 max-[359px]:size-5" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-primary sm:text-xl">my<span className="text-accent">Tento</span> <span className="mobile-compact-hide text-xs font-bold text-muted-foreground sm:text-sm">Admin</span></span></Link>
           </Button>
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
@@ -120,11 +120,11 @@ function Providers({ providers, onToggle, onUpdate }: { providers: AdminProvider
       <div className="space-y-3">
         {providers.map((p) => (
           <div key={p.name} className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-center gap-4">
+             <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 min-[420px]:gap-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display text-sm font-bold text-primary">{p.initials}</span>
             <div className="min-w-0 flex-1"><p className="truncate font-bold">{p.name}</p><p className="text-xs text-muted-foreground">{p.service} · {p.city} · ₹{Number(p.price).toLocaleString("en-IN")} · ★ {p.rating}</p></div>
             <Button variant="ghost" size="icon" aria-label={`Edit ${p.name}`} onClick={() => setEditing(editing === p.name ? null : p.name)}><Pencil className="size-4" /></Button>
-            <Button variant={p.verified ? "outline" : "default"} size="sm" onClick={() => onToggle(p.name)}>
+            <Button variant={p.verified ? "outline" : "default"} size="sm" onClick={() => onToggle(p.name)} className="col-span-3 w-full min-[420px]:col-span-1 min-[420px]:w-auto">
               {p.verified ? <><Check className="size-4" /> Verified</> : <><X className="size-4" /> Verify</>}
             </Button>
             </div>
@@ -154,7 +154,7 @@ function Bookings() {
 function BookingRow({ booking }: { booking: AdminBooking }) {
   const tone = booking.status === "confirmed" ? "text-success" : booking.status === "pending" ? "text-accent" : "text-muted-foreground";
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border border-border bg-card p-3 min-[380px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[380px]:gap-4 min-[380px]:p-4">
       <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-secondary text-primary"><TentTree className="size-6" /></span>
       <div className="min-w-0 flex-1">
         <p className={`text-xs font-bold ${tone}`}>{booking.status.toUpperCase()}</p>
@@ -162,7 +162,7 @@ function BookingRow({ booking }: { booking: AdminBooking }) {
         <p className="text-xs text-muted-foreground">{booking.customer} · +91 98••• ••210</p>
         <p className="text-xs text-muted-foreground">{booking.provider} · {booking.date} · 6:00 PM</p>
       </div>
-      <span className="font-display text-sm font-extrabold text-primary">{booking.amount}</span>
+      <span className="col-span-2 text-right font-display text-sm font-extrabold text-primary min-[380px]:col-span-1">{booking.amount}</span>
     </div>
   );
 }
@@ -241,13 +241,13 @@ function Offers() {
       <div className="mb-6"><h1 className="text-2xl font-extrabold">Offers & coupons</h1><p className="mt-1 text-sm text-muted-foreground">Discount codes customers can apply at payment</p></div>
       <div className="space-y-3">
         {offers.map((o) => (
-          <div key={o.code} className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
+          <div key={o.code} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border border-border bg-card p-3 min-[380px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[380px]:gap-4 min-[380px]:p-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display text-xs font-bold text-primary">%</span>
             <div className="min-w-0 flex-1">
               <p className="font-bold">{o.code}</p>
               <p className="text-xs text-muted-foreground">{o.desc} · used {o.used} times</p>
             </div>
-            <Button variant={o.active ? "default" : "outline"} size="sm" onClick={() => toggle(o.code)}>
+            <Button variant={o.active ? "default" : "outline"} size="sm" onClick={() => toggle(o.code)} className="col-span-2 w-full min-[380px]:col-span-1 min-[380px]:w-auto">
               {o.active ? <><Check className="size-4" /> Active</> : "Paused"}
             </Button>
           </div>
@@ -263,7 +263,7 @@ function Stat({ icon: Icon, label, value, tone, sub }: { icon: ElementType; labe
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <Icon className={`size-5 ${tone}`} />
-      <p className="mt-3 font-display text-xl font-extrabold">{value}</p>
+      <p className="mt-3 break-words font-display text-lg font-extrabold min-[360px]:text-xl">{value}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
       {sub && <p className="mt-1 flex items-center gap-1 text-xs font-bold text-success"><TrendingUp className="size-3" /> {sub}</p>}
     </div>
