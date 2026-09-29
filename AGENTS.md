@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep new cross-panel requirement mock controls in `src/components/client-requirement-panels.tsx` so customer, provider, and admin routes share one coherent demo model.

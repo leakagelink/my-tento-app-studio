@@ -5,6 +5,7 @@ import {
   IndianRupee, MapPin, Phone, Star, Store, TentTree, TrendingUp, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProviderInventoryManager } from "@/components/client-requirement-panels";
 
 export const Route = createFileRoute("/provider")({
   head: () => ({
@@ -87,7 +88,7 @@ function ProviderApp() {
         ) : tab === "earnings" ? (
           <Earnings paidOut={paidOut} onPayout={() => setPaidOut(true)} />
         ) : (
-          <Profile />
+          <ProviderInventoryManager />
         )}
       </main>
 
