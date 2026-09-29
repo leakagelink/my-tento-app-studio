@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type ElementType } from "react";
 import {
-  ArrowLeft, Bell, CalendarDays, Check, IndianRupee, ShieldCheck,
+  ArrowLeft, Bell, CalendarDays, Check, IndianRupee, Pencil, Save, ShieldCheck,
   Store, TentTree, TrendingUp, UserRound, Users as UsersIcon, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,14 +24,14 @@ export const Route = createFileRoute("/admin")({
 type Tab = "overview" | "providers" | "bookings" | "users" | "payments" | "offers" | AdminExtraTab;
 
 type AdminBooking = { id: string; customer: string; provider: string; service: string; date: string; amount: string; status: "confirmed" | "completed" | "pending" };
-type AdminProvider = { name: string; service: string; city: string; rating: string; verified: boolean; initials: string };
+type AdminProvider = { name: string; service: string; city: string; price: string; rating: string; verified: boolean; initials: string };
 type AdminUser = { name: string; phone: string; city: string; bookings: number; initials: string };
 
 const initialProviders: AdminProvider[] = [
-  { name: "Royal Tent House", service: "Tent & stage", city: "Lucknow", rating: "4.8", verified: true, initials: "RT" },
-  { name: "Shree Tent & Decor", service: "Tent & decoration", city: "Lucknow", rating: "4.7", verified: true, initials: "ST" },
-  { name: "Celebration Events", service: "Full event package", city: "Kanpur", rating: "4.9", verified: false, initials: "CE" },
-  { name: "Goel Caterers", service: "Catering & bartan", city: "Lucknow", rating: "4.6", verified: false, initials: "GC" },
+  { name: "Royal Tent House", service: "Tent & stage", city: "Lucknow", price: "25000", rating: "4.8", verified: true, initials: "RT" },
+  { name: "Shree Tent & Decor", service: "Tent & decoration", city: "Lucknow", price: "20000", rating: "4.7", verified: true, initials: "ST" },
+  { name: "Celebration Events", service: "Full event package", city: "Kanpur", price: "28500", rating: "4.9", verified: false, initials: "CE" },
+  { name: "Goel Caterers", service: "Catering & bartan", city: "Lucknow", price: "18000", rating: "4.6", verified: false, initials: "GC" },
 ];
 
 const bookings: AdminBooking[] = [
@@ -53,6 +53,7 @@ function AdminApp() {
   const [providers, setProviders] = useState(initialProviders);
 
   const toggle = (name: string) => setProviders((list) => list.map((p) => (p.name === name ? { ...p, verified: !p.verified } : p)));
+  const updateProvider = (name: string, next: AdminProvider) => setProviders((list) => list.map((p) => p.name === name ? next : p));
   const go = (next: Tab) => { setTab(next); window.scrollTo(0, 0); };
 
   return (
@@ -73,7 +74,7 @@ function AdminApp() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {tab === "overview" && <Overview />}
-        {tab === "providers" && <Providers providers={providers} onToggle={toggle} />}
+        {tab === "providers" && <Providers providers={providers} onToggle={toggle} onUpdate={updateProvider} />}
         {tab === "bookings" && <Bookings />}
         {tab === "users" && <Users />}
         {tab === "payments" && <Payments />}
@@ -111,23 +112,34 @@ function Overview() {
   );
 }
 
-function Providers({ providers, onToggle }: { providers: AdminProvider[]; onToggle: (name: string) => void }) {
+function Providers({ providers, onToggle, onUpdate }: { providers: AdminProvider[]; onToggle: (name: string) => void; onUpdate: (name: string, provider: AdminProvider) => void }) {
+  const [editing, setEditing] = useState<string | null>(null);
   return (
     <div className="animate-rise-in">
       <div className="mb-6"><h1 className="text-2xl font-extrabold">Providers</h1><p className="mt-1 text-sm text-muted-foreground">Verify partners and manage listings</p></div>
       <div className="space-y-3">
         {providers.map((p) => (
-          <div key={p.name} className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
+          <div key={p.name} className="rounded-lg border border-border bg-card p-4">
+            <div className="flex items-center gap-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display text-sm font-bold text-primary">{p.initials}</span>
-            <div className="min-w-0 flex-1"><p className="truncate font-bold">{p.name}</p><p className="text-xs text-muted-foreground">{p.service} · {p.city} · ★ {p.rating}</p></div>
+            <div className="min-w-0 flex-1"><p className="truncate font-bold">{p.name}</p><p className="text-xs text-muted-foreground">{p.service} · {p.city} · ₹{Number(p.price).toLocaleString("en-IN")} · ★ {p.rating}</p></div>
+            <Button variant="ghost" size="icon" aria-label={`Edit ${p.name}`} onClick={() => setEditing(editing === p.name ? null : p.name)}><Pencil className="size-4" /></Button>
             <Button variant={p.verified ? "outline" : "default"} size="sm" onClick={() => onToggle(p.name)}>
               {p.verified ? <><Check className="size-4" /> Verified</> : <><X className="size-4" /> Verify</>}
             </Button>
+            </div>
+            {editing === p.name && <ProviderEditor provider={p} onSave={(next) => { onUpdate(p.name, next); setEditing(null); }} />}
           </div>
         ))}
       </div>
     </div>
   );
+}
+
+function ProviderEditor({ provider, onSave }: { provider: AdminProvider; onSave: (provider: AdminProvider) => void }) {
+  const [draft, setDraft] = useState(provider);
+  const field = "rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-primary";
+  return <div className="mt-4 grid gap-2 border-t border-border pt-4 sm:grid-cols-2"><input aria-label="Provider name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={field} /><input aria-label="Provider service" value={draft.service} onChange={(e) => setDraft({ ...draft, service: e.target.value })} className={field} /><input aria-label="Provider location" value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} className={field} /><input aria-label="Provider price" type="number" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} className={field} /><Button className="sm:col-span-2" onClick={() => onSave(draft)}><Save className="size-4" /> Save provider, service, price & location</Button></div>;
 }
 
 function Bookings() {
@@ -147,7 +159,8 @@ function BookingRow({ booking }: { booking: AdminBooking }) {
       <div className="min-w-0 flex-1">
         <p className={`text-xs font-bold ${tone}`}>{booking.status.toUpperCase()}</p>
         <p className="mt-0.5 truncate text-sm font-bold">{booking.service} · {booking.id}</p>
-        <p className="text-xs text-muted-foreground">{booking.customer} → {booking.provider} · {booking.date}</p>
+        <p className="text-xs text-muted-foreground">{booking.customer} · +91 98••• ••210</p>
+        <p className="text-xs text-muted-foreground">{booking.provider} · {booking.date} · 6:00 PM</p>
       </div>
       <span className="font-display text-sm font-extrabold text-primary">{booking.amount}</span>
     </div>
@@ -181,6 +194,8 @@ const payments: Payment[] = [
 ];
 
 function Payments() {
+  const [filter, setFilter] = useState<"all" | "online" | "cash" | "advance">("all");
+  const visible = payments.filter((payment) => filter === "all" || (filter === "advance" ? payment.status === "advance" : filter === "cash" ? payment.method.includes("Cash") : payment.method.includes("UPI") || payment.method.includes("Card")));
   return (
     <div className="animate-rise-in">
       <div className="mb-6"><h1 className="text-2xl font-extrabold">Payments</h1><p className="mt-1 text-sm text-muted-foreground">Customer payments, advances and refunds</p></div>
@@ -189,8 +204,9 @@ function Payments() {
         <Stat icon={TrendingUp} label="Platform fee (8%)" value="₹75K" tone="text-success" />
         <Stat icon={X} label="Refunds" value="₹12K" tone="text-accent" />
       </div>
+      <div className="mb-4 flex gap-2 overflow-x-auto">{(["all", "online", "cash", "advance"] as const).map((item) => <Button key={item} size="sm" variant={filter === item ? "default" : "outline"} onClick={() => setFilter(item)} className="capitalize">{item}</Button>)}</div>
       <div className="space-y-3">
-        {payments.map((p) => (
+        {visible.map((p) => (
           <div key={p.id} className="flex items-center gap-4 rounded-lg border border-border bg-card p-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-secondary text-primary"><IndianRupee className="size-6" /></span>
             <div className="min-w-0 flex-1">
@@ -215,6 +231,10 @@ function Offers() {
     { code: "FESTIVE500", desc: "Flat ₹500 off · catering", used: 87, active: false },
   ]);
   const toggle = (code: string) => setOffers((list) => list.map((o) => (o.code === code ? { ...o, active: !o.active } : o)));
+  const [creating, setCreating] = useState(false);
+  const [code, setCode] = useState("");
+  const [discount, setDiscount] = useState("");
+  const createOffer = () => { if (!code.trim() || !discount.trim()) return; setOffers((list) => [...list, { code: code.trim().toUpperCase(), desc: `${discount}% off · all services`, used: 0, active: true }]); setCode(""); setDiscount(""); setCreating(false); };
   return (
     <div className="animate-rise-in">
       <div className="mb-6"><h1 className="text-2xl font-extrabold">Offers & coupons</h1><p className="mt-1 text-sm text-muted-foreground">Discount codes customers can apply at payment</p></div>
@@ -232,7 +252,8 @@ function Offers() {
           </div>
         ))}
       </div>
-      <Button variant="outline" className="mt-4">+ Create new offer</Button>
+      <Button variant="outline" className="mt-4" onClick={() => setCreating(!creating)}>+ Create new offer</Button>
+      {creating && <div className="mt-3 grid gap-2 rounded-lg border border-border bg-card p-4 sm:grid-cols-2"><input aria-label="New offer code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="OFFER CODE" className="rounded-md border border-border bg-background p-3 text-sm uppercase" /><input aria-label="Discount percent" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="Discount %" type="number" className="rounded-md border border-border bg-background p-3 text-sm" /><Button className="sm:col-span-2" onClick={createOffer}>Create & activate offer</Button></div>}
     </div>
   );
 }
