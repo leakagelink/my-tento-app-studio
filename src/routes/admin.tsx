@@ -190,6 +190,7 @@ const payments: Payment[] = [
   { id: "PAY-9021", booking: "MT-261225-48", customer: "Dheeraj Tagde", method: "UPI · advance 20%", amount: "₹5,000", status: "advance" },
   { id: "PAY-8990", booking: "MT-261018-09", customer: "Sandeep Yadav", method: "UPI · full", amount: "₹18,000", status: "paid" },
   { id: "PAY-8974", booking: "MT-261005-77", customer: "Pooja Singh", method: "Card · full", amount: "₹32,000", status: "paid" },
+  { id: "PAY-8961", booking: "MT-260930-22", customer: "Neha Singh", method: "Cash · provider", amount: "₹12,500", status: "paid" },
   { id: "PAY-8932", booking: "MT-260912-14", customer: "Rahul Gupta", method: "Refund · cancelled", amount: "− ₹3,000", status: "refund" },
 ];
 
