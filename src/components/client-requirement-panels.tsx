@@ -25,10 +25,9 @@ const vehicles: Vehicle[] = [
 ];
 
 export function CabPriorityCard({ onOpen }: { onOpen: () => void }) {
-  return <section className="mb-6 min-w-0 overflow-hidden rounded-[24px] bg-primary p-4 text-primary-foreground shadow-action min-[360px]:p-5">
-    <div className="flex items-start gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-card text-primary"><Navigation className="size-5" /></span><div className="flex-1"><p className="text-[10px] font-black uppercase text-accent">Fast priority booking</p><h2 className="mt-1 font-display text-xl font-extrabold">Where are you going?</h2><p className="mt-1 text-xs text-primary-foreground/75">Nearby cabs, upfront fares and live driver tracking.</p></div></div>
-    <div className="mt-4 grid gap-2"><div className="flex items-center gap-2 rounded-xl bg-card/15 px-3 py-2 text-xs"><span className="size-2 rounded-full bg-success" />Gomti Nagar, Lucknow</div><div className="flex items-center gap-2 rounded-xl bg-card/15 px-3 py-2 text-xs"><MapPin className="size-3 text-accent" />Enter destination</div></div>
-    <Button onClick={onOpen} className="mt-4 w-full bg-accent text-accent-foreground hover:bg-accent/90">Book a cab now <ChevronRight className="size-4" /></Button>
+  return <section className="mb-6 flex min-w-0 items-center justify-between gap-3 rounded-3xl border border-border bg-festive p-4">
+    <div className="flex min-w-0 items-center gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Navigation className="size-5" /></span><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Need a ride?</p><h2 className="truncate font-display text-sm font-bold text-foreground">Cab Quick Booking</h2></div></div>
+    <Button onClick={onOpen} variant="ghost" className="shrink-0 rounded-xl bg-foreground/5 px-4 text-xs font-bold text-primary hover:bg-foreground/10">Book <ChevronRight className="size-4" /></Button>
   </section>;
 }
 
