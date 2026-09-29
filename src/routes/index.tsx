@@ -87,7 +87,7 @@ function Index() {
   return (
     <LangContext.Provider value={{ lang, setLang: changeLang }}>
     {onboard && <Onboarding onDone={() => { setOnboard(false); localStorage.setItem("mt-onboarded", "1"); }} />}
-    <div className="app-bottom-space min-h-svh min-w-0 bg-background sm:py-6">
+    <div className="min-h-svh min-w-0 bg-background sm:py-6">
       <div className="mx-auto min-h-svh min-w-0 max-w-md overflow-x-clip bg-card sm:min-h-[calc(100svh-3rem)] sm:rounded-lg sm:border sm:border-border sm:shadow-panel">
       <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-4">
@@ -235,7 +235,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
   const isQuote = (selected?.price ?? 0) === 0;
   const toggleAddOn = (name: string) => setAddOns((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
 
-  return <div className="animate-rise-in pb-52">
+  return <div className="animate-rise-in pb-24">
     <section className="relative h-56 overflow-hidden bg-primary">
       <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/35 to-transparent" />
