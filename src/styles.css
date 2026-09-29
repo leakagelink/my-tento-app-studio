@@ -82,7 +82,7 @@
   --secondary: oklch(0.92 0.03 225);
   --secondary-foreground: oklch(0.42 0.09 225);
   --muted: oklch(0.94 0.015 230);
-  --muted-foreground: oklch(0.48 0.03 240);
+  --muted-foreground: oklch(0.46 0.045 245);
   --accent: oklch(0.58 0.09 210);
   --accent-foreground: oklch(0.985 0.008 230);
   --destructive: oklch(0.577 0.245 27.325);
@@ -158,6 +158,8 @@
     overflow-x: clip;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   html {
@@ -175,7 +177,8 @@
 
   h1, h2, h3 {
     font-family: var(--font-display);
-    letter-spacing: 0;
+    letter-spacing: -0.02em;
+    color: var(--color-foreground);
   }
 }
 
