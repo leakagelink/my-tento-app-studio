@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { CalendarDays, Check, ChevronRight, Languages, PartyPopper, ShieldCheck, Sparkles, Star, TentTree, Tag, Truck, UtensilsCrossed, Wrench, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import homeBanner from "@/assets/home-banner.jpg";
-import serviceTent from "@/assets/service-tent.jpg";
-import serviceDecoration from "@/assets/service-decoration.jpg";
-import serviceCatering from "@/assets/service-catering.jpg";
-import packagePremium from "@/assets/package-premium.jpg";
-import packageStandard from "@/assets/package-standard.jpg";
-import packageBasic from "@/assets/package-basic.jpg";
+import homeBanner from "@/assets/home-banner.webp";
+import serviceTent from "@/assets/service-tent.webp";
+import serviceDecoration from "@/assets/service-decoration.webp";
+import serviceCatering from "@/assets/service-catering.webp";
+import packagePremium from "@/assets/package-premium.webp";
+import packageStandard from "@/assets/package-standard.webp";
+import packageBasic from "@/assets/package-basic.webp";
 
 /* ---------- Language ---------- */
 export type Lang = "en" | "hi";
