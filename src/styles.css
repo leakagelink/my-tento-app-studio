@@ -191,6 +191,10 @@
   animation: rise-in 0.35s ease-out both;
 }
 
+@utility shadow-tile {
+  box-shadow: 0 12px 28px color-mix(in oklab, var(--primary) 16%, transparent);
+}
+
 @utility safe-top {
   padding-top: env(safe-area-inset-top, 0px);
 }
