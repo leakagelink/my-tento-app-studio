@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { CalendarDays, Check, ChevronRight, Languages, PartyPopper, ShieldCheck, Sparkles, Star, TentTree, Tag, Truck, UtensilsCrossed, Wrench, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import homeBanner from "@/assets/home-banner.jpg";
-import serviceTent from "@/assets/service-tent.jpg";
-import serviceDecoration from "@/assets/service-decoration.jpg";
-import serviceCatering from "@/assets/service-catering.jpg";
-import packagePremium from "@/assets/package-premium.jpg";
-import packageStandard from "@/assets/package-standard.jpg";
-import packageBasic from "@/assets/package-basic.jpg";
+import homeBanner from "@/assets/home-banner.webp";
+import serviceTent from "@/assets/service-tent.webp";
+import serviceDecoration from "@/assets/service-decoration.webp";
+import serviceCatering from "@/assets/service-catering.webp";
+import packagePremium from "@/assets/package-premium.webp";
+import packageStandard from "@/assets/package-standard.webp";
+import packageBasic from "@/assets/package-basic.webp";
 
 /* ---------- Language ---------- */
 export type Lang = "en" | "hi";
@@ -34,7 +34,7 @@ const slides = [
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [splash, setSplash] = useState(true);
   const [i, setI] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setSplash(false), 1400); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setSplash(false), 600); return () => clearTimeout(t); }, []);
   if (splash) return <div className="safe-top safe-bottom fixed inset-0 z-50 grid place-items-center bg-primary text-primary-foreground"><div className="animate-rise-in text-center"><span className="mx-auto grid size-20 place-items-center rounded-2xl bg-card text-primary shadow-panel"><TentTree className="size-11" /></span><p className="mt-5 font-display text-3xl font-extrabold">My<span className="text-accent">Tento</span></p><p className="mt-1 text-xs font-bold uppercase tracking-widest text-primary-foreground/70">Plan. Book. Celebrate.</p></div></div>;
   const s = slides[i] ?? slides[0]!;
   const last = i === slides.length - 1;

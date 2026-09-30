@@ -8,19 +8,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { CabPriorityCard, ClientCabScreen } from "@/components/client-requirement-panels";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
-import decorationHero from "@/assets/decoration-hero.jpg";
-import packagePremium from "@/assets/package-premium.jpg";
-import packageStandard from "@/assets/package-standard.jpg";
-import packageBasic from "@/assets/package-basic.jpg";
-import vehicleCab from "@/assets/vehicle-cab.png";
-import vehicleAuto from "@/assets/vehicle-auto.png";
-import vehicleToto from "@/assets/vehicle-toto.png";
-import vehicleSuv from "@/assets/vehicle-suv.png";
-import homeBanner from "@/assets/home-banner.jpg";
-import serviceTent from "@/assets/service-tent.jpg";
-import serviceDecoration from "@/assets/service-decoration.jpg";
-import serviceCatering from "@/assets/service-catering.jpg";
-import serviceCab from "@/assets/service-cab.jpg";
+import decorationHero from "@/assets/decoration-hero.webp";
+import packagePremium from "@/assets/package-premium.webp";
+import packageStandard from "@/assets/package-standard.webp";
+import packageBasic from "@/assets/package-basic.webp";
+import vehicleCab from "@/assets/vehicle-cab.webp";
+import vehicleAuto from "@/assets/vehicle-auto.webp";
+import vehicleToto from "@/assets/vehicle-toto.webp";
+import vehicleSuv from "@/assets/vehicle-suv.webp";
+import homeBanner from "@/assets/home-banner.webp";
+import serviceTent from "@/assets/service-tent.webp";
+import serviceDecoration from "@/assets/service-decoration.webp";
+import serviceCatering from "@/assets/service-catering.webp";
+import serviceCab from "@/assets/service-cab.webp";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
 

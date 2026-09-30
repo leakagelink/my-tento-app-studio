@@ -5,13 +5,13 @@ import {
   ShieldCheck, Star, Store, Trash2, Truck, Upload, UserRound, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import vehicleCab from "@/assets/vehicle-cab.png";
-import vehicleSuv from "@/assets/vehicle-suv.png";
-import vehicleAuto from "@/assets/vehicle-auto.png";
-import packageBasic from "@/assets/package-basic.jpg";
-import packageStandard from "@/assets/package-standard.jpg";
-import packagePremium from "@/assets/package-premium.jpg";
-import homeBanner from "@/assets/home-banner.jpg";
+import vehicleCab from "@/assets/vehicle-cab.webp";
+import vehicleSuv from "@/assets/vehicle-suv.webp";
+import vehicleAuto from "@/assets/vehicle-auto.webp";
+import packageBasic from "@/assets/package-basic.webp";
+import packageStandard from "@/assets/package-standard.webp";
+import packagePremium from "@/assets/package-premium.webp";
+import homeBanner from "@/assets/home-banner.webp";
 
 type CabStage = "search" | "driver" | "tracking";
 type Vehicle = { name: string; seats: string; base: number; perKm: number; eta: string; image: string };
