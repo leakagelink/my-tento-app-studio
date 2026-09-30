@@ -137,7 +137,7 @@ function Index() {
 
 function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocation, onServices, onProviders, onProvider, onCombo }: { onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
   const t = useT();
-  const tile = (name: ServiceName, label: string, sub: string, cls: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[28px] bg-secondary text-left ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-500 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" /><span className="absolute bottom-4 left-4 right-3"><span className="block font-display text-base font-bold text-foreground">{label}</span><span className="block text-[10px] text-foreground/70">{sub}</span></span></button>;
+  const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 group-active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/25 to-transparent" />{badge && <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[9px] font-bold uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-4 left-4 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
   return <div className="animate-rise-in">
     <section className="relative mb-6">
       <div className="relative">
@@ -161,12 +161,26 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
     </button>
 
     <section className="mb-8">
-      <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-lg font-bold text-foreground">{t("services")}</h2><button type="button" onClick={onServices} className="text-xs font-semibold text-primary">View all</button></div>
-      <div className="grid h-[300px] grid-cols-2 grid-rows-3 gap-3">
-        {tile("Tent", t("tent"), "Royal & Modern", "row-span-2")}
+      <div className="mb-4 flex items-end justify-between gap-3 px-1">
+        <div className="min-w-0">
+          <h2 className="font-display text-2xl font-bold leading-none text-primary">{t("services")}</h2>
+          <p className="mt-1.5 truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("servicesSub")}</p>
+        </div>
+        <button type="button" onClick={onServices} className="flex shrink-0 items-center gap-1.5 pb-1 text-sm font-bold text-primary">{t("viewAll")}<span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary/10"><ChevronRight className="size-3" /></span></button>
+      </div>
+      <div className="grid grid-cols-2 grid-rows-[repeat(3,minmax(110px,1fr))] gap-3">
+        {tile("Tent", t("tent"), "Royal & Modern", "row-span-2", t("trending"))}
         {tile("Decoration", t("decoration"), "Theme & Floral", "")}
         {tile("Catering", t("catering"), "Lucknowi flavours", "")}
-        {tile("Cab", t("cab"), "Guest rides & baraat", "col-span-2 max-[359px]:col-span-2")}
+        <button type="button" onClick={() => onBook("Cab")} className="group relative col-span-2 min-h-[112px] min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 group-active:scale-[0.98]">
+          <img src={serviceImages["Cab"]} alt={t("cab")} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+          <span className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/45 to-transparent" />
+          <span className="absolute inset-y-0 left-5 flex min-w-0 flex-col justify-center pr-20">
+            <span className="flex min-w-0 items-center gap-2"><span className="h-4 w-1 shrink-0 rounded-full bg-accent" /><span className="truncate font-display text-xl font-bold leading-tight text-white">{t("cab")}</span></span>
+            <span className="mt-1 truncate pl-3 text-xs font-medium text-white/90">Guest rides &amp; baraat</span>
+          </span>
+          <span className="absolute right-5 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md transition-transform duration-300 group-active:scale-90"><ChevronRight className="size-5 text-white" /></span>
+        </button>
       </div>
     </section>
 
