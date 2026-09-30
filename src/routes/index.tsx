@@ -151,12 +151,12 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
     <CabPriorityCard onOpen={() => onBook("Cab")} />
 
     <button type="button" onClick={() => onBook("Tent")} className="relative mb-8 block h-40 w-full overflow-hidden rounded-[32px] bg-secondary text-left">
-      <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover opacity-70" />
-      <span className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+      <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover" />
+      <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
       <span className="absolute bottom-5 left-6 right-6">
-        <span className="rounded bg-primary px-2 py-0.5 text-[9px] font-black uppercase text-primary-foreground">{t("offer")}</span>
-        <span className="mt-1.5 block font-display text-lg font-bold leading-tight text-foreground">{t("offerTitle")}</span>
-        <span className="block text-xs text-foreground/70">{t("offerSub")}</span>
+        <span className="rounded bg-accent px-2 py-0.5 text-[9px] font-black uppercase text-accent-foreground">{t("offer")}</span>
+        <span className="mt-1.5 block font-display text-lg font-bold leading-tight text-white">{t("offerTitle")}</span>
+        <span className="block text-xs text-white/80">{t("offerSub")}</span>
       </span>
     </button>
 
