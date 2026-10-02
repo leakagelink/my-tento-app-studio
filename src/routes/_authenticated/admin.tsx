@@ -7,8 +7,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { AdminCabControl, AdminRequirementCenter, type AdminExtraTab } from "@/components/client-requirement-panels";
+import { RoleGate } from "@/components/role-gate";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Admin Dashboard | My Tento" },
@@ -50,6 +51,10 @@ const users: AdminUser[] = [
 ];
 
 function AdminApp() {
+  return <RoleGate role="admin"><AdminPanel /></RoleGate>;
+}
+
+function AdminPanel() {
   const [tab, setTab] = useState<Tab>("overview");
   const [providers, setProviders] = useState(initialProviders);
 

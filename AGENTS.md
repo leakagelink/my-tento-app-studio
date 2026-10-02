@@ -12,3 +12,4 @@
 - Keep new cross-panel requirement mock controls in `src/components/client-requirement-panels.tsx` so customer, provider, and admin routes share one coherent demo model.
 - Keep client-requested mock admin cab, banner, and provider vehicle controls in the shared requirement panel module so all panels use one demo source.
 - Render the shared MyTento brand mark through `BrandLogo` so customer, provider, and admin headers stay visually consistent.
+- Keep private business data behind authenticated cloud access and enforce admin/provider roles in the database, not browser state.
