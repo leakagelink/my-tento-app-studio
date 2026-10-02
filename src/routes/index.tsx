@@ -55,10 +55,12 @@ const services: { name: ServiceName; subtitle: string; icon: ElementType; tone: 
 ];
 
 const providers = [
-  { name: "Royal Tent House", detail: "Up to 200 guests", price: "₹25,000", rating: "4.8", initials: "RT" },
-  { name: "Shree Tent & Decor", detail: "Up to 200 guests", price: "₹20,000", rating: "4.7", initials: "ST" },
-  { name: "Celebration Events", detail: "Up to 250 guests", price: "₹28,500", rating: "4.9", initials: "CE" },
+  { name: "Royal Tent House", detail: "Up to 200 guests", price: "₹25,000", rating: "4.8", initials: "RT", distance: 2.4 },
+  { name: "Shree Tent & Decor", detail: "Up to 200 guests", price: "₹20,000", rating: "4.7", initials: "ST", distance: 6.8 },
+  { name: "Celebration Events", detail: "Up to 250 guests", price: "₹28,500", rating: "4.9", initials: "CE", distance: 9.6 },
+  { name: "City Event Works", detail: "Up to 300 guests", price: "₹31,000", rating: "4.6", initials: "CW", distance: 14.2 },
 ];
+const nearbyProviders = providers.filter((item) => item.distance <= 10);
 
 function Index() {
   const [step, setStep] = useState<Step>("home");
@@ -73,7 +75,7 @@ function Index() {
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
   useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); }, []);
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
-  const chosenProvider = providers[provider] ?? providers[0]!;
+  const chosenProvider = nearbyProviders[provider] ?? nearbyProviders[0]!;
 
   const go = (next: Step) => { setStep(next); window.scrollTo(0, 0); };
   const beginBooking = (name: ServiceName) => { setService(name); setCombo(null); go("details"); };
@@ -93,8 +95,8 @@ function Index() {
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-4">
           <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
             {step !== "home" && <ArrowLeft className="size-5 text-foreground" />}
-            <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground max-[359px]:size-9"><TentTree className="size-6 max-[359px]:size-5" /></span>
-             <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-primary sm:text-xl">My<span className="text-accent">Tento</span></span><span className="mobile-compact-hide block truncate text-[10px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
+             <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground max-[359px]:size-9"><TentTree className="size-6 max-[359px]:size-5" /></span>
+              <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-accent sm:text-xl">MyTento</span><span className="mobile-compact-hide block truncate text-[10px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
           </Button>
            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
@@ -247,12 +249,14 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
   const packages = servicePackages[key];
   const addOnOptions = serviceAddOns[key];
   const [selectedPackage, setSelectedPackage] = useState(0);
-  const [addOns, setAddOns] = useState<string[]>([addOnOptions[0]?.name ?? ""]);
+  const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => addOnOptions[0] ? { [addOnOptions[0].name]: 1 } : {});
+  const [selectedDay, setSelectedDay] = useState(25);
   const selected = packages[selectedPackage] ?? packages[0];
-  const addOnTotal = addOnOptions.filter((item) => addOns.includes(item.name)).reduce((total, item) => total + item.price, 0);
+  const addOnTotal = addOnOptions.reduce((total, item) => total + item.price * (addOnQuantities[item.name] ?? 0), 0);
   const total = (selected?.price ?? 0) + addOnTotal;
   const isQuote = (selected?.price ?? 0) === 0;
-  const toggleAddOn = (name: string) => setAddOns((current) => current.includes(name) ? current.filter((item) => item !== name) : [...current, name]);
+  const bookedDays = [3, 7, 8, 14, 20, 26];
+  const setQuantity = (name: string, quantity: number) => setAddOnQuantities((current) => ({ ...current, [name]: Math.max(0, Math.min(20, quantity)) }));
 
   return <div className="animate-rise-in pb-24">
     <section className="relative h-56 overflow-hidden bg-primary">
@@ -270,10 +274,11 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
         <SectionHeading number="1" title="Event Details" subtitle="Tell us about your event" />
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div className="col-span-2 flex items-center gap-3 rounded-lg border border-border bg-muted p-3"><span className="grid size-9 place-items-center rounded-md bg-card text-primary shadow-sm"><MapPin className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">Location</p><p className="truncate text-sm font-bold">Gomti Nagar, Lucknow</p></div><ChevronDown className="size-4 text-muted-foreground" /></div>
-          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><CalendarDays className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Date</span><input aria-label="Event date" type="date" defaultValue="2026-12-25" className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><CalendarDays className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Selected date</span><span className="text-xs font-bold">{selectedDay} Dec 2026</span></span></div>
           <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><Clock3 className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Time</span><input aria-label="Start time" type="time" defaultValue="18:00" className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
-          <div className="col-span-2 flex items-center justify-between rounded-lg border border-border bg-muted p-3"><div><p className="text-[10px] font-bold uppercase text-muted-foreground">Number of guests</p><p className="text-sm font-bold">{guests} guests</p></div><div className="flex items-center gap-2"><Button variant="outline" size="icon" aria-label="Remove guests" onClick={() => setGuests(Math.max(50, guests - 50))} className="size-8 min-h-8"><Minus className="size-4" /></Button><Button size="icon" aria-label="Add guests" onClick={() => setGuests(guests + 50)} className="size-8 min-h-8"><Plus className="size-4" /></Button></div></div>
+          <div className="col-span-2 flex items-center justify-between rounded-lg border border-border bg-muted p-3"><div><p className="text-[10px] font-bold uppercase text-muted-foreground">Number of guests · steps of 20</p><p className="text-sm font-bold">{guests} guests</p></div><div className="flex items-center gap-2"><Button variant="outline" size="icon" aria-label="Remove 20 guests" onClick={() => setGuests(Math.max(20, guests - 20))} className="size-8 min-h-8"><Minus className="size-4" /></Button><Button size="icon" aria-label="Add 20 guests" onClick={() => setGuests(guests + 20)} className="size-8 min-h-8"><Plus className="size-4" /></Button></div></div>
         </div>
+        <div className="mt-3 rounded-lg border border-border bg-card p-3"><div className="flex items-center justify-between"><div><p className="text-sm font-bold">December 2026 availability</p><p className="text-[10px] text-muted-foreground">Booked dates cannot be selected</p></div><CalendarDays className="size-5 text-primary" /></div><div className="mt-3 grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-muted-foreground">{["M", "T", "W", "T", "F", "S", "S"].map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}</div><div className="mt-1 grid grid-cols-7 gap-1">{Array.from({ length: 31 }, (_, index) => index + 1).map((day) => { const booked = bookedDays.includes(day); return <Button key={day} size="icon" variant="ghost" disabled={booked} aria-label={booked ? `${day} December booked` : `${day} December available`} onClick={() => setSelectedDay(day)} className={`aspect-square h-auto min-h-8 w-full min-w-0 rounded-md p-0 text-xs ${booked ? "bg-destructive/10 text-destructive line-through" : selectedDay === day ? "bg-primary text-primary-foreground" : "bg-success/10 text-success"}`}>{day}</Button>; })}</div><div className="mt-3 flex flex-wrap gap-3 text-[10px] font-semibold"><span className="flex items-center gap-1"><span className="size-2.5 rounded-sm bg-success/20" /> Available</span><span className="flex items-center gap-1"><span className="size-2.5 rounded-sm bg-destructive/20" /> Already booked</span><span className="flex items-center gap-1"><span className="size-2.5 rounded-sm bg-primary" /> Selected</span></div></div>
       </section>
 
       <section>
@@ -289,7 +294,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
       <section>
         <SectionHeading number="+" title="Add-on Services" subtitle="Enhance your event experience" muted />
         <div className="mt-4 grid gap-2 rounded-lg bg-muted p-3">
-          {addOnOptions.map((item) => { const active = addOns.includes(item.name); return <Button key={item.name} variant="outline" onClick={() => toggleAddOn(item.name)} className={`h-auto justify-between p-3 ${active ? "border-primary bg-card ring-2 ring-secondary" : "bg-card"}`}><span className="flex items-center gap-3"><span className={`grid size-5 place-items-center rounded-sm border-2 ${active ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{active && <Check className="size-3" />}</span><span className="text-xs font-bold">{item.name}</span></span><span className="text-xs font-extrabold text-primary">+₹ {item.price.toLocaleString("en-IN")}</span></Button> })}
+          {addOnOptions.map((item) => { const quantity = addOnQuantities[item.name] ?? 0; return <div key={item.name} className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border bg-card p-3 ${quantity > 0 ? "border-primary ring-2 ring-secondary" : "border-border"}`}><div className="min-w-0"><p className="break-words text-xs font-bold">{item.name}</p><p className="mt-1 text-[10px] font-extrabold text-primary">₹{item.price.toLocaleString("en-IN")} each · ₹{(item.price * quantity).toLocaleString("en-IN")}</p></div><div className="flex items-center gap-1"><Button size="icon" variant="outline" aria-label={`Remove ${item.name}`} disabled={quantity === 0} onClick={() => setQuantity(item.name, quantity - 1)} className="size-8"><Minus className="size-3" /></Button><span className="w-6 text-center text-sm font-bold">{quantity}</span><Button size="icon" aria-label={`Add ${item.name}`} onClick={() => setQuantity(item.name, quantity + 1)} className="size-8"><Plus className="size-3" /></Button></div></div> })}
         </div>
       </section>
     </div>
@@ -303,7 +308,7 @@ function DetailsScreen({ service, guests, setGuests, onContinue }: { service: Se
 function SectionHeading({ number, title, subtitle, muted = false }: { number: string; title: string; subtitle: string; muted?: boolean }) { return <div className="flex items-center gap-3"><span className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-extrabold ${muted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground shadow-action"}`}>{number}</span><div><h2 className="text-base font-extrabold leading-none">{title}</h2><p className="mt-1 text-[10px] font-bold uppercase text-muted-foreground">{subtitle}</p></div></div>; }
 
 function ProvidersScreen({ selected, setSelected, onContinue, onView }: { selected: number; setSelected: (n: number) => void; onContinue: () => void; onView: () => void }) {
-  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="2 of 3" title="Choose a provider" subtitle="3 trusted providers available" /><div className="space-y-3">{providers.map((item, index) => <button key={item.name} onClick={() => setSelected(index)} className={`grid w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border bg-card p-3 text-left transition min-[380px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[380px]:gap-4 min-[380px]:p-4 ${selected === index ? "border-primary ring-2 ring-primary/15" : "border-border"}`}><span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary min-[380px]:size-14">{item.initials}</span><span className="min-w-0 flex-1"><span className="block break-words font-bold">{item.name}</span><span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Star className="size-3 shrink-0 fill-accent text-accent" /> {item.rating} · Verified provider</span><span className="mt-2 block text-xs text-muted-foreground">Tent, chairs, tables & shamiyana</span></span><span className="col-span-2 flex items-center justify-between text-right min-[380px]:col-span-1 min-[380px]:block"><span className="block font-display font-bold text-primary">{item.price}</span><span className="text-xs text-muted-foreground">package</span>{selected === index && <Check className="ml-auto mt-2 size-5 text-success" />}</span></button>)}</div><div className="mt-5 grid grid-cols-1 gap-3 min-[340px]:grid-cols-2"><Button variant="outline" onClick={onView}>View details</Button><Button onClick={onContinue}>Continue to payment</Button></div></div>;
+  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="2 of 3" title="Choose a provider" subtitle={`${nearbyProviders.length} verified providers within 10 km`} /><div className="mb-4 flex items-center gap-2 rounded-lg bg-brand-soft p-3 text-xs font-bold text-primary"><MapPin className="size-4" /> Showing nearby providers only · 10 km radius</div><div className="space-y-3">{nearbyProviders.map((item, index) => <Button variant="outline" key={item.name} onClick={() => setSelected(index)} className={`grid h-auto w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center justify-normal gap-3 rounded-lg bg-card p-3 text-left transition min-[380px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[380px]:gap-4 min-[380px]:p-4 ${selected === index ? "border-primary ring-2 ring-primary/15" : "border-border"}`}><span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary min-[380px]:size-14">{item.initials}</span><span className="min-w-0 flex-1"><span className="block break-words font-bold">{item.name}</span><span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Star className="size-3 shrink-0 fill-accent text-accent" /> {item.rating} · Verified · {item.distance} km away</span><span className="mt-2 block text-xs text-muted-foreground">Tent, chairs, tables & shamiyana</span></span><span className="col-span-2 flex items-center justify-between text-right min-[380px]:col-span-1 min-[380px]:block"><span className="block font-display font-bold text-primary">{item.price}</span><span className="text-xs text-muted-foreground">package</span>{selected === index && <Check className="ml-auto mt-2 size-5 text-success" />}</span></Button>)}</div><div className="mt-5 grid grid-cols-1 gap-3 min-[340px]:grid-cols-2"><Button variant="outline" onClick={onView}>View details</Button><Button onClick={onContinue}>Continue to payment</Button></div></div>;
 }
 
 function PaymentScreen({ service, amount, guests, provider, onConfirm }: { service: string; amount: number; guests: number; provider: (typeof providers)[number]; onConfirm: () => void }) {
