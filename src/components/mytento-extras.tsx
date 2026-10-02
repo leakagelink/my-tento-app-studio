@@ -35,7 +35,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [splash, setSplash] = useState(true);
   const [i, setI] = useState(0);
   useEffect(() => { const t = setTimeout(() => setSplash(false), 600); return () => clearTimeout(t); }, []);
-  if (splash) return <div className="safe-top safe-bottom fixed inset-0 z-50 grid place-items-center bg-primary text-primary-foreground"><div className="animate-rise-in text-center"><span className="mx-auto grid size-20 place-items-center rounded-2xl bg-accent text-accent-foreground shadow-panel"><TentTree className="size-11" /></span><p className="mt-5 font-display text-3xl font-extrabold text-accent">MyTento</p><p className="mt-1 text-xs font-bold uppercase tracking-widest text-primary-foreground/70">Plan. Book. Celebrate.</p></div></div>;
+  if (splash) return <div className="safe-top safe-bottom fixed inset-0 z-50 grid place-items-center bg-primary text-primary-foreground"><div className="animate-rise-in text-center"><span className="mx-auto grid size-20 place-items-center rounded-2xl bg-logo text-logo-foreground shadow-panel"><TentTree className="size-11" /></span><p className="mt-5 font-display text-3xl font-extrabold text-logo">MyTento</p><p className="mt-1 text-xs font-bold uppercase tracking-widest text-primary-foreground/70">Plan. Book. Celebrate.</p></div></div>;
   const s = slides[i] ?? slides[0]!;
   const last = i === slides.length - 1;
   return <div className="safe-top safe-bottom fixed inset-0 z-50 flex justify-center overflow-y-auto bg-background"><div className="flex min-h-full w-full max-w-md flex-col bg-card">

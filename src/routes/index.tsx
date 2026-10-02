@@ -95,8 +95,8 @@ function Index() {
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-4">
           <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
             {step !== "home" && <ArrowLeft className="size-5 text-foreground" />}
-             <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-accent text-accent-foreground max-[359px]:size-9"><TentTree className="size-6 max-[359px]:size-5" /></span>
-              <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-accent sm:text-xl">MyTento</span><span className="mobile-compact-hide block truncate text-[10px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
+             <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-logo text-logo-foreground max-[359px]:size-9"><TentTree className="size-6 max-[359px]:size-5" /></span>
+              <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-logo sm:text-xl">MyTento</span><span className="mobile-compact-hide block truncate text-[10px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
           </Button>
            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
@@ -190,7 +190,7 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
 
     <section>
       <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-lg font-bold text-foreground">{t("topRated")}</h2><button type="button" onClick={onProviders} className="text-xs font-semibold text-primary">View all</button></div>
-      <div className="space-y-3">{providers.map((item, i) => <button type="button" key={item.name} onClick={() => onProvider(i)} className="flex w-full min-w-0 items-center gap-3 rounded-3xl border border-border bg-card p-3.5 text-left shadow-sm"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary font-display text-sm font-bold text-primary-foreground">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-foreground">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-primary text-primary" /> {item.rating} · Lucknow · <ShieldCheck className="size-3 text-success" /> Verified</span></span><ChevronRight className="size-5 shrink-0 text-primary" /></button>)}</div>
+      <div className="space-y-3">{nearbyProviders.map((item, i) => <Button variant="outline" type="button" key={item.name} onClick={() => onProvider(i)} className="flex h-auto w-full min-w-0 items-center justify-start gap-3 rounded-3xl bg-card p-3.5 text-left shadow-sm"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary font-display text-sm font-bold text-primary-foreground">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-foreground">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-primary text-primary" /> {item.rating} · {item.distance} km · <ShieldCheck className="size-3 text-success" /> Verified</span></span><ChevronRight className="size-5 shrink-0 text-primary" /></Button>)}</div>
     </section>
   </div>;
 }
