@@ -1,0 +1,4 @@
+CREATE POLICY "Public reads provider media" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'provider-media');
+CREATE POLICY "Providers upload own media" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'provider-media' AND (storage.foldername(name))[1] = auth.uid()::text AND public.has_role(auth.uid(), 'provider'));
+CREATE POLICY "Providers update own media" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'provider-media' AND (storage.foldername(name))[1] = auth.uid()::text AND public.has_role(auth.uid(), 'provider')) WITH CHECK (bucket_id = 'provider-media' AND (storage.foldername(name))[1] = auth.uid()::text AND public.has_role(auth.uid(), 'provider'));
+CREATE POLICY "Providers delete own media" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'provider-media' AND ((storage.foldername(name))[1] = auth.uid()::text OR public.has_role(auth.uid(), 'admin')));

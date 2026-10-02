@@ -8,6 +8,13 @@
       "when": 1790924059476,
       "tag": "0000_create_mytento_live_core",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790924201374,
+      "tag": "0001_secure_provider_media_storage",
+      "breakpoints": true
     }
   ]
 }
