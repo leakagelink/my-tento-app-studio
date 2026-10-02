@@ -6,6 +6,7 @@ import {
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 import { CabPriorityCard, ClientCabScreen } from "@/components/client-requirement-panels";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.webp";
@@ -95,7 +96,7 @@ function Index() {
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-4">
           <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
             {step !== "home" && <ArrowLeft className="size-5 text-foreground" />}
-             <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-logo text-logo-foreground max-[359px]:size-9"><TentTree className="size-6 max-[359px]:size-5" /></span>
+             <BrandLogo priority className="size-11 max-[359px]:size-10" />
               <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-logo sm:text-xl">MyTento</span><span className="mobile-compact-hide block truncate text-[10px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
           </Button>
            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
