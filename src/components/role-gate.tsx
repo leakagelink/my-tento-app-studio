@@ -8,12 +8,12 @@ export function RoleGate({ role, children }: { role: "admin" | "provider"; child
   const [allowed, setAllowed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    void supabase.rpc("has_role", { _user_id: undefined, _role: role }).then(async () => {
+    void (async () => {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) return setAllowed(false);
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", auth.user.id).eq("role", role).maybeSingle();
       setAllowed(Boolean(data));
-    });
+    })();
   }, [role]);
 
   if (allowed === null) return <div className="grid min-h-svh place-items-center bg-background"><div className="size-10 animate-spin rounded-full border-4 border-secondary border-t-primary" /></div>;

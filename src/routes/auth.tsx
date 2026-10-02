@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({ redirect: typeof search.redirect === "string" && search.redirect.startsWith("/") ? search.redirect : "/" }),
+  validateSearch: (search: Record<string, unknown>) => ({ redirect: typeof search["redirect"] === "string" && search["redirect"].startsWith("/") ? search["redirect"] : "/" }),
   head: () => ({ meta: [
     { title: "Sign in | MyTento" },
     { name: "description", content: "Sign in or create your MyTento account to manage bookings." },

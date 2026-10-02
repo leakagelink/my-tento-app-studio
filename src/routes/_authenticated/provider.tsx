@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { ProviderInventoryManager } from "@/components/client-requirement-panels";
+import { RoleGate } from "@/components/role-gate";
 
 export const Route = createFileRoute("/_authenticated/provider")({
   head: () => ({
@@ -46,6 +47,10 @@ const providerReviews = [
 ];
 
 function ProviderApp() {
+  return <RoleGate role="provider"><ProviderPanel /></RoleGate>;
+}
+
+function ProviderPanel() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const [bookings, setBookings] = useState(initialBookings);
   const [openId, setOpenId] = useState<string | null>(null);
