@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type ElementType, type ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ArrowLeft, Bell, CalendarDays, Car, Check, ChevronDown, ChevronRight, Clock3, CreditCard, Headphones, Home,
   MapPin, Minus, PartyPopper, Plus, Search, Settings, ShieldCheck, Sparkles,
@@ -22,6 +24,9 @@ import serviceTent from "@/assets/service-tent.webp";
 import serviceDecoration from "@/assets/service-decoration.webp";
 import serviceCatering from "@/assets/service-catering.webp";
 import serviceCab from "@/assets/service-cab.webp";
+import { supabase } from "@/integrations/supabase/client";
+import { createLiveBooking, useLiveProviders, type LiveProvider } from "@/lib/live-data";
+import { useAuth } from "@/hooks/use-auth";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
 
@@ -56,14 +61,16 @@ const services: { name: ServiceName; subtitle: string; icon: ElementType; tone: 
 ];
 
 const providers = [
-  { name: "Royal Tent House", detail: "Up to 200 guests", price: "₹25,000", rating: "4.8", initials: "RT", distance: 2.4 },
-  { name: "Shree Tent & Decor", detail: "Up to 200 guests", price: "₹20,000", rating: "4.7", initials: "ST", distance: 6.8 },
-  { name: "Celebration Events", detail: "Up to 250 guests", price: "₹28,500", rating: "4.9", initials: "CE", distance: 9.6 },
-  { name: "City Event Works", detail: "Up to 300 guests", price: "₹31,000", rating: "4.6", initials: "CW", distance: 14.2 },
+  { id: "", name: "Royal Tent House", detail: "Up to 200 guests", price: "₹25,000", rating: "4.8", initials: "RT", distance: 2.4, phone: "+91 98765 43210" },
+  { id: "", name: "Shree Tent & Decor", detail: "Up to 200 guests", price: "₹20,000", rating: "4.7", initials: "ST", distance: 6.8, phone: "+91 98765 43211" },
+  { id: "", name: "Celebration Events", detail: "Up to 250 guests", price: "₹28,500", rating: "4.9", initials: "CE", distance: 9.6, phone: "+91 98765 43212" },
+  { id: "", name: "City Event Works", detail: "Up to 300 guests", price: "₹31,000", rating: "4.6", initials: "CW", distance: 14.2, phone: "" },
 ];
 const nearbyProviders = providers.filter((item) => item.distance <= 10);
 
 function Index() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("home");
   const [service, setService] = useState<ServiceName>("Tent");
   const [guests, setGuests] = useState(200);
@@ -74,9 +81,13 @@ function Index() {
   const [lang, setLang] = useState<Lang>("en");
   const [onboard, setOnboard] = useState(false);
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
+  const [bookingCode, setBookingCode] = useState("");
+  const city = location.split(",")[0] ?? "Lucknow";
+  const { data: liveProviders = [] } = useLiveProviders(city);
+  const visibleProviders: LiveProvider[] = liveProviders.length > 0 ? liveProviders : nearbyProviders;
   useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); }, []);
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
-  const chosenProvider = nearbyProviders[provider] ?? nearbyProviders[0]!;
+  const chosenProvider = visibleProviders[provider] ?? visibleProviders[0];
 
   const go = (next: Step) => { setStep(next); window.scrollTo(0, 0); };
   const beginBooking = (name: ServiceName) => { setService(name); setCombo(null); go("details"); };
@@ -102,26 +113,26 @@ function Index() {
            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
             <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
-            <Button variant="ghost" size="icon" aria-label="Profile" onClick={() => go("profile")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><UserRound className="size-5" /></Button>
+             <Button variant="ghost" size="icon" aria-label={user ? "Profile" : "Sign in"} onClick={() => user ? go("profile") : void navigate({ to: "/auth", search: { redirect: "/" } })} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><UserRound className="size-5" /></Button>
           </div>
         </div>
       </header>
 
       <main className={step === "details" ? "app-bottom-space min-w-0" : step === "combo" ? "app-bottom-space min-w-0 px-3 pt-4 min-[360px]:px-4" : "app-bottom-space min-w-0 px-3 pt-5 min-[360px]:px-4 min-[360px]:pt-6"}>
-        {step === "home" && <HomeScreen onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} onCombo={() => go("combo")} />}
+         {step === "home" && <HomeScreen providers={visibleProviders} onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} onCombo={() => go("combo")} />}
         {step === "combo" && <ComboScreen onContinue={(name, price) => { setCombo({ name, price }); go("payment"); }} />}
         {step === "reviews" && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
         {step === "details" && service === "Cab" && <ClientCabScreen />}
         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
-        {step === "providers" && <ProvidersScreen selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
+         {step === "providers" && <ProvidersScreen providers={visibleProviders} selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
         {step === "providerDetail" && chosenProvider && <ProviderDetailFull provider={chosenProvider} onBook={() => go("details")} onReviews={() => go("reviews")} />}
-        {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} onConfirm={() => go("success")} />}
-        {step === "success" && chosenProvider && <SuccessScreen provider={chosenProvider} onHome={() => go("home")} />}
-        {step === "bookings" && <BookingsScreen onTrack={() => go("bookingDetail")} />}
+         {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} onConfirm={(code) => { setBookingCode(code); go("success"); }} />}
+         {step === "success" && chosenProvider && <SuccessScreen provider={chosenProvider} bookingCode={bookingCode} onHome={() => go("home")} />}
+         {step === "bookings" && <BookingsScreen userId={user?.id} onTrack={() => go("bookingDetail")} onSignIn={() => void navigate({ to: "/auth", search: { redirect: "/" } })} />}
         {step === "bookingDetail" && <BookingTracker />}
         {step === "wallet" && <WalletScreen />}
-        {step === "profile" && <ProfileScreen />}
+         {step === "profile" && <ProfileScreen userId={user?.id} email={user?.email} />}
         {step === "notifications" && <NotificationsScreen read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
       </main>
 
@@ -138,7 +149,7 @@ function Index() {
   );
 }
 
-function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocation, onServices, onProviders, onProvider, onCombo }: { onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
+function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
   const t = useT();
   const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 group-active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/25 to-transparent" />{badge && <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[9px] font-bold uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-4 left-4 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
   return <div className="animate-rise-in">
@@ -191,7 +202,7 @@ function HomeScreen({ onBook, location, locationOpen, setLocationOpen, setLocati
 
     <section>
       <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-lg font-bold text-foreground">{t("topRated")}</h2><button type="button" onClick={onProviders} className="text-xs font-semibold text-primary">View all</button></div>
-      <div className="space-y-3">{nearbyProviders.map((item, i) => <Button variant="outline" type="button" key={item.name} onClick={() => onProvider(i)} className="flex h-auto w-full min-w-0 items-center justify-start gap-3 rounded-3xl bg-card p-3.5 text-left shadow-sm"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary font-display text-sm font-bold text-primary-foreground">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-foreground">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-primary text-primary" /> {item.rating} · {item.distance} km · <ShieldCheck className="size-3 text-success" /> Verified</span></span><ChevronRight className="size-5 shrink-0 text-primary" /></Button>)}</div>
+       <div className="space-y-3">{providers.map((item, i) => <Button variant="outline" type="button" key={`${item.id}-${item.name}`} onClick={() => onProvider(i)} className="flex h-auto w-full min-w-0 items-center justify-start gap-3 rounded-3xl bg-card p-3.5 text-left shadow-sm"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary font-display text-sm font-bold text-primary-foreground">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-foreground">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-primary text-primary" /> {item.rating} · {item.distance} km · <ShieldCheck className="size-3 text-success" /> Verified</span></span><ChevronRight className="size-5 shrink-0 text-primary" /></Button>)}</div>
     </section>
   </div>;
 }
