@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { AdminCabControl, AdminRequirementCenter, type AdminExtraTab } from "@/components/client-requirement-panels";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Admin Dashboard | My Tento" },

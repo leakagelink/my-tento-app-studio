@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { ProviderInventoryManager } from "@/components/client-requirement-panels";
 
-export const Route = createFileRoute("/provider")({
+export const Route = createFileRoute("/_authenticated/provider")({
   head: () => ({
     meta: [
       { title: "Provider Panel | My Tento" },
