@@ -64,6 +64,8 @@
   --color-brand-soft: var(--brand-soft);
   --color-warm-soft: var(--warm-soft);
   --color-success: var(--success);
+  --color-logo: var(--logo);
+  --color-logo-foreground: var(--logo-foreground);
   --shadow-action: 0 14px 34px color-mix(in oklab, var(--primary) 30%, transparent);
   --gradient-festive: linear-gradient(125deg, oklch(0.38 0.16 265), oklch(0.47 0.19 262) 55%, oklch(0.58 0.15 250));
   --shadow-panel: 0 28px 70px color-mix(in oklab, oklch(0.40 0.10 262) 16%, transparent);
@@ -93,6 +95,8 @@
   --brand-soft: oklch(0.93 0.03 255);
   --warm-soft: oklch(0.96 0.02 85);
   --success: oklch(0.6 0.15 155);
+  --logo: oklch(0.68 0.2 48);
+  --logo-foreground: oklch(0.99 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

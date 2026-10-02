@@ -5,7 +5,7 @@ import {
   Store, TentTree, TrendingUp, UserRound, Users as UsersIcon, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AdminRequirementCenter, type AdminExtraTab } from "@/components/client-requirement-panels";
+import { AdminCabControl, AdminRequirementCenter, type AdminExtraTab } from "@/components/client-requirement-panels";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminApp,
 });
 
-type Tab = "overview" | "providers" | "bookings" | "users" | "payments" | "offers" | AdminExtraTab;
+type Tab = "overview" | "providers" | "bookings" | "users" | "payments" | "offers" | "cab" | AdminExtraTab;
 
 type AdminBooking = { id: string; customer: string; provider: string; service: string; date: string; amount: string; status: "confirmed" | "completed" | "pending" };
 type AdminProvider = { name: string; service: string; city: string; price: string; rating: string; verified: boolean; initials: string };
@@ -61,12 +61,12 @@ function AdminApp() {
       <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="mx-auto grid min-h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:flex sm:px-6">
           <Button variant="ghost" asChild className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
-            <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground max-[359px]:size-9"><ShieldCheck className="size-6 max-[359px]:size-5" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-primary sm:text-xl">my<span className="text-accent">Tento</span> <span className="mobile-compact-hide text-xs font-bold text-muted-foreground sm:text-sm">Admin</span></span></Link>
+             <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-logo text-logo-foreground max-[359px]:size-9"><ShieldCheck className="size-6 max-[359px]:size-5" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-logo sm:text-xl">myTento <span className="mobile-compact-hide text-xs font-bold text-muted-foreground sm:text-sm">Admin</span></span></Link>
           </Button>
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
         <div className="mx-auto flex w-full max-w-6xl gap-1 overflow-x-auto overscroll-x-contain px-3 sm:px-6">
-          {([["overview", "Overview"], ["providers", "Providers"], ["bookings", "Bookings"], ["users", "Users"], ["payments", "Payments"], ["offers", "Offers"], ["content", "Content"], ["notifications", "Notifications"], ["reports", "Reports"], ["settings", "Settings"]] as [Tab, string][]).map(([id, label]) => (
+          {([["overview", "Overview"], ["providers", "Providers"], ["bookings", "Bookings"], ["users", "Users"], ["payments", "Payments"], ["cab", "Cab Control"], ["offers", "Offers"], ["content", "Banners"], ["notifications", "Notifications"], ["reports", "Reports"], ["settings", "Settings"]] as [Tab, string][]).map(([id, label]) => (
             <Button key={id} variant="ghost" size="sm" onClick={() => go(id)} className={`shrink-0 rounded-b-none border-b-2 ${tab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{label}</Button>
           ))}
         </div>
@@ -79,6 +79,7 @@ function AdminApp() {
         {tab === "users" && <Users />}
         {tab === "payments" && <Payments />}
         {tab === "offers" && <Offers />}
+        {tab === "cab" && <AdminCabControl />}
         {(["content", "notifications", "reports", "settings"] as Tab[]).includes(tab) && <AdminRequirementCenter tab={tab as AdminExtraTab} />}
       </main>
     </div>
