@@ -5,6 +5,7 @@ import {
   IndianRupee, MapPin, Phone, Star, Store, TentTree, TrendingUp, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 import { ProviderInventoryManager } from "@/components/client-requirement-panels";
 
 export const Route = createFileRoute("/provider")({
@@ -70,7 +71,7 @@ function ProviderApp() {
       <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
         <div className="mx-auto grid min-h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:flex sm:px-6">
           <Button variant="ghost" asChild className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
-             <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><span className="grid size-10 shrink-0 place-items-center rounded-lg bg-logo text-logo-foreground max-[359px]:size-9"><Store className="size-6 max-[359px]:size-5" /></span><span className="min-w-0 truncate font-display text-lg font-extrabold text-logo sm:text-xl">myTento <span className="mobile-compact-hide text-xs font-bold text-muted-foreground sm:text-sm">Provider</span></span></Link>
+             <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><BrandLogo priority className="size-11 max-[359px]:size-10" /><span className="min-w-0 truncate font-display text-lg font-extrabold text-logo sm:text-xl">MyTento <span className="mobile-compact-hide text-xs font-bold text-muted-foreground sm:text-sm">Provider</span></span></Link>
           </Button>
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
