@@ -3,8 +3,8 @@ import { useEffect, useState, type ElementType, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Bell, CalendarDays, Car, Check, ChevronDown, ChevronRight, Clock3, CreditCard, Headphones, Home,
-  MapPin, Minus, PartyPopper, Plus, Search, Settings, ShieldCheck, Sparkles,
+  ArrowLeft, Bell, CalendarDays, Car, Check, ChevronDown, ChevronRight, Clock3, Headphones, Home,
+  MapPin, Minus, Plus, Search, Settings, ShieldCheck, Sparkles,
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,6 @@ import decorationHero from "@/assets/decoration-hero.webp";
 import packagePremium from "@/assets/package-premium.webp";
 import packageStandard from "@/assets/package-standard.webp";
 import packageBasic from "@/assets/package-basic.webp";
-import vehicleCab from "@/assets/vehicle-cab.webp";
-import vehicleAuto from "@/assets/vehicle-auto.webp";
-import vehicleToto from "@/assets/vehicle-toto.webp";
-import vehicleSuv from "@/assets/vehicle-suv.webp";
 import homeBanner from "@/assets/home-banner.webp";
 import serviceTent from "@/assets/service-tent.webp";
 import serviceDecoration from "@/assets/service-decoration.webp";
@@ -29,9 +25,6 @@ import { createLiveBooking, useLiveProviders, type LiveProvider } from "@/lib/li
 import { useAuth } from "@/hooks/use-auth";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
-
-const vehicleImages: Record<string, string> = { Cab: vehicleCab, Auto: vehicleAuto, Toto: vehicleToto, SUV: vehicleSuv };
-const premiumImages: Record<string, string> = { "Toyota Fortuner": vehicleSuv, Scorpio: vehicleSuv, "Innova Crysta": vehicleSuv, "Toyota Camry": vehicleCab };
 
 // No head() here: the home route inherits title/description/og/twitter from
 // __root.tsx, and ships no og:image so serve-time hosting can inject the
@@ -69,7 +62,9 @@ function Index() {
   const [provider, setProvider] = useState(0);
   const [location, setLocation] = useState("Lucknow, Uttar Pradesh");
   const [locationOpen, setLocationOpen] = useState(false);
-  const [notificationsRead, setNotificationsRead] = useState(false);
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState<{ booking_code: string; booking_type: string; event_date: string; event_time: string; city: string; status: string; total_amount: number } | null>(null);
   const [lang, setLang] = useState<Lang>("en");
   const [onboard, setOnboard] = useState(false);
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
@@ -104,7 +99,7 @@ function Index() {
           </Button>
            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
-            <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" />{!notificationsRead && <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />}</Button>
+             <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /></Button>
              <Button variant="ghost" size="icon" aria-label={user ? "Profile" : "Sign in"} onClick={() => user ? go("profile") : void navigate({ to: "/auth", search: { redirect: "/" } })} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><UserRound className="size-5" /></Button>
           </div>
         </div>
@@ -116,16 +111,16 @@ function Index() {
          {step === "reviews" && chosenProvider && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
         {step === "details" && service === "Cab" && <ClientCabScreen />}
-        {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} onContinue={() => go("providers")} />}
+         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} city={city} onContinue={() => go("providers")} />}
          {step === "providers" && <ProvidersScreen providers={visibleProviders} selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
          {step === "providerDetail" && chosenProvider && <ProviderDetailFull provider={chosenProvider} onBook={() => go("details")} onReviews={() => go("reviews")} />}
-         {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} onConfirm={(code) => { setBookingCode(code); go("success"); }} />}
-         {step === "success" && chosenProvider && <SuccessScreen provider={chosenProvider} bookingCode={bookingCode} onHome={() => go("home")} />}
-         {step === "bookings" && <BookingsScreen userId={user?.id} onTrack={() => go("bookingDetail")} onSignIn={() => { void navigate({ to: "/auth", search: { redirect: "/" } }); }} />}
-         {step === "bookingDetail" && <BookingTracker />}
+          {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} eventDate={eventDate} eventTime={eventTime} city={city} onConfirm={(code) => { setBookingCode(code); go("success"); }} />}
+          {step === "success" && chosenProvider && <SuccessScreen provider={chosenProvider} bookingCode={bookingCode} eventDate={eventDate} onHome={() => go("home")} />}
+          {step === "bookings" && <BookingsScreen userId={user?.id} onTrack={(booking) => { setSelectedBooking(booking); go("bookingDetail"); }} onSignIn={() => { void navigate({ to: "/auth", search: { redirect: "/" } }); }} />}
+          {step === "bookingDetail" && <BookingTracker booking={selectedBooking} />}
          {step === "wallet" && <WalletScreen userId={user?.id} />}
          {step === "profile" && <ProfileScreen userId={user?.id} email={user?.email} />}
-         {step === "notifications" && <NotificationsScreen userId={user?.id} read={notificationsRead} onRead={() => setNotificationsRead(true)} onBooking={() => go("bookingDetail")} />}
+          {step === "notifications" && <NotificationsScreen userId={user?.id} onBooking={() => go("bookings")} />}
       </main>
 
       <nav className="safe-bottom app-bottom-nav fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
