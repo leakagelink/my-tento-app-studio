@@ -7,6 +7,7 @@
 - [x] Apply the selected Celebration M brand logo across customer, provider, admin, splash, and app icon
 - [x] Create secure live database tables, access rules, media storage, and catalogue data
 - [x] Add email account creation, sign-in, sign-out foundation, and password recovery
-- [ ] Connect customer bookings, profiles, and notifications to live data
-- [ ] Connect provider and admin controls to live data with role checks
+- [x] Connect customer bookings, profiles, and notifications to live data
+- [x] Connect provider and admin controls to live data with role checks
+- [x] Remove mock operational records and use truthful empty states
 - [ ] Verify live account and booking flows end to end

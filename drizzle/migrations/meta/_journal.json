@@ -29,6 +29,20 @@
       "when": 1790991486103,
       "tag": "0003_restrict_provider_media_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790992415230,
+      "tag": "0004_grant_catalogue_data_api_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790992441881,
+      "tag": "0005_separate_public_catalogue_read_policies",
+      "breakpoints": true
     }
   ]
 }

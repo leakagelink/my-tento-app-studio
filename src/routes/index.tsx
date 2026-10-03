@@ -12,9 +12,6 @@ import { BrandLogo } from "@/components/brand-logo";
 import { CabPriorityCard, ClientCabScreen } from "@/components/client-requirement-panels";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.webp";
-import packagePremium from "@/assets/package-premium.webp";
-import packageStandard from "@/assets/package-standard.webp";
-import packageBasic from "@/assets/package-basic.webp";
 import homeBanner from "@/assets/home-banner.webp";
 import serviceTent from "@/assets/service-tent.webp";
 import serviceDecoration from "@/assets/service-decoration.webp";
@@ -219,53 +216,7 @@ function ProfileScreen({ userId, email }: { userId: string | undefined; email: s
 
 function NotificationsScreen({ userId, onBooking }: { userId: string | undefined; onBooking: () => void }) { const queryClient = useQueryClient(); const { data = [], isLoading } = useQuery({ queryKey: ["notifications", userId], enabled: Boolean(userId), queryFn: async () => { const { data, error } = await supabase.from("notifications").select("id,title,message,read_at,created_at").eq("user_id", userId ?? "").order("created_at", { ascending: false }); if (error) throw error; return data ?? []; } }); const markRead = async () => { if (!userId) return; const { error } = await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId).is("read_at", null); if (error) { toast.error("Notifications could not be updated"); return; } await queryClient.invalidateQueries({ queryKey: ["notifications", userId] }); }; return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and account updates" />{data.some((item) => !item.read_at) && <Button variant="ghost" size="sm" onClick={() => void markRead()}>Mark all read</Button>}</div>{!userId ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Sign in to view notifications.</p> : isLoading ? <p className="text-sm text-muted-foreground">Loading notifications…</p> : data.length === 0 ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No notifications yet.</p> : <div className="space-y-3">{data.map((item) => <Button key={item.id} variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${item.read_at ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">{item.title}</span><span className="text-xs font-normal text-muted-foreground">{item.message}</span></span></Button>)}</div>}</div>; }
 
-const servicePackages: Record<Exclude<ServiceName, "Cab">, { name: string; detail: string; price: number; image?: string }[]> = {
-  Decoration: [
-    { name: "Premium", detail: "Full setup + grand stage", price: 25000, image: packagePremium },
-    { name: "Standard", detail: "Stage + main hall", price: 15000, image: packageStandard },
-    { name: "Basic", detail: "Elegant stage only", price: 10000, image: packageBasic },
-    { name: "Custom", detail: "As per your need", price: 0 },
-  ],
-  Tent: [
-    { name: "Royal Shamiyana", detail: "Premium tent + full setup", price: 30000, image: packagePremium },
-    { name: "Standard Tent", detail: "Tent + chairs + tables", price: 18000, image: packageStandard },
-    { name: "Basic Canopy", detail: "Simple tent setup", price: 12000, image: packageBasic },
-    { name: "Custom", detail: "Type, size, design & colour", price: 0 },
-  ],
-  Catering: [
-    { name: "Full Catering", detail: "Food, snacks, drinks & staff", price: 20000, image: packagePremium },
-    { name: "Cooking Master", detail: "Experienced cook only", price: 8000, image: packageStandard },
-    { name: "Bartan Only", detail: "Utensils & serving items", price: 6000, image: packageBasic },
-    { name: "Custom", detail: "Menu as per your need", price: 0 },
-  ],
-};
-
-const serviceAddOns: Record<Exclude<ServiceName, "Cab">, { name: string; price: number }[]> = {
-  Decoration: [
-    { name: "Stage Setup", price: 5000 }, { name: "Lighting Setup", price: 3000 }, { name: "Flower Decoration", price: 4000 },
-    { name: "DJ / Sound System", price: 6000 }, { name: "Photography", price: 5000 }, { name: "LED Screen", price: 7000 },
-  ],
-  Tent: [
-    { name: "DJ Sound + Light Setup", price: 6000 }, { name: "Night Light + Gate Light", price: 3500 }, { name: "Mineral Water (Branded / Normal)", price: 2000 },
-    { name: "Normal Decoration", price: 4000 }, { name: "All Catering Facility", price: 15000 }, { name: "Catering Staff Only", price: 5000 },
-  ],
-  Catering: [
-    { name: "Mineral Water (Branded / Normal)", price: 2000 }, { name: "DJ Speakers", price: 5000 }, { name: "Extra Serving Staff", price: 3000 }, { name: "Snacks & Drinks Counter", price: 4000 },
-  ],
-};
-
 function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; onContinue: () => void }) {
-  const key = (service === "Cab" ? "Tent" : service) as Exclude<ServiceName, "Cab">;
-  const packages = servicePackages[key];
-  const addOnOptions = serviceAddOns[key];
-  const [selectedPackage, setSelectedPackage] = useState(0);
-  const [addOnQuantities, setAddOnQuantities] = useState<Record<string, number>>(() => addOnOptions[0] ? { [addOnOptions[0].name]: 1 } : {});
-  const selected = packages[selectedPackage] ?? packages[0];
-  const addOnTotal = addOnOptions.reduce((total, item) => total + item.price * (addOnQuantities[item.name] ?? 0), 0);
-  const total = (selected?.price ?? 0) + addOnTotal;
-  const isQuote = (selected?.price ?? 0) === 0;
-  const setQuantity = (name: string, quantity: number) => setAddOnQuantities((current) => ({ ...current, [name]: Math.max(0, Math.min(20, quantity)) }));
-
   return <div className="animate-rise-in pb-24">
     <section className="relative h-56 overflow-hidden bg-primary">
       <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
@@ -277,7 +228,7 @@ function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, ev
       </div>
     </section>
 
-    <div className="space-y-8 px-5 py-6">
+    <div className="px-5 py-6">
       <section>
         <SectionHeading number="1" title="Event Details" subtitle="Tell us about your event" />
         <div className="mt-4 grid grid-cols-2 gap-3">
@@ -289,26 +240,10 @@ function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, ev
         <p className="mt-3 rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">Provider availability is shown after you choose a provider.</p>
       </section>
 
-      <section>
-        <SectionHeading number="2" title={`Choose ${service} Package`} subtitle="Select your preferred style" />
-        <div className="-mx-1 mt-4 flex snap-x gap-3 overflow-x-auto px-1 pb-4">
-          {packages.map((item, index) => <Button key={item.name} variant="outline" onClick={() => setSelectedPackage(index)} className={`h-auto min-w-44 snap-start flex-col items-stretch overflow-hidden p-1.5 text-left ${selectedPackage === index ? "border-primary ring-4 ring-secondary" : "border-border"}`}>
-            <span className="relative block h-28 overflow-hidden rounded-md">{item.image ? <img src={item.image} alt={`${item.name} ${service} package`} loading="lazy" width={1024} height={768} className="h-full w-full object-cover" /> : <span className="grid h-full w-full place-items-center bg-brand-soft"><Sparkles className="size-8 text-primary" /></span>}{selectedPackage === index && <span className="absolute left-2 top-2 grid size-5 place-items-center rounded-full border-2 border-primary-foreground bg-primary text-primary-foreground"><Check className="size-3" /></span>}</span>
-            <span className="block w-full px-2 pb-2 pt-2"><span className="block text-xs font-extrabold">{item.name} {service}</span><span className="mt-0.5 block text-[10px] font-medium text-muted-foreground">{item.detail}</span><span className="mt-2 block font-display text-sm font-extrabold text-primary">{item.price === 0 ? "Get Quote" : `₹ ${item.price.toLocaleString("en-IN")}`}</span></span>
-          </Button>)}
-        </div>
-      </section>
-
-      <section>
-        <SectionHeading number="+" title="Add-on Services" subtitle="Enhance your event experience" muted />
-        <div className="mt-4 grid gap-2 rounded-lg bg-muted p-3">
-          {addOnOptions.map((item) => { const quantity = addOnQuantities[item.name] ?? 0; return <div key={item.name} className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border bg-card p-3 ${quantity > 0 ? "border-primary ring-2 ring-secondary" : "border-border"}`}><div className="min-w-0"><p className="break-words text-xs font-bold">{item.name}</p><p className="mt-1 text-[10px] font-extrabold text-primary">₹{item.price.toLocaleString("en-IN")} each · ₹{(item.price * quantity).toLocaleString("en-IN")}</p></div><div className="flex items-center gap-1"><Button size="icon" variant="outline" aria-label={`Remove ${item.name}`} disabled={quantity === 0} onClick={() => setQuantity(item.name, quantity - 1)} className="size-8"><Minus className="size-3" /></Button><span className="w-6 text-center text-sm font-bold">{quantity}</span><Button size="icon" aria-label={`Add ${item.name}`} onClick={() => setQuantity(item.name, quantity + 1)} className="size-8"><Plus className="size-3" /></Button></div></div> })}
-        </div>
-      </section>
     </div>
 
     <div className="above-bottom-nav sticky z-20 border-t border-border bg-card/95 px-3 py-3 backdrop-blur min-[360px]:px-4">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg bg-primary p-3 shadow-action"><div className="min-w-0 pl-1 text-primary-foreground min-[360px]:pl-2"><p className="truncate text-[10px] font-bold uppercase text-primary-foreground/70">{isQuote ? "Custom package" : "Total amount"}</p><p className="truncate font-display text-lg font-extrabold min-[360px]:text-xl">{isQuote ? "Get Quote" : `₹ ${total.toLocaleString("en-IN")}`}</p></div><Button disabled={!eventDate || !eventTime} onClick={onContinue} className="shrink-0 bg-card px-3 text-primary shadow-none hover:bg-secondary min-[360px]:px-5">{isQuote ? "Request quote" : "Book now"} <ChevronRight className="size-4" /></Button></div>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg bg-primary p-3 shadow-action"><div className="min-w-0 pl-1 text-primary-foreground min-[360px]:pl-2"><p className="text-[10px] font-bold uppercase text-primary-foreground/70">Next</p><p className="font-display text-base font-extrabold">Compare live providers</p></div><Button disabled={!eventDate || !eventTime} onClick={onContinue} className="shrink-0 bg-card px-3 text-primary shadow-none hover:bg-secondary min-[360px]:px-5">Choose provider <ChevronRight className="size-4" /></Button></div>
     </div>
   </div>;
 }
