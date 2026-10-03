@@ -9,7 +9,6 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Keep new cross-panel requirement mock controls in `src/components/client-requirement-panels.tsx` so customer, provider, and admin routes share one coherent demo model.
-- Keep client-requested mock admin cab, banner, and provider vehicle controls in the shared requirement panel module so all panels use one demo source.
+- Keep customer cab discovery in `src/components/client-requirement-panels.tsx` and source operational records from Lovable Cloud so customer, provider, and admin views stay consistent.
 - Render the shared MyTento brand mark through `BrandLogo` so customer, provider, and admin headers stay visually consistent.
 - Keep private business data behind authenticated cloud access and enforce admin/provider roles in the database, not browser state.
