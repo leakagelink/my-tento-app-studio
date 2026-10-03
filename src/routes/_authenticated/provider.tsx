@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Bell, CalendarDays, Check, ChevronRight, Clock3, Home as HomeIcon,
-  IndianRupee, MapPin, Phone, Star, Store, TentTree, TrendingUp, WalletCards, X,
+  ArrowLeft, Bell, CalendarDays, ChevronRight, Clock3, Home as HomeIcon,
+  IndianRupee, Phone, Star, Store, TentTree, TrendingUp, WalletCards,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
@@ -132,8 +132,8 @@ function Dashboard({ bookings, profile, onOpen }: { bookings: ProviderBooking[];
           : pending.map((b) => <RequestCard key={b.id} booking={b} onOpen={() => onOpen(b.id)} />)}
       </section>
       <section>
-        <h2 className="mb-3 text-lg font-bold">Upcoming events</h2>
-        <div className="space-y-3">{upcoming.map((b) => <RequestCard key={b.id} booking={b} onOpen={() => onOpen(b.id)} />)}</div>
+            <h2 className="mb-3 text-lg font-bold">Upcoming events</h2>
+        <div className="space-y-3">{upcoming.length === 0 ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No upcoming events.</p> : upcoming.map((b) => <RequestCard key={b.id} booking={b} onOpen={() => onOpen(b.id)} />)}</div>
       </section>
     </div>
   );
@@ -177,7 +177,7 @@ function BookingDetail({ booking, onNext, onDecline, onClose }: { booking: Provi
         <Summary label="Customer" value={booking.customer} />
         <Summary label="Requirements" value={booking.detail} />
         <Summary label="Package amount" value={booking.amount} strong />
-        <div className="mt-4 flex items-center gap-3 rounded-lg bg-secondary p-3"><Phone className="size-4 text-primary" /><span className="text-sm font-semibold">{booking.phone}</span><span className="ml-auto text-xs text-muted-foreground">Shared after accept</span></div>
+        <div className="mt-4 flex items-center gap-3 rounded-lg bg-secondary p-3"><Phone className="size-4 text-primary" /><span className="text-sm font-semibold">{booking.phone}</span></div>
         {booking.status !== "new" && (
           <div className="mt-5">
             <h3 className="font-bold">Job progress</h3>
