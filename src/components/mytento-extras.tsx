@@ -1,14 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { CalendarDays, Check, ChevronRight, Languages, PartyPopper, ShieldCheck, Sparkles, Star, TentTree, Tag, Truck, UtensilsCrossed, Wrench, X } from "lucide-react";
+import { CalendarDays, ChevronRight, Languages, ShieldCheck, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import myTentoLogo from "@/assets/mytento-logo.png";
 import homeBanner from "@/assets/home-banner.webp";
 import serviceTent from "@/assets/service-tent.webp";
 import serviceDecoration from "@/assets/service-decoration.webp";
-import serviceCatering from "@/assets/service-catering.webp";
-import packagePremium from "@/assets/package-premium.webp";
-import packageStandard from "@/assets/package-standard.webp";
-import packageBasic from "@/assets/package-basic.webp";
 
 /* ---------- Language ---------- */
 export type Lang = "en" | "hi";
@@ -55,15 +51,10 @@ export function ComboScreen({ onContinue }: { onContinue: (name: string, price: 
 
 /* ---------- Provider detail: gallery, dates, reviews ---------- */
 type Prov = { id?: string; name: string; detail: string; price: string; rating: string; initials: string; phone?: string };
-const gallery = [serviceTent, serviceDecoration, serviceCatering, packagePremium, packageStandard, homeBanner];
 export function ProviderDetailFull({ provider, onBook, onReviews }: { provider: Prov; onBook: () => void; onReviews: () => void }) {
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [day, setDay] = useState<number | null>(null);
   return <div className="mx-auto max-w-2xl animate-rise-in pb-4">
     <div className="mb-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 min-[360px]:gap-4"><span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-brand-soft font-display text-xl font-bold text-primary min-[360px]:size-20">{provider.initials}</span><div className="min-w-0"><h1 className="break-words text-xl font-extrabold min-[360px]:text-2xl">{provider.name}</h1><p className="mt-1 flex flex-wrap items-center gap-1 text-sm text-muted-foreground"><Star className="size-4 shrink-0 fill-accent text-accent" /> {provider.rating} · Verified</p>{provider.phone && <p className="break-words text-xs text-muted-foreground">{provider.phone}</p>}</div></div>
-    <h2 className="mb-2 font-bold">Service gallery</h2>
-    <div className="grid grid-cols-3 gap-2">{gallery.map((g, n) => <button key={n} onClick={() => setPhoto(g)} aria-label={`Open photo ${n + 1}`} className="overflow-hidden rounded-xl"><img src={g} alt={`Work ${n + 1}`} loading="lazy" className="aspect-square w-full object-cover transition hover:scale-105" /></button>)}</div>
-    {photo && <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/80 p-4" onClick={() => setPhoto(null)}><img src={photo} alt="Gallery" className="max-h-[80vh] rounded-2xl" /><Button size="icon" variant="secondary" aria-label="Close photo" className="absolute right-4 top-4 rounded-full"><X /></Button></div>}
+    <h2 className="mb-2 font-bold">Service gallery</h2><p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">This provider has not uploaded any service photos yet.</p>
     <h2 className="mb-2 mt-6 flex items-center gap-2 font-bold"><CalendarDays className="size-4 text-primary" /> Availability</h2><p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No availability dates have been published by this provider.</p>
     <div className="mb-2 mt-6 flex items-center justify-between"><h2 className="font-bold">Ratings & reviews</h2><Button variant="ghost" size="sm" onClick={onReviews}>See all <ChevronRight className="size-4" /></Button></div>
     <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">Reviews appear after completed customer bookings.</p>
@@ -72,8 +63,6 @@ export function ProviderDetailFull({ provider, onBook, onReviews }: { provider: 
     <Button onClick={onBook} className="mt-4 w-full" size="lg">Book this provider</Button>
   </div>;
 }
-function Stars({ n }: { n: number }) { return <span className="flex">{Array.from({ length: 5 }, (_, i) => <Star key={i} className={`size-3.5 ${i < n ? "fill-accent text-accent" : "text-border"}`} />)}</span>; }
-function ReviewCard({ r }: { r: (typeof reviews)[number] }) { return <div className="rounded-lg border border-border bg-card p-4"><div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-full bg-brand-soft text-xs font-bold text-primary">{r.name.split(" ").map((w) => w[0]).join("")}</span><div className="flex-1"><p className="text-sm font-bold">{r.name}</p><p className="text-[10px] text-muted-foreground">{r.date}</p></div><Stars n={r.rating} /></div><p className="mt-2 text-sm leading-6 text-muted-foreground">{r.text}</p></div>; }
 
 export function ReviewsScreen({ provider }: { provider: Prov }) {
   return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Reviews</h1><p className="mb-5 text-sm text-muted-foreground">{provider.name}</p><p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No verified reviews yet.</p></div>;
@@ -88,13 +77,7 @@ export function CouponBox({ applied, setApplied }: { applied: string | null; set
 }
 
 /* ---------- Live tracking ---------- */
-const stages = [
-  { icon: Check, title: "Booking confirmed", sub: "Payment received · 25 Nov, 10:12 AM" },
-  { icon: ShieldCheck, title: "Provider confirmed", sub: "Royal Tent House accepted" },
-  { icon: Truck, title: "Team भेजा गया", sub: "Rohit & 6 members on the way" },
-  { icon: Wrench, title: "Setup शुरू", sub: "Tent & stage being installed" },
-  { icon: PartyPopper, title: "Ready for event", sub: "Enjoy your celebration!" },
-];
-export function BookingTracker() {
-  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Booking details</h1><p className="mt-5 rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Open a saved booking to view its current status.</p></div>;
+export function BookingTracker({ booking }: { booking?: { booking_code: string; booking_type: string; event_date: string; event_time: string; city: string; status: string; total_amount: number } | null }) {
+  if (!booking) return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Booking details</h1><p className="mt-5 rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Select a saved booking to view its current status.</p></div>;
+  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">{booking.booking_type} booking</h1><p className="mt-1 text-sm text-muted-foreground">{booking.booking_code}</p><div className="mt-5 rounded-lg border border-border bg-card p-5"><p className="text-xs font-bold uppercase text-primary">{booking.status.replaceAll("_", " ")}</p><p className="mt-3 font-bold">{booking.event_date} · {booking.event_time}</p><p className="text-sm text-muted-foreground">{booking.city}</p><p className="mt-4 font-display text-xl font-extrabold text-primary">₹{Number(booking.total_amount).toLocaleString("en-IN")}</p></div></div>;
 }
