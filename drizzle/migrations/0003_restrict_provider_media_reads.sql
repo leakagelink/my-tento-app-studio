@@ -1,0 +1,2 @@
+DROP POLICY "Authenticated reads provider media" ON storage.objects;
+CREATE POLICY "Owners and admins read provider media" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'provider-media' AND ((storage.foldername(name))[1] = auth.uid()::text OR public.has_role(auth.uid(), 'admin')));
