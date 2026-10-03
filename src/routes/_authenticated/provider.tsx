@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type ElementType } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ArrowLeft, Bell, CalendarDays, Check, ChevronRight, Clock3, Home as HomeIcon,
   IndianRupee, MapPin, Phone, Star, Store, TentTree, TrendingUp, WalletCards, X,
@@ -8,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { ProviderInventoryManager } from "@/components/client-requirement-panels";
 import { RoleGate } from "@/components/role-gate";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/provider")({
   head: () => ({
@@ -51,6 +55,7 @@ function ProviderApp() {
 }
 
 function ProviderPanel() {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("dashboard");
   const [bookings, setBookings] = useState(initialBookings);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -58,11 +63,19 @@ function ProviderPanel() {
     "Sat 26 Sep": "booked", "Sun 27 Sep": "free", "Mon 28 Sep": "free", "Tue 29 Sep": "booked", "Wed 30 Sep": "free", "Thu 01 Oct": "free",
   });
   const [paidOut, setPaidOut] = useState(false);
+  const { data: liveBookings } = useQuery({ queryKey: ["provider-bookings"], queryFn: async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return []; const { data: provider } = await supabase.from("providers").select("id").eq("owner_id", auth.user.id).maybeSingle(); if (!provider) return []; const { data, error } = await supabase.from("bookings").select("booking_code,booking_type,event_date,event_time,city,total_amount,status,guests").eq("provider_id", provider.id).order("created_at", { ascending: false }); if (error) throw error; return (data ?? []).map((row): ProviderBooking => { const statusMap: Record<string, ProviderBooking["status"]> = { pending: "new", confirmed: "confirmed", team_assigned: "team", setup_started: "setup", completed: "done", declined: "declined", cancelled: "declined" }; return { id: row.booking_code, customer: "MyTento customer", phone: "Shared after accept", service: `${row.booking_type} booking`, detail: `${row.guests} guests`, date: row.event_date, time: row.event_time, area: row.city, amount: `₹${Number(row.total_amount).toLocaleString("en-IN")}`, status: statusMap[row.status] ?? "new" }; }); } });
+  useEffect(() => { if (liveBookings && liveBookings.length > 0) setBookings(liveBookings); }, [liveBookings]);
 
   const go = (next: Tab) => { setTab(next); setOpenId(null); window.scrollTo(0, 0); };
   const open = bookings.find((b) => b.id === openId) ?? null;
-  const update = (id: string, status: ProviderBooking["status"]) =>
-    setBookings((list) => list.map((b) => (b.id === id ? { ...b, status } : b)));
+  const update = async (id: string, status: ProviderBooking["status"]) => {
+    const statusMap: Record<ProviderBooking["status"], "pending" | "confirmed" | "team_assigned" | "setup_started" | "completed" | "declined"> = { new: "pending", confirmed: "confirmed", team: "team_assigned", setup: "setup_started", done: "completed", declined: "declined" };
+    const { error } = await supabase.from("bookings").update({ status: statusMap[status] }).eq("booking_code", id);
+    if (error) { toast.error("Booking status could not be updated"); return; }
+    setBookings((list) => list.map((booking) => booking.id === id ? { ...booking, status } : booking));
+    await queryClient.invalidateQueries({ queryKey: ["provider-bookings"] });
+    toast.success("Booking status updated");
+  };
 
   const nextStatus: Partial<Record<ProviderBooking["status"], { label: string; next: ProviderBooking["status"] }>> = {
     new: { label: "Accept booking", next: "confirmed" },
@@ -84,7 +97,7 @@ function ProviderPanel() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {open ? (
-          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) update(open.id, n.next); else setOpenId(null); }} onDecline={() => { update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
+          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) void update(open.id, n.next); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
           <Dashboard bookings={bookings} onOpen={(id) => setOpenId(id)} />
         ) : tab === "bookings" ? (

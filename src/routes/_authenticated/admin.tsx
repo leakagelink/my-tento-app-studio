@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, type ElementType } from "react";
+import { useEffect, useState, type ElementType } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   ArrowLeft, Bell, CalendarDays, Check, IndianRupee, Pencil, Save, ShieldCheck,
   Store, TentTree, TrendingUp, UserRound, Users as UsersIcon, X,
@@ -8,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { AdminCabControl, AdminRequirementCenter, type AdminExtraTab } from "@/components/client-requirement-panels";
 import { RoleGate } from "@/components/role-gate";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -26,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 type Tab = "overview" | "providers" | "bookings" | "users" | "payments" | "offers" | "cab" | AdminExtraTab;
 
 type AdminBooking = { id: string; customer: string; provider: string; service: string; date: string; amount: string; status: "confirmed" | "completed" | "pending" };
-type AdminProvider = { name: string; service: string; city: string; price: string; rating: string; verified: boolean; initials: string };
+type AdminProvider = { id?: string; name: string; service: string; city: string; price: string; rating: string; verified: boolean; initials: string };
 type AdminUser = { name: string; phone: string; city: string; bookings: number; initials: string };
 
 const initialProviders: AdminProvider[] = [
@@ -55,11 +58,14 @@ function AdminApp() {
 }
 
 function AdminPanel() {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("overview");
   const [providers, setProviders] = useState(initialProviders);
+  const { data: liveProviders } = useQuery({ queryKey: ["admin-providers"], queryFn: async () => { const { data, error } = await supabase.from("providers").select("id,business_name,description,city,rating,verified,provider_services(base_price)").order("created_at"); if (error) throw error; return (data ?? []).map((provider): AdminProvider => { const service = Array.isArray(provider.provider_services) ? provider.provider_services[0] : undefined; return { id: provider.id, name: provider.business_name, service: provider.description || "Event services", city: provider.city, price: String(service?.base_price ?? 0), rating: Number(provider.rating).toFixed(1), verified: provider.verified, initials: provider.business_name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() }; }); } });
+  useEffect(() => { if (liveProviders && liveProviders.length > 0) setProviders(liveProviders); }, [liveProviders]);
 
-  const toggle = (name: string) => setProviders((list) => list.map((p) => (p.name === name ? { ...p, verified: !p.verified } : p)));
-  const updateProvider = (name: string, next: AdminProvider) => setProviders((list) => list.map((p) => p.name === name ? next : p));
+  const toggle = async (name: string) => { const provider = providers.find((item) => item.name === name); if (!provider?.id) return; const { error } = await supabase.from("providers").update({ verified: !provider.verified }).eq("id", provider.id); if (error) { toast.error("Provider verification could not be updated"); return; } await queryClient.invalidateQueries({ queryKey: ["admin-providers"] }); toast.success("Provider verification updated"); };
+  const updateProvider = async (name: string, next: AdminProvider) => { const provider = providers.find((item) => item.name === name); if (!provider?.id) return; const providerId = provider.id; const { error } = await supabase.from("providers").update({ business_name: next.name, description: next.service, city: next.city }).eq("id", providerId); if (error) { toast.error("Provider could not be saved"); return; } setProviders((list) => list.map((item) => item.name === name ? { ...next, id: providerId } : item)); toast.success("Provider saved"); };
   const go = (next: Tab) => { setTab(next); window.scrollTo(0, 0); };
 
   return (
@@ -80,7 +86,7 @@ function AdminPanel() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {tab === "overview" && <Overview />}
-        {tab === "providers" && <Providers providers={providers} onToggle={toggle} onUpdate={updateProvider} />}
+         {tab === "providers" && <Providers providers={providers} onToggle={(name) => void toggle(name)} onUpdate={(name, provider) => void updateProvider(name, provider)} />}
         {tab === "bookings" && <Bookings />}
         {tab === "users" && <Users />}
         {tab === "payments" && <Payments />}
@@ -95,7 +101,7 @@ function AdminPanel() {
 function Overview() {
   return (
     <div className="animate-rise-in">
-      <div className="mb-6"><h1 className="text-2xl font-extrabold">Platform overview</h1><p className="mt-1 text-sm text-muted-foreground">Live mock data — Lucknow region, September 2026</p></div>
+       <div className="mb-6"><h1 className="text-2xl font-extrabold">Platform overview</h1><p className="mt-1 text-sm text-muted-foreground">Live MyTento operations overview</p></div>
       <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat icon={CalendarDays} label="Total bookings" value="1,284" tone="text-primary" sub="+124 this month" />
         <Stat icon={Store} label="Active providers" value="86" tone="text-accent" sub="12 pending verify" />
