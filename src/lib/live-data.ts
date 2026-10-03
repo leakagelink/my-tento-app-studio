@@ -12,16 +12,18 @@ export type LiveProvider = {
   phone: string;
 };
 
-export function useLiveProviders(city: string) {
+export function useLiveProviders(city: string, serviceName: string) {
   return useQuery({
-    queryKey: ["providers", city],
+    queryKey: ["providers", city, serviceName],
     queryFn: async (): Promise<LiveProvider[]> => {
       const { data, error } = await supabase
         .from("providers")
-        .select("id,business_name,description,phone,rating,distance_km,provider_services(base_price,details)")
+        .select("id,business_name,description,phone,rating,distance_km,provider_services!inner(base_price,details,active,services!inner(name))")
         .eq("city", city)
         .eq("active", true)
         .eq("verified", true)
+        .eq("provider_services.active", true)
+        .eq("provider_services.services.name", serviceName)
         .lte("distance_km", 10)
         .order("rating", { ascending: false });
       if (error) throw error;

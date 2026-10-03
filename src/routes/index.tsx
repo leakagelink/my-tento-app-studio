@@ -67,7 +67,7 @@ function Index() {
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
   const [bookingCode, setBookingCode] = useState("");
   const city = location.split(",")[0] ?? "Lucknow";
-  const { data: liveProviders = [] } = useLiveProviders(city);
+  const { data: liveProviders = [] } = useLiveProviders(city, service);
   const visibleProviders: LiveProvider[] = liveProviders;
   useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); }, []);
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
