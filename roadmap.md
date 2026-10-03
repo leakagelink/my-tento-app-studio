@@ -11,3 +11,4 @@
 - [x] Connect provider and admin controls to live data with role checks
 - [x] Remove mock operational records and use truthful empty states
 - [ ] Verify live account and booking flows end to end
+- [ ] Add live demo services and admin add/edit/delete controls

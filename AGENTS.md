@@ -12,3 +12,4 @@
 - Keep customer cab discovery in `src/components/client-requirement-panels.tsx` and source operational records from Lovable Cloud so customer, provider, and admin views stay consistent.
 - Render the shared MyTento brand mark through `BrandLogo` so customer, provider, and admin headers stay visually consistent.
 - Keep private business data behind authenticated cloud access and enforce admin/provider roles in the database, not browser state.
+- Model customer-bookable services as provider service listings linked to catalogue categories so pricing and availability have one live source.
