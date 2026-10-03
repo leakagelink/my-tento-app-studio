@@ -26,7 +26,7 @@ export function LanguageToggle() {
 const slides = [
   { img: homeBanner, title: "Plan your dream event", text: "Tent, decoration, catering and cabs — everything for your function in one app." },
   { img: serviceTent, title: "Verified local providers", text: "Compare prices, ratings, reviews and photos of trusted providers near you." },
-  { img: serviceDecoration, title: "Book & pay your way", text: "Pay online, advance or cash. Get confirmation on WhatsApp, SMS and app." },
+  { img: serviceDecoration, title: "Save every booking", text: "Send a booking request and follow its latest status inside MyTento." },
 ];
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const [splash, setSplash] = useState(true);

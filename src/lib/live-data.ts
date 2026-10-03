@@ -54,7 +54,10 @@ export async function createLiveBooking(input: {
   bookingType: string;
   guests: number;
   totalAmount: number;
-  paymentMethod: "cash" | "advance" | "razorpay";
+  paymentMethod: "cash";
+  eventDate: string;
+  eventTime: string;
+  city: string;
 }) {
   const user = await getCurrentUser();
   if (!user) throw new Error("SIGN_IN_REQUIRED");
@@ -62,21 +65,21 @@ export async function createLiveBooking(input: {
     customer_id: user.id,
     provider_id: input.providerId,
     booking_type: input.bookingType,
-    event_date: "2026-12-25",
-    event_time: "18:00",
-    city: "Lucknow",
+    event_date: input.eventDate,
+    event_time: input.eventTime,
+    city: input.city,
     guests: input.guests,
     subtotal: input.totalAmount,
     total_amount: input.totalAmount,
     details: { source: "customer_app" },
   }).select("id,booking_code").single();
   if (error) throw error;
-  const amount = input.paymentMethod === "advance" ? Math.round(input.totalAmount * 0.2) : input.totalAmount;
   const { error: paymentError } = await supabase.from("payments").insert({
     booking_id: booking.id,
     customer_id: user.id,
     method: input.paymentMethod,
-    amount,
+    amount: input.totalAmount,
+    status: "pending",
   });
   if (paymentError) throw paymentError;
   return booking;
