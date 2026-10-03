@@ -13,8 +13,8 @@ import packageBasic from "@/assets/package-basic.webp";
 /* ---------- Language ---------- */
 export type Lang = "en" | "hi";
 const dict = {
-  en: { home: "Home", tent: "Tent", decoration: "Decoration", catering: "Catering", cab: "Cab", greeting: "Good morning", hello: "Hello, Dheeraj!", services: "Our services", servicesSub: "Premium Event Planning", trending: "Trending", topRated: "Top rated", combo: "Marriage Combo", comboSub: "Tent + Decoration + Catering in one package", profile: "Profile", language: "Language", viewAll: "View all", offer: "Special offer", offerTitle: "Wedding Season Spectacular Deals", offerSub: "Get up to 20% off on your first booking", explore: "Explore now" },
-  hi: { home: "होम", tent: "टेंट", decoration: "सजावट", catering: "केटरिंग", cab: "कैब", greeting: "सुप्रभात", hello: "नमस्ते, धीरज!", services: "हमारी सेवाएँ", servicesSub: "प्रीमियम इवेंट प्लानिंग", trending: "ट्रेंडिंग", topRated: "टॉप रेटेड", combo: "शादी कॉम्बो", comboSub: "टेंट + सजावट + केटरिंग एक ही पैकेज में", profile: "प्रोफ़ाइल", language: "भाषा", viewAll: "सभी देखें", offer: "खास ऑफ़र", offerTitle: "शादी सीज़न के शानदार ऑफ़र", offerSub: "पहली बुकिंग पर 20% तक की छूट", explore: "अभी देखें" },
+  en: { home: "Home", tent: "Tent", decoration: "Decoration", catering: "Catering", cab: "Cab", greeting: "Good morning", hello: "Welcome to MyTento", services: "Our services", servicesSub: "Premium Event Planning", trending: "Trending", topRated: "Top rated", combo: "Marriage Combo", comboSub: "Tent + Decoration + Catering in one package", profile: "Profile", language: "Language", viewAll: "View all", offer: "Special offer", offerTitle: "Wedding Season Spectacular Deals", offerSub: "See active offers while booking", explore: "Explore now" },
+  hi: { home: "होम", tent: "टेंट", decoration: "सजावट", catering: "केटरिंग", cab: "कैब", greeting: "सुप्रभात", hello: "MyTento में आपका स्वागत है", services: "हमारी सेवाएँ", servicesSub: "प्रीमियम इवेंट प्लानिंग", trending: "ट्रेंडिंग", topRated: "टॉप रेटेड", combo: "शादी कॉम्बो", comboSub: "टेंट + सजावट + केटरिंग एक ही पैकेज में", profile: "प्रोफ़ाइल", language: "भाषा", viewAll: "सभी देखें", offer: "खास ऑफ़र", offerTitle: "शादी सीज़न के शानदार ऑफ़र", offerSub: "बुकिंग के समय सक्रिय ऑफ़र देखें", explore: "अभी देखें" },
 } as const;
 export type TKey = keyof (typeof dict)["en"];
 export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "en", setLang: () => {} });
@@ -48,46 +48,25 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 }
 
 /* ---------- Marriage Combo ---------- */
-export const combos = [
-  { name: "Silver Combo", price: 45000, was: 52000, img: packageBasic, items: ["Standard tent for 200 guests", "Stage + entry gate decoration", "Veg buffet with 12 items"] },
-  { name: "Gold Combo", price: 75000, was: 88000, img: packageStandard, items: ["Royal shamiyana for 400 guests", "Mandap, haldi & birthday stage", "Full catering + serving staff", "DJ + RGB night lights"] },
-  { name: "Platinum Combo", price: 120000, was: 142000, img: packagePremium, items: ["Luxury tent for 700 guests", "Premium floral theme decoration", "Multi-cuisine catering + counters", "DJ, LED screen & photography", "Branded mineral water"] },
-];
 export function ComboScreen({ onContinue }: { onContinue: (name: string, price: number) => void }) {
-  const [sel, setSel] = useState(1);
-  const [date, setDate] = useState("2026-12-25");
-  const [guests, setGuests] = useState(400);
-  const c = combos[sel] ?? combos[1]!;
-  return <div className="animate-rise-in pb-24">
-    <div className="relative mb-5 overflow-hidden rounded-[24px] text-primary-foreground"><img src={homeBanner} alt="Wedding combo" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-r from-primary/95 to-primary/40" /><div className="relative p-5"><span className="rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase text-accent-foreground">Save up to 15%</span><h1 className="mt-3 font-display text-2xl font-extrabold">Marriage Combo</h1><p className="mt-1 text-xs text-primary-foreground/80">Tent + Decoration + Catering — one booking, one provider team</p><div className="mt-3 flex gap-2">{[TentTree, Sparkles, UtensilsCrossed].map((I, n) => <span key={n} className="grid size-9 place-items-center rounded-full bg-card/20"><I className="size-4" /></span>)}</div></div></div>
-    <div className="mb-5 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2"><label className="min-w-0 rounded-lg border border-border p-3"><span className="text-[10px] font-bold uppercase text-muted-foreground">Event date</span><input aria-label="Combo date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full min-w-0 bg-transparent text-sm font-bold outline-none" /></label><div className="rounded-lg border border-border p-3"><span className="text-[10px] font-bold uppercase text-muted-foreground">Guests · steps of 20</span><div className="mt-1 flex items-center justify-between"><Button size="icon" variant="ghost" aria-label="Fewer guests" onClick={() => setGuests(Math.max(20, guests - 20))}>−</Button><span className="text-sm font-bold">{guests}</span><Button size="icon" variant="ghost" aria-label="More guests" onClick={() => setGuests(guests + 20)}>+</Button></div></div></div>
-    <div className="space-y-3">{combos.map((x, n) => <button key={x.name} onClick={() => setSel(n)} className={`w-full overflow-hidden rounded-[20px] border bg-card text-left transition ${sel === n ? "border-primary ring-2 ring-primary/20" : "border-border"}`}><div className="flex gap-3 p-3"><img src={x.img} alt={x.name} loading="lazy" className="size-20 rounded-xl object-cover" /><div className="flex-1"><div className="flex items-center justify-between"><p className="font-extrabold text-primary">{x.name}</p>{sel === n && <Check className="size-5 text-success" />}</div><p className="text-xs text-muted-foreground line-through">₹{x.was.toLocaleString("en-IN")}</p><p className="font-display text-lg font-extrabold">₹{x.price.toLocaleString("en-IN")}</p></div></div><ul className="space-y-1 border-t border-border px-4 py-3">{x.items.map((it) => <li key={it} className="flex items-center gap-2 text-xs"><Check className="size-3.5 text-success" />{it}</li>)}</ul></button>)}</div>
-    <div className="above-bottom-nav sticky z-20 border-t border-border bg-card px-3 py-3 min-[360px]:px-4"><div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 min-[360px]:gap-3"><div className="min-w-0 flex-1"><p className="truncate text-[10px] font-bold uppercase text-muted-foreground">{c.name} · {guests} guests</p><p className="truncate font-display text-lg font-extrabold text-primary min-[360px]:text-xl">₹{c.price.toLocaleString("en-IN")}</p></div><Button className="shrink-0 px-3 min-[360px]:px-4" onClick={() => onContinue(c.name, c.price)}>Book combo <ChevronRight className="size-4" /></Button></div></div>
-  </div>;
+  void onContinue;
+  return <div className="animate-rise-in"><h1 className="text-2xl font-extrabold">Marriage Combo</h1><p className="mt-1 text-sm text-muted-foreground">Live combo packages</p><p className="mt-5 rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No combo packages are available right now.</p></div>;
 }
 
 /* ---------- Provider detail: gallery, dates, reviews ---------- */
-export const reviews = [
-  { name: "Anita Verma", rating: 5, date: "12 Nov 2026", text: "Tent aur stage bahut sundar tha. Team time par aayi aur setup perfect kiya." },
-  { name: "Sandeep Yadav", rating: 5, date: "18 Oct 2026", text: "Catering staff very polite, food quality excellent. Highly recommended!" },
-  { name: "Priya Singh", rating: 4, date: "02 Oct 2026", text: "Decoration was beautiful, lights thodi der se lagi but overall great experience." },
-  { name: "Rahul Mishra", rating: 5, date: "21 Sep 2026", text: "Best price in Lucknow for full wedding setup. Will book again." },
-];
-type Prov = { name: string; detail: string; price: string; rating: string; initials: string };
+type Prov = { id?: string; name: string; detail: string; price: string; rating: string; initials: string; phone?: string };
 const gallery = [serviceTent, serviceDecoration, serviceCatering, packagePremium, packageStandard, homeBanner];
-const booked = [3, 7, 8, 14, 20, 25, 26];
 export function ProviderDetailFull({ provider, onBook, onReviews }: { provider: Prov; onBook: () => void; onReviews: () => void }) {
   const [photo, setPhoto] = useState<string | null>(null);
   const [day, setDay] = useState<number | null>(null);
   return <div className="mx-auto max-w-2xl animate-rise-in pb-4">
-    <div className="mb-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 min-[360px]:gap-4"><span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-brand-soft font-display text-xl font-bold text-primary min-[360px]:size-20">{provider.initials}</span><div className="min-w-0"><h1 className="break-words text-xl font-extrabold min-[360px]:text-2xl">{provider.name}</h1><p className="mt-1 flex flex-wrap items-center gap-1 text-sm text-muted-foreground"><Star className="size-4 shrink-0 fill-accent text-accent" /> {provider.rating} (128 reviews) · Verified</p><p className="break-words text-xs text-muted-foreground">Gomti Nagar, Lucknow · +91 94150 12345</p></div></div>
+    <div className="mb-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 min-[360px]:gap-4"><span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-brand-soft font-display text-xl font-bold text-primary min-[360px]:size-20">{provider.initials}</span><div className="min-w-0"><h1 className="break-words text-xl font-extrabold min-[360px]:text-2xl">{provider.name}</h1><p className="mt-1 flex flex-wrap items-center gap-1 text-sm text-muted-foreground"><Star className="size-4 shrink-0 fill-accent text-accent" /> {provider.rating} · Verified</p>{provider.phone && <p className="break-words text-xs text-muted-foreground">{provider.phone}</p>}</div></div>
     <h2 className="mb-2 font-bold">Service gallery</h2>
     <div className="grid grid-cols-3 gap-2">{gallery.map((g, n) => <button key={n} onClick={() => setPhoto(g)} aria-label={`Open photo ${n + 1}`} className="overflow-hidden rounded-xl"><img src={g} alt={`Work ${n + 1}`} loading="lazy" className="aspect-square w-full object-cover transition hover:scale-105" /></button>)}</div>
     {photo && <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/80 p-4" onClick={() => setPhoto(null)}><img src={photo} alt="Gallery" className="max-h-[80vh] rounded-2xl" /><Button size="icon" variant="secondary" aria-label="Close photo" className="absolute right-4 top-4 rounded-full"><X /></Button></div>}
-    <h2 className="mb-2 mt-6 flex items-center gap-2 font-bold"><CalendarDays className="size-4 text-primary" /> Available dates · December 2026</h2>
-    <div className="rounded-lg border border-border bg-card p-2 min-[360px]:p-3"><div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-muted-foreground">{["M", "T", "W", "T", "F", "S", "S"].map((d, n) => <span key={n}>{d}</span>)}</div><div className="mt-1 grid grid-cols-7 gap-1">{Array.from({ length: 31 }, (_, n) => n + 1).map((d) => { const b = booked.includes(d); return <button key={d} disabled={b} onClick={() => setDay(d)} className={`aspect-square min-w-0 rounded-md text-xs font-bold ${b ? "bg-muted text-muted-foreground line-through" : day === d ? "bg-primary text-primary-foreground" : "bg-brand-soft text-primary"}`}>{d}</button>; })}</div><div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-muted-foreground"><span className="flex items-center gap-1"><span className="size-2.5 rounded bg-brand-soft" /> Available</span><span className="flex items-center gap-1"><span className="size-2.5 rounded bg-muted" /> Booked</span>{day && <span className="font-bold text-primary">Selected: {day} Dec</span>}</div></div>
+    <h2 className="mb-2 mt-6 flex items-center gap-2 font-bold"><CalendarDays className="size-4 text-primary" /> Availability</h2><p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No availability dates have been published by this provider.</p>
     <div className="mb-2 mt-6 flex items-center justify-between"><h2 className="font-bold">Ratings & reviews</h2><Button variant="ghost" size="sm" onClick={onReviews}>See all <ChevronRight className="size-4" /></Button></div>
-    <ReviewCard r={reviews[0]!} />
+    <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">Reviews appear after completed customer bookings.</p>
     <div className="mt-4 space-y-2 rounded-lg border border-border bg-card p-4 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Capacity</span><b>{provider.detail}</b></div><div className="flex justify-between"><span className="text-muted-foreground">Starting price</span><b className="text-primary">{provider.price}</b></div></div>
     <div className="mt-4 flex gap-2 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" />Identity and service details verified by My Tento.</div>
     <Button onClick={onBook} className="mt-4 w-full" size="lg">Book this provider</Button>
@@ -97,34 +76,15 @@ function Stars({ n }: { n: number }) { return <span className="flex">{Array.from
 function ReviewCard({ r }: { r: (typeof reviews)[number] }) { return <div className="rounded-lg border border-border bg-card p-4"><div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-full bg-brand-soft text-xs font-bold text-primary">{r.name.split(" ").map((w) => w[0]).join("")}</span><div className="flex-1"><p className="text-sm font-bold">{r.name}</p><p className="text-[10px] text-muted-foreground">{r.date}</p></div><Stars n={r.rating} /></div><p className="mt-2 text-sm leading-6 text-muted-foreground">{r.text}</p></div>; }
 
 export function ReviewsScreen({ provider }: { provider: Prov }) {
-  const [list, setList] = useState(reviews);
-  const [text, setText] = useState("");
-  const [rate, setRate] = useState(5);
-  const bars = [5, 4, 3, 2, 1].map((s) => [s, s === 5 ? 78 : s === 4 ? 16 : s === 3 ? 4 : 1] as const);
-  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Reviews</h1><p className="mb-5 text-sm text-muted-foreground">{provider.name}</p>
-    <div className="flex items-center gap-5 rounded-lg border border-border bg-card p-4"><div className="text-center"><p className="font-display text-4xl font-extrabold text-primary">{provider.rating}</p><Stars n={5} /><p className="mt-1 text-[10px] text-muted-foreground">{120 + list.length} reviews</p></div><div className="flex-1 space-y-1">{bars.map(([s, p]) => <div key={s} className="flex items-center gap-2 text-[10px]"><span className="w-2">{s}</span><div className="h-1.5 flex-1 rounded-full bg-secondary"><div className="h-full rounded-full bg-accent" style={{ width: `${p}%` }} /></div></div>)}</div></div>
-    <div className="mt-4 rounded-lg border border-border bg-card p-4"><p className="text-sm font-bold">Write a review</p><div className="mt-2 flex gap-1">{[1, 2, 3, 4, 5].map((s) => <button key={s} aria-label={`${s} stars`} onClick={() => setRate(s)}><Star className={`size-6 ${s <= rate ? "fill-accent text-accent" : "text-border"}`} /></button>)}</div><textarea aria-label="Review text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Share your experience..." className="mt-2 w-full rounded-md border border-border bg-background p-3 text-sm outline-none focus:border-primary" rows={3} /><Button className="mt-2 w-full" disabled={!text.trim()} onClick={() => { setList([{ name: "Dheeraj Tagde", rating: rate, date: "Today", text }, ...list]); setText(""); }}>Post review</Button></div>
-    <div className="mt-4 space-y-3">{list.map((r, n) => <ReviewCard key={n} r={r} />)}</div>
-  </div>;
+  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Reviews</h1><p className="mb-5 text-sm text-muted-foreground">{provider.name}</p><p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No verified reviews yet.</p></div>;
 }
 
 /* ---------- Coupons ---------- */
-export const coupons = [
-  { code: "MYTENTO20", pct: 20, max: 5000, text: "20% off up to ₹5,000 on first booking" },
-  { code: "WEDDING10", pct: 10, max: 10000, text: "10% off up to ₹10,000 on wedding combos" },
-  { code: "FESTIVE500", pct: 0, flat: 500, max: 500, text: "Flat ₹500 off on any booking" },
-];
 export function discountFor(code: string | null, amount: number) {
-  const c = coupons.find((x) => x.code === code); if (!c) return 0;
-  return c.flat ?? Math.min(Math.round((amount * c.pct) / 100), c.max);
+  void code; void amount; return 0;
 }
 export function CouponBox({ applied, setApplied }: { applied: string | null; setApplied: (c: string | null) => void }) {
-  const [code, setCode] = useState("");
-  const [err, setErr] = useState("");
-  const [open, setOpen] = useState(false);
-  const apply = (c: string) => { const u = c.trim().toUpperCase(); if (coupons.some((x) => x.code === u)) { setApplied(u); setErr(""); setOpen(false); } else setErr("Invalid coupon code"); };
-  if (applied) return <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4 min-[360px]:grid-cols-[auto_minmax(0,1fr)_auto]"><Tag className="size-5 text-success" /><div className="min-w-0"><p className="text-sm font-bold text-success">{applied} applied</p><p className="break-words text-xs text-muted-foreground">{coupons.find((x) => x.code === applied)?.text}</p></div><Button size="sm" variant="ghost" onClick={() => setApplied(null)} className="col-span-2 w-full min-[360px]:col-span-1 min-[360px]:w-auto">Remove</Button></div>;
-  return <div className="mt-4 rounded-lg border border-border bg-card p-4"><p className="mb-2 flex items-center gap-2 text-sm font-bold"><Tag className="size-4 text-accent" /> Apply coupon</p><div className="grid gap-2 min-[360px]:grid-cols-[minmax(0,1fr)_auto]"><input aria-label="Coupon code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Enter code e.g. MYTENTO20" className="min-w-0 rounded-md border border-border bg-background px-3 py-2 text-sm uppercase outline-none focus:border-primary" /><Button onClick={() => apply(code)}>Apply</Button></div>{err && <p className="mt-2 text-xs font-semibold text-destructive">{err}</p>}<Button variant="link" size="sm" className="mt-1 px-0" onClick={() => setOpen(!open)}>{open ? "Hide offers" : "View available offers"}</Button>{open && <div className="space-y-2">{coupons.map((c) => <div key={c.code} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-dashed border-accent/60 bg-warm-soft p-3"><div className="min-w-0"><p className="text-sm font-extrabold text-accent">{c.code}</p><p className="break-words text-xs text-muted-foreground">{c.text}</p></div><Button size="sm" variant="outline" onClick={() => apply(c.code)}>Apply</Button></div>)}</div>}</div>;
+  void applied; void setApplied; return null;
 }
 
 /* ---------- Live tracking ---------- */
@@ -136,14 +96,5 @@ const stages = [
   { icon: PartyPopper, title: "Ready for event", sub: "Enjoy your celebration!" },
 ];
 export function BookingTracker() {
-  const [done, setDone] = useState(2);
-  const pct = Math.round(((done - 1) / (stages.length - 1)) * 100);
-  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Booking details</h1><p className="mb-5 text-sm text-muted-foreground">MT-261225-48</p>
-    <div className="rounded-lg border border-border bg-card p-5"><span className="rounded-full bg-success/15 px-2.5 py-1 text-[10px] font-bold uppercase text-success">{stages[done - 1]?.title}</span><h2 className="mt-3 text-xl font-bold">Royal Tent House</h2><p className="text-sm text-muted-foreground">25 Dec 2026 · 6:00 PM · Gomti Nagar</p>
-      <div className="mt-5"><div className="mb-1 flex justify-between text-xs font-bold"><span>Live progress</span><span className="text-primary">{pct}%</span></div><div className="h-2.5 overflow-hidden rounded-full bg-secondary"><div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-700" style={{ width: `${pct}%` }} /></div></div>
-      <div className="mt-6 space-y-0">{stages.map((s, n) => { const ok = n < done; const cur = n === done - 1; const I = s.icon; return <div key={s.title} className="flex gap-3"><div className="flex flex-col items-center"><span className={`grid size-9 place-items-center rounded-full ${ok ? "bg-success text-primary-foreground" : "bg-secondary text-muted-foreground"} ${cur ? "ring-4 ring-success/25" : ""}`}><I className="size-4" /></span>{n < stages.length - 1 && <span className={`h-8 w-0.5 ${n < done - 1 ? "bg-success" : "bg-border"}`} />}</div><div className="pt-1.5"><p className={`text-sm font-bold ${ok ? "" : "text-muted-foreground"}`}>{s.title}</p><p className="text-xs text-muted-foreground">{ok ? s.sub : "Pending"}</p></div></div>; })}</div>
-      <Button variant="outline" className="mt-5 w-full" disabled={done === stages.length} onClick={() => setDone(done + 1)}>{done === stages.length ? "Event ready ✓" : "Simulate next update (demo)"}</Button>
-      <Button asChild className="mt-2 w-full"><a href="tel:+919415012345">Call provider · +91 94150 12345</a></Button>
-    </div>
-  </div>;
+  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Booking details</h1><p className="mt-5 rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Open a saved booking to view its current status.</p></div>;
 }
