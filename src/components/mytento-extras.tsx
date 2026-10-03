@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Languages, ShieldCheck, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import myTentoLogo from "@/assets/mytento-logo.png";
+import myTentoLogo from "@/assets/mytento-logo.webp";
 import homeBanner from "@/assets/home-banner.webp";
 import serviceTent from "@/assets/service-tent.webp";
 import serviceDecoration from "@/assets/service-decoration.webp";
