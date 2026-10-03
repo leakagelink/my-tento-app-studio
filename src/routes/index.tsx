@@ -67,7 +67,7 @@ function Index() {
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
   const [bookingCode, setBookingCode] = useState("");
   const city = location.split(",")[0] ?? "Lucknow";
-  const { data: liveProviders = [] } = useLiveProviders(city, service);
+  const { data: liveProviders = [], isLoading: providersLoading } = useLiveProviders(city, service);
   const visibleProviders: LiveProvider[] = liveProviders;
   useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); }, []);
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
@@ -108,7 +108,7 @@ function Index() {
          {step === "reviews" && chosenProvider && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
         {step === "details" && service === "Cab" && <ClientCabScreen />}
-         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} city={city} onContinue={() => go("providers")} />}
+         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} city={city} providers={visibleProviders} loading={providersLoading} onContinue={() => go("providers")} />}
          {step === "providers" && <ProvidersScreen providers={visibleProviders} selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
          {step === "providerDetail" && chosenProvider && <ProviderDetailFull provider={chosenProvider} onBook={() => go("details")} onReviews={() => go("reviews")} />}
           {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} eventDate={eventDate} eventTime={eventTime} city={city} onConfirm={(code) => { setBookingCode(code); go("success"); }} />}
@@ -216,7 +216,7 @@ function ProfileScreen({ userId, email }: { userId: string | undefined; email: s
 
 function NotificationsScreen({ userId, onBooking }: { userId: string | undefined; onBooking: () => void }) { const queryClient = useQueryClient(); const { data = [], isLoading } = useQuery({ queryKey: ["notifications", userId], enabled: Boolean(userId), queryFn: async () => { const { data, error } = await supabase.from("notifications").select("id,title,message,read_at,created_at").eq("user_id", userId ?? "").order("created_at", { ascending: false }); if (error) throw error; return data ?? []; } }); const markRead = async () => { if (!userId) return; const { error } = await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId).is("read_at", null); if (error) { toast.error("Notifications could not be updated"); return; } await queryClient.invalidateQueries({ queryKey: ["notifications", userId] }); }; return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and account updates" />{data.some((item) => !item.read_at) && <Button variant="ghost" size="sm" onClick={() => void markRead()}>Mark all read</Button>}</div>{!userId ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Sign in to view notifications.</p> : isLoading ? <p className="text-sm text-muted-foreground">Loading notifications…</p> : data.length === 0 ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No notifications yet.</p> : <div className="space-y-3">{data.map((item) => <Button key={item.id} variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${item.read_at ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">{item.title}</span><span className="text-xs font-normal text-muted-foreground">{item.message}</span></span></Button>)}</div>}</div>; }
 
-function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; onContinue: () => void }) {
+function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, providers, loading, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; providers: LiveProvider[]; loading: boolean; onContinue: () => void }) {
   return <div className="animate-rise-in pb-24">
     <section className="relative h-56 overflow-hidden bg-primary">
       <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
@@ -237,9 +237,15 @@ function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, ev
           <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><Clock3 className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Time</span><input aria-label="Start time" type="time" value={eventTime} onChange={(event) => setEventTime(event.target.value)} className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
           <div className="col-span-2 flex items-center justify-between rounded-lg border border-border bg-muted p-3"><div><p className="text-[10px] font-bold uppercase text-muted-foreground">Number of guests · steps of 20</p><p className="text-sm font-bold">{guests} guests</p></div><div className="flex items-center gap-2"><Button variant="outline" size="icon" aria-label="Remove 20 guests" onClick={() => setGuests(Math.max(20, guests - 20))} className="size-8 min-h-8"><Minus className="size-4" /></Button><Button size="icon" aria-label="Add 20 guests" onClick={() => setGuests(guests + 20)} className="size-8 min-h-8"><Plus className="size-4" /></Button></div></div>
         </div>
-        <p className="mt-3 rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">Provider availability is shown after you choose a provider.</p>
       </section>
 
+      <section className="mt-6">
+        <SectionHeading number="2" title={`Available ${service} providers`} subtitle={`Verified · within 10 km of ${city}`} />
+        <div className="mt-4 space-y-3">
+          {loading ? <p className="text-sm text-muted-foreground">Loading providers…</p> : providers.length === 0 ? <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No {service.toLowerCase()} providers available in {city} yet. Try Lucknow, or add one from the admin panel.</p> : providers.map((item) => <div key={item.id} className="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-card p-3"><span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary">{item.initials}</span><div className="min-w-0 flex-1"><p className="truncate font-bold">{item.name}</p><p className="flex items-center gap-1 text-xs text-muted-foreground"><Star className="size-3 shrink-0 fill-accent text-accent" /> {item.rating} · {item.distance} km</p><p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.detail}</p></div><p className="shrink-0 font-display font-bold text-primary">{item.price}</p></div>)}
+        </div>
+        {providers.length > 0 && <p className="mt-3 text-xs text-muted-foreground">Choose date and time above, then tap “Choose provider” to book.</p>}
+      </section>
     </div>
 
     <div className="above-bottom-nav sticky z-20 border-t border-border bg-card/95 px-3 py-3 backdrop-blur min-[360px]:px-4">
