@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   ArrowLeft, Bell, CalendarDays, Car, Check, ChevronDown, ChevronRight, Clock3, Headphones, Home,
-  MapPin, Minus, Plus, Search, Settings, ShieldCheck, Sparkles,
+  MapPin, Minus, Navigation, Plus, Search, Settings, ShieldCheck, Sparkles,
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
