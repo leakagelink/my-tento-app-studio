@@ -116,7 +116,7 @@ function Index() {
       </header>
 
       <main className={step === "details" ? "app-bottom-space min-w-0" : step === "combo" ? "app-bottom-space min-w-0 px-3 pt-4 min-[360px]:px-4" : "app-bottom-space min-w-0 px-3 pt-5 min-[360px]:px-4 min-[360px]:pt-6"}>
-         {step === "home" && <HomeScreen providers={visibleProviders} onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={setLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} onCombo={() => go("combo")} />}
+         {step === "home" && <HomeScreen providers={visibleProviders} onBook={beginBooking} location={location} locationOpen={locationOpen} setLocationOpen={setLocationOpen} setLocation={chooseLocation} onDetect={detectLocation} onServices={() => go("services")} onProviders={() => go("providers")} onProvider={(i) => { setProvider(i); go("providerDetail"); }} onCombo={() => go("combo")} />}
         {step === "combo" && <ComboScreen onContinue={(name, price) => { setCombo({ name, price }); go("payment"); }} />}
          {step === "reviews" && chosenProvider && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
