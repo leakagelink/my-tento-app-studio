@@ -69,7 +69,20 @@ function Index() {
   const city = location.split(",")[0] ?? "Lucknow";
   const { data: liveProviders = [], isLoading: providersLoading } = useLiveProviders(city, service);
   const visibleProviders: LiveProvider[] = liveProviders;
-  useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); }, []);
+  useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); const saved = localStorage.getItem("mt-location"); if (saved) setLocation(saved); else detectLocation(); }, []);
+  const chooseLocation = (value: string) => { setLocation(value); localStorage.setItem("mt-location", value); };
+  const detectLocation = () => {
+    if (!("geolocation" in navigator)) { toast.error("Location is not supported on this device"); return; }
+    setLocation("Detecting location…");
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      try {
+        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=en`);
+        const d = await res.json() as { city?: string; locality?: string; principalSubdivision?: string };
+        const name = d.city || d.locality;
+        chooseLocation(name ? `${name}${d.principalSubdivision ? `, ${d.principalSubdivision}` : ""}` : "Lucknow, Uttar Pradesh");
+      } catch { chooseLocation("Lucknow, Uttar Pradesh"); }
+    }, () => { setLocation(localStorage.getItem("mt-location") ?? "Lucknow, Uttar Pradesh"); toast.error("Location permission denied — choose your city manually"); }, { timeout: 10000, maximumAge: 600000 });
+  };
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
   const chosenProvider = visibleProviders[provider] ?? visibleProviders[0];
 
@@ -133,14 +146,14 @@ function Index() {
   );
 }
 
-function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
+function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onDetect, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onDetect: () => void; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
   const t = useT();
   const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 group-active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/25 to-transparent" />{badge && <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[9px] font-bold uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-4 left-4 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
   return <div className="animate-rise-in">
     <section className="relative mb-6">
       <div className="relative">
         <button type="button" onClick={() => setLocationOpen(!locationOpen)} className="flex max-w-full items-center gap-1.5 text-muted-foreground"><MapPin className="size-3.5 shrink-0 text-primary" /><span className="min-w-0 truncate text-xs font-medium uppercase tracking-wide">{location}</span><ChevronDown className="size-3 shrink-0" /></button>
-        {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-popover p-2 shadow-lg">{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
+        {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-popover p-2 shadow-lg"><Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
       </div>
       <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("greeting")}</p>
        <h1 className="mt-1 font-display text-2xl font-semibold text-foreground">{t("hello")}</h1>
