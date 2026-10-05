@@ -49,6 +49,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          assigned_team_member_id: string | null
           booking_code: string
           booking_type: string
           city: string
@@ -71,6 +72,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_team_member_id?: string | null
           booking_code?: string
           booking_type: string
           city?: string
@@ -93,6 +95,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_team_member_id?: string | null
           booking_code?: string
           booking_type?: string
           city?: string
@@ -115,6 +118,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_assigned_team_member_id_fkey"
+            columns: ["assigned_team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_provider_id_fkey"
             columns: ["provider_id"]
@@ -530,6 +540,44 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          provider_id: string
+          role: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string
+          provider_id: string
+          role?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          provider_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -597,6 +645,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_booking_customer_contact: {
+        Args: { _booking_code: string }
+        Returns: {
+          full_name: string
+          phone: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
