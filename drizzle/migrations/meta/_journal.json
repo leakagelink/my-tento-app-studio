@@ -43,6 +43,13 @@
       "when": 1790992441881,
       "tag": "0005_separate_public_catalogue_read_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791208819651,
+      "tag": "0006_provider_self_registration",
+      "breakpoints": true
     }
   ]
 }
