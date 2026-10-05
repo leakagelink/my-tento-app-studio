@@ -102,7 +102,7 @@ export function InventoryManager({ providerId }: { providerId: string }) {
   return <Card title="Equipment & items" sub="Chairs, lights, sound, gadgets with per-unit price" action={<Button size="sm" onClick={() => setEdit("new")}><Plus className="size-4" />Add</Button>}>
     {edit && <form onSubmit={(e) => void submit(e)} className="mb-3 grid gap-2 rounded-md bg-secondary p-3 sm:grid-cols-3">
       <label className="text-xs font-bold">Item name<input name="name" required defaultValue={edit !== "new" ? edit.name : ""} className={field} /></label>
-      <label className="text-xs font-bold">Category<input name="category" required defaultValue={edit !== "new" ? edit.category : ""} placeholder="Furniture, Lighting…" className={field} /></label>
+      <label className="text-xs font-bold">Category<select name="category" required defaultValue={edit !== "new" ? edit.category : "gadget"} className={field}><option value="tent">Tent</option><option value="gadget">Gadget / Equipment</option><option value="decoration">Decoration</option><option value="catering">Catering</option></select></label>
       <label className="text-xs font-bold">Price per unit (₹)<input name="price" type="number" min={0} required defaultValue={edit !== "new" ? edit.price : ""} className={field} /></label>
       <div className="flex gap-2 sm:col-span-3"><Button type="button" variant="outline" onClick={() => setEdit(null)} className="flex-1">Cancel</Button><Button type="submit" className="flex-1">Save</Button></div>
     </form>}
