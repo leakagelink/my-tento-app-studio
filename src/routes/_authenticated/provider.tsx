@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { RoleGate } from "@/components/role-gate";
 import { supabase } from "@/integrations/supabase/client";
+import { BookingExtras, BusinessEditor, CalendarEditor, InventoryManager, ReviewsList, ServicesManager, TeamManager, VehiclesManager } from "@/components/provider-manage";
 
 export const Route = createFileRoute("/_authenticated/provider")({
   head: () => ({
@@ -48,7 +49,7 @@ function ProviderPanel() {
   const [openId, setOpenId] = useState<string | null>(null);
   const { data: providerProfile } = useQuery({ queryKey: ["provider-profile"], queryFn: async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return null; const { data, error } = await supabase.from("providers").select("id,business_name,city,rating,verified").eq("owner_id", auth.user.id).maybeSingle(); if (error) throw error; return data; } });
   const { data: availability = [] } = useQuery({ queryKey: ["provider-availability", providerProfile?.id], enabled: Boolean(providerProfile?.id), queryFn: async () => { const { data, error } = await supabase.from("provider_availability").select("id,available_date,status").eq("provider_id", providerProfile?.id ?? "").order("available_date"); if (error) throw error; return data ?? []; } });
-  const { data: liveBookings } = useQuery({ queryKey: ["provider-bookings"], queryFn: async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return []; const { data: provider } = await supabase.from("providers").select("id").eq("owner_id", auth.user.id).maybeSingle(); if (!provider) return []; const { data, error } = await supabase.from("bookings").select("booking_code,booking_type,event_date,event_time,city,total_amount,status,guests").eq("provider_id", provider.id).order("created_at", { ascending: false }); if (error) throw error; return (data ?? []).map((row): ProviderBooking => { const statusMap: Record<string, ProviderBooking["status"]> = { pending: "new", confirmed: "confirmed", team_assigned: "team", setup_started: "setup", completed: "done", declined: "declined", cancelled: "declined" }; return { id: row.booking_code, customer: "MyTento customer", phone: "Shared after accept", service: `${row.booking_type} booking`, detail: `${row.guests} guests`, date: row.event_date, time: row.event_time, area: row.city, amount: `₹${Number(row.total_amount).toLocaleString("en-IN")}`, status: statusMap[row.status] ?? "new" }; }); } });
+  const { data: liveBookings } = useQuery({ queryKey: ["provider-bookings"], queryFn: async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return []; const { data: provider } = await supabase.from("providers").select("id").eq("owner_id", auth.user.id).maybeSingle(); if (!provider) return []; const { data, error } = await supabase.from("bookings").select("booking_code,booking_type,event_date,event_time,city,total_amount,status,guests").eq("provider_id", provider.id).order("created_at", { ascending: false }); if (error) throw error; return (data ?? []).map((row): ProviderBooking => { const statusMap: Record<string, ProviderBooking["status"]> = { pending: "new", confirmed: "confirmed", team_assigned: "team", setup_started: "setup", completed: "done", declined: "declined", cancelled: "declined" }; return { id: row.booking_code, customer: "Customer", phone: "Shared after accept", service: `${row.booking_type} booking`, detail: `${row.guests} guests`, date: row.event_date, time: row.event_time, area: row.city, amount: `₹${Number(row.total_amount).toLocaleString("en-IN")}`, status: statusMap[row.status] ?? "new" }; }); } });
   useEffect(() => { setBookings(liveBookings ?? []); }, [liveBookings]);
 
   const go = (next: Tab) => { setTab(next); setOpenId(null); window.scrollTo(0, 0); };
@@ -82,17 +83,17 @@ function ProviderPanel() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {open ? (
-          <BookingDetail booking={open} onNext={() => { const n = nextStatus[open.status]; if (n) void update(open.id, n.next); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
+          <BookingDetail booking={open} providerId={providerProfile?.id} onNext={() => { const n = nextStatus[open.status]; if (n) void update(open.id, n.next); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
           <Dashboard bookings={bookings} profile={providerProfile} onOpen={(id) => setOpenId(id)} />
         ) : tab === "bookings" ? (
           <Bookings bookings={bookings} onOpen={(id) => setOpenId(id)} />
         ) : tab === "calendar" ? (
-          <Calendar availability={availability} />
+          <Calendar availability={availability} providerId={providerProfile?.id} />
         ) : tab === "earnings" ? (
           <Earnings bookings={bookings} />
         ) : (
-          <ProviderProfile profile={providerProfile} />
+          <div><ProviderProfile profile={providerProfile} />{providerProfile && <><BusinessEditor providerId={providerProfile.id} /><ServicesManager providerId={providerProfile.id} /><InventoryManager providerId={providerProfile.id} /><VehiclesManager providerId={providerProfile.id} /><TeamManager providerId={providerProfile.id} /><ReviewsList providerId={providerProfile.id} /></>}</div>
         )}
       </main>
 
@@ -163,7 +164,7 @@ function RequestCard({ booking, onOpen }: { booking: ProviderBooking; onOpen: ()
   );
 }
 
-function BookingDetail({ booking, onNext, onDecline, onClose }: { booking: ProviderBooking; onNext: () => void; onDecline: () => void; onClose: () => void }) {
+function BookingDetail({ booking, providerId, onNext, onDecline, onClose }: { booking: ProviderBooking; providerId?: string | undefined; onNext: () => void; onDecline: () => void; onClose: () => void }) {
   const action = { new: { label: "Accept booking", next: "CONFIRMED" }, confirmed: { label: "Assign team", next: "TEAM ASSIGNED" }, team: { label: "Start setup", next: "SETUP STARTED" }, setup: { label: "Mark completed", next: "COMPLETED" } }[booking.status as "new" | "confirmed" | "team" | "setup"];
   const stages: ProviderBooking["status"][] = ["confirmed", "team", "setup", "done"];
   return (
@@ -177,7 +178,7 @@ function BookingDetail({ booking, onNext, onDecline, onClose }: { booking: Provi
         <Summary label="Customer" value={booking.customer} />
         <Summary label="Requirements" value={booking.detail} />
         <Summary label="Package amount" value={booking.amount} strong />
-        <div className="mt-4 flex items-center gap-3 rounded-lg bg-secondary p-3"><Phone className="size-4 text-primary" /><span className="text-sm font-semibold">{booking.phone}</span></div>
+        {providerId ? <BookingExtras bookingCode={booking.id} providerId={providerId} status={booking.status} /> : <div className="mt-4 flex items-center gap-3 rounded-lg bg-secondary p-3"><Phone className="size-4 text-primary" /><span className="text-sm font-semibold">{booking.phone}</span></div>}
         {booking.status !== "new" && (
           <div className="mt-5">
             <h3 className="font-bold">Job progress</h3>
@@ -195,7 +196,8 @@ function BookingDetail({ booking, onNext, onDecline, onClose }: { booking: Provi
   );
 }
 
-function Calendar({ availability }: { availability: { id: string; available_date: string; status: string }[] }) {
+function Calendar({ availability, providerId }: { availability: { id: string; available_date: string; status: string }[]; providerId?: string | undefined }) {
+  if (providerId) return <div className="animate-rise-in"><PageTitle title="Availability calendar" subtitle="Mark dates available or already booked" /><CalendarEditor providerId={providerId} availability={availability} /></div>;
   return (
     <div className="animate-rise-in">
       <PageTitle title="Availability calendar" subtitle="Published availability for your business" />
