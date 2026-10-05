@@ -164,7 +164,7 @@ function RequestCard({ booking, onOpen }: { booking: ProviderBooking; onOpen: ()
   );
 }
 
-function BookingDetail({ booking, providerId, onNext, onDecline, onClose }: { booking: ProviderBooking; providerId?: string; onNext: () => void; onDecline: () => void; onClose: () => void }) {
+function BookingDetail({ booking, providerId, onNext, onDecline, onClose }: { booking: ProviderBooking; providerId?: string | undefined; onNext: () => void; onDecline: () => void; onClose: () => void }) {
   const action = { new: { label: "Accept booking", next: "CONFIRMED" }, confirmed: { label: "Assign team", next: "TEAM ASSIGNED" }, team: { label: "Start setup", next: "SETUP STARTED" }, setup: { label: "Mark completed", next: "COMPLETED" } }[booking.status as "new" | "confirmed" | "team" | "setup"];
   const stages: ProviderBooking["status"][] = ["confirmed", "team", "setup", "done"];
   return (
@@ -196,7 +196,7 @@ function BookingDetail({ booking, providerId, onNext, onDecline, onClose }: { bo
   );
 }
 
-function Calendar({ availability, providerId }: { availability: { id: string; available_date: string; status: string }[]; providerId?: string }) {
+function Calendar({ availability, providerId }: { availability: { id: string; available_date: string; status: string }[]; providerId?: string | undefined }) {
   if (providerId) return <div className="animate-rise-in"><PageTitle title="Availability calendar" subtitle="Mark dates available or already booked" /><CalendarEditor providerId={providerId} availability={availability} /></div>;
   return (
     <div className="animate-rise-in">

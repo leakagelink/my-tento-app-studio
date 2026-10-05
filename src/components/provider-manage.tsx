@@ -38,12 +38,12 @@ export function BusinessEditor({ providerId }: { providerId: string }) {
   }
   async function upload(kind: "logo_url" | "banner_url", file?: File) {
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) return toast.error("Image must be under 5 MB");
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5 MB"); return; }
     const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return;
     const path = `${auth.user.id}/${kind === "logo_url" ? "logo" : "banner"}-${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
     const { error } = await supabase.storage.from("provider-media").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
-    const { error: e2 } = await supabase.from("providers").update({ [kind]: path }).eq("id", providerId);
+    if (error) { toast.error(error.message); return; }
+    const { error: e2 } = await supabase.from("providers").update(kind === "logo_url" ? { logo_url: path } : { banner_url: path }).eq("id", providerId);
     if (done(e2, "Photo uploaded")) await inv("provider-business");
   }
   return <Card title="Business details" sub={data.verified ? "Verified by MyTento" : "Waiting for admin verification"}>
@@ -179,7 +179,7 @@ export function CalendarEditor({ providerId, availability }: { providerId: strin
     const cur = map.get(date);
     const next = !cur ? "available" : cur.status === "available" ? "booked" : null;
     const { error } = next === null ? await supabase.from("provider_availability").delete().eq("id", cur!.id) : cur ? await supabase.from("provider_availability").update({ status: next }).eq("id", cur.id) : await supabase.from("provider_availability").insert({ provider_id: providerId, available_date: date, status: next });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     await inv("provider-availability");
   }
   return <div className="rounded-lg border border-border bg-card p-4">
