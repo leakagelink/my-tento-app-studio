@@ -604,6 +604,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      register_provider: {
+        Args: {
+          _area: string
+          _business_name: string
+          _city: string
+          _description: string
+          _phone: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "provider" | "customer"
