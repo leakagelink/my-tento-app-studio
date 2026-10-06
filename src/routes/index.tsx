@@ -72,16 +72,22 @@ function Index() {
   useEffect(() => { if (!localStorage.getItem("mt-onboarded")) setOnboard(true); const l = localStorage.getItem("mt-lang"); if (l === "hi" || l === "en") setLang(l); const saved = localStorage.getItem("mt-location"); if (saved) setLocation(saved); else detectLocation(); }, []);
   const chooseLocation = (value: string) => { setLocation(value); localStorage.setItem("mt-location", value); };
   const detectLocation = () => {
-    if (!("geolocation" in navigator)) { toast.error("Location is not supported on this device"); return; }
-    setLocation("Detecting location…");
-    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-      try {
-        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=en`);
-        const d = await res.json() as { city?: string; locality?: string; principalSubdivision?: string };
-        const name = d.city || d.locality;
-        chooseLocation(name ? `${name}${d.principalSubdivision ? `, ${d.principalSubdivision}` : ""}` : "Lucknow, Uttar Pradesh");
-      } catch { chooseLocation("Lucknow, Uttar Pradesh"); }
-    }, () => { setLocation(localStorage.getItem("mt-location") ?? "Lucknow, Uttar Pradesh"); toast.error("Location permission denied — choose your city manually"); }, { timeout: 10000, maximumAge: 600000 });
+    const fallback = () => { try { return localStorage.getItem("mt-location") || "Lucknow, Uttar Pradesh"; } catch { return "Lucknow, Uttar Pradesh"; } };
+    try {
+      if (typeof navigator === "undefined" || !navigator.geolocation) { toast.error("Location is not supported on this device"); return; }
+      setLocation("Detecting location…");
+      let done = false;
+      const safety = window.setTimeout(() => { if (!done) { done = true; setLocation(fallback()); toast.error("Could not detect location — choose your city manually"); } }, 15000);
+      navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+        if (done) return; done = true; window.clearTimeout(safety);
+        try {
+          const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=en`);
+          const d = await res.json() as { city?: string; locality?: string; principalSubdivision?: string };
+          const name = d?.city || d?.locality;
+          chooseLocation(name ? `${name}${d.principalSubdivision ? `, ${d.principalSubdivision}` : ""}` : fallback());
+        } catch { setLocation(fallback()); }
+      }, () => { if (done) return; done = true; window.clearTimeout(safety); setLocation(fallback()); toast.error("Location permission denied — choose your city manually"); }, { timeout: 10000, maximumAge: 600000 });
+    } catch { setLocation(fallback()); toast.error("Could not detect location — choose your city manually"); }
   };
   const changeLang = (l: Lang) => { setLang(l); localStorage.setItem("mt-lang", l); };
   const chosenProvider = visibleProviders[provider] ?? visibleProviders[0];
