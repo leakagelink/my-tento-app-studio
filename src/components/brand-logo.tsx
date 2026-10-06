@@ -1,4 +1,4 @@
-import myTentoMark from "@/assets/mytento-mark.png";
+import myTentoMark from "@/assets/mytento-brand.png.asset.json";
 
 type BrandLogoProps = {
   className?: string;
@@ -8,7 +8,7 @@ type BrandLogoProps = {
 export function BrandLogo({ className = "size-10", priority = false }: BrandLogoProps) {
   return (
     <img
-      src={myTentoMark}
+      src={myTentoMark.url}
       alt="MyTento"
       width={256}
       height={256}
