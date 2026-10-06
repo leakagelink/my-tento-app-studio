@@ -148,58 +148,71 @@ function Index() {
 
 function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onDetect, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onDetect: () => void; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
   const t = useT();
-  const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 group-active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/25 to-transparent" />{badge && <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[9px] font-bold uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-4 left-4 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
+  const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[32px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent" />{badge && <span className="absolute left-4 top-4 rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-5 left-5 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
   return <div className="animate-rise-in">
-    <section className="relative mb-6">
-      <div className="relative">
-        <button type="button" onClick={() => setLocationOpen(!locationOpen)} className="flex max-w-full items-center gap-1.5 text-muted-foreground"><MapPin className="size-3.5 shrink-0 text-primary" /><span className="min-w-0 truncate text-xs font-medium uppercase tracking-wide">{location}</span><ChevronDown className="size-3 shrink-0" /></button>
-        {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-popover p-2 shadow-lg"><Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
-      </div>
-      <p className="mt-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("greeting")}</p>
-       <h1 className="mt-1 font-display text-2xl font-semibold text-foreground">{t("hello")}</h1>
+    <section className="relative mb-5">
+      <button type="button" onClick={() => setLocationOpen(!locationOpen)} className="flex max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-muted-foreground shadow-sm"><MapPin className="size-3.5 shrink-0 text-accent" /><span className="min-w-0 truncate text-[11px] font-bold uppercase tracking-widest">{location}</span><ChevronDown className="size-3 shrink-0 opacity-60" /></button>
+      {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-popover p-2 shadow-lg"><Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
     </section>
 
-    <CabPriorityCard onOpen={() => onBook("Cab")} />
+    <section className="mb-5 overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-tile">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("greeting")}</p>
+          <h1 className="mt-1 font-display text-2xl font-bold leading-tight text-foreground">Welcome to <span className="text-primary">MyTento</span></h1>
+        </div>
+        <img src={serviceImages.Cab} alt="" width={1024} height={768} className="h-16 w-24 shrink-0 rounded-xl object-cover drop-shadow-xl" />
+      </div>
+    </section>
 
-    <button type="button" onClick={() => onBook("Tent")} className="relative mb-8 block h-40 w-full overflow-hidden rounded-[32px] bg-secondary text-left">
-      <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover" />
-      <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+    <button type="button" onClick={() => onBook("Cab")} className="bg-festive relative mb-5 flex w-full items-center justify-between gap-3 overflow-hidden rounded-3xl p-4 text-left shadow-action">
+      <span className="absolute -right-10 -top-10 size-32 rounded-full bg-white/5" />
+      <span className="relative z-10 flex min-w-0 items-center gap-4">
+        <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md"><Navigation className="size-6 rotate-45 text-white" /></span>
+        <span className="min-w-0"><span className="block text-[10px] font-bold uppercase tracking-widest text-blue-100">Need a ride?</span><span className="block truncate text-sm font-semibold text-white">View nearby vehicles</span></span>
+      </span>
+      <span className="relative z-10 flex shrink-0 items-center gap-1.5 rounded-xl bg-card px-4 py-2.5 text-[11px] font-bold text-primary shadow-sm transition-transform active:scale-95">View <ChevronRight className="size-3" /></span>
+    </button>
+
+    <button type="button" onClick={() => onBook("Tent")} className="group relative mb-8 block h-52 w-full overflow-hidden rounded-[32px] bg-secondary text-left shadow-tile">
+      <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+      <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
       <span className="absolute bottom-5 left-6 right-6">
-        <span className="rounded bg-accent px-2 py-0.5 text-[9px] font-black uppercase text-accent-foreground">{t("offer")}</span>
-        <span className="mt-1.5 block font-display text-lg font-bold leading-tight text-white">{t("offerTitle")}</span>
-        <span className="block text-xs text-white/80">{t("offerSub")}</span>
+        <span className="mb-2 inline-block rounded-md bg-accent px-2.5 py-1 text-[9px] font-black uppercase text-accent-foreground shadow-sm">{t("offer")}</span>
+        <span className="block font-display text-xl font-bold leading-tight text-white">{t("offerTitle")}</span>
+        <span className="mt-1 block text-xs text-white/80">{t("offerSub")}</span>
       </span>
     </button>
 
     <section className="mb-8">
       <div className="mb-4 flex items-end justify-between gap-3 px-1">
         <div className="min-w-0">
-          <h2 className="font-display text-2xl font-bold leading-none text-primary">{t("services")}</h2>
-          <p className="mt-1.5 truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{t("servicesSub")}</p>
+          <h2 className="font-display text-xl font-bold leading-none text-foreground">{t("services")}</h2>
+          <p className="mt-1.5 truncate text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{t("servicesSub")}</p>
         </div>
-        <button type="button" onClick={onServices} className="flex shrink-0 items-center gap-1.5 pb-1 text-sm font-bold text-primary">{t("viewAll")}<span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary/10"><ChevronRight className="size-3" /></span></button>
+        <button type="button" onClick={onServices} className="flex shrink-0 items-center gap-1.5 pb-1 text-xs font-bold text-primary">{t("viewAll")}<span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/10"><ChevronRight className="size-3" /></span></button>
       </div>
-      <div className="grid grid-cols-2 grid-rows-[repeat(3,minmax(110px,1fr))] gap-3">
+      <div className="grid h-[340px] grid-cols-2 grid-rows-2 gap-4">
         {tile("Tent", t("tent"), "Royal & Modern", "row-span-2", t("trending"))}
         {tile("Decoration", t("decoration"), "Theme & Floral", "")}
         {tile("Catering", t("catering"), "Lucknowi flavours", "")}
-        <button type="button" onClick={() => onBook("Cab")} className="group relative col-span-2 min-h-[112px] min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 group-active:scale-[0.98]">
-          <img src={serviceImages["Cab"]} alt={t("cab")} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-          <span className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/45 to-transparent" />
-          <span className="absolute inset-y-0 left-5 flex min-w-0 flex-col justify-center pr-20">
-            <span className="flex min-w-0 items-center gap-2"><span className="h-4 w-1 shrink-0 rounded-full bg-accent" /><span className="truncate font-display text-xl font-bold leading-tight text-white">{t("cab")}</span></span>
-            <span className="mt-1 truncate pl-3 text-xs font-medium text-white/90">Guest rides &amp; baraat</span>
-          </span>
-          <span className="absolute right-5 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md transition-transform duration-300 group-active:scale-90"><ChevronRight className="size-5 text-white" /></span>
-        </button>
       </div>
+      <button type="button" onClick={() => onBook("Cab")} className="group relative mt-4 block min-h-[112px] w-full min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 active:scale-[0.98]">
+        <img src={serviceImages.Cab} alt={t("cab")} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+        <span className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/45 to-transparent" />
+        <span className="absolute inset-y-0 left-5 flex min-w-0 flex-col justify-center pr-20">
+          <span className="flex min-w-0 items-center gap-2"><span className="h-4 w-1 shrink-0 rounded-full bg-accent" /><span className="truncate font-display text-xl font-bold leading-tight text-white">{t("cab")}</span></span>
+          <span className="mt-1 truncate pl-3 text-xs font-medium text-white/90">Guest rides &amp; baraat</span>
+        </span>
+        <span className="absolute right-5 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-white/20 backdrop-blur-md transition-transform duration-300 group-active:scale-90"><ChevronRight className="size-5 text-white" /></span>
+      </button>
     </section>
 
-    <section className="mb-8"><button type="button" onClick={onCombo} className="flex w-full items-center justify-between gap-4 rounded-[32px] bg-primary p-6 text-left text-primary-foreground shadow-action"><span className="min-w-0 flex-1"><span className="block font-display text-2xl font-bold leading-tight">{t("combo")}</span><span className="mt-2 block text-[11px] font-bold uppercase italic tracking-wide opacity-80">{t("comboSub")}</span></span><span className="grid size-12 shrink-0 place-items-center rounded-full bg-background text-primary"><ChevronRight className="size-6" /></span></button></section>
+    <section className="mb-8"><button type="button" onClick={onCombo} className="bg-festive flex w-full items-center justify-between gap-4 rounded-[32px] p-6 text-left text-primary-foreground shadow-action"><span className="min-w-0 flex-1"><span className="block font-display text-2xl font-bold leading-tight">{t("combo")}</span><span className="mt-2 block text-[11px] font-bold uppercase italic tracking-wide opacity-80">{t("comboSub")}</span></span><span className="grid size-12 shrink-0 place-items-center rounded-full bg-card text-primary"><ChevronRight className="size-6" /></span></button></section>
 
     <section>
       <div className="mb-4 flex items-end justify-between"><h2 className="font-display text-lg font-bold text-foreground">{t("topRated")}</h2><button type="button" onClick={onProviders} className="text-xs font-semibold text-primary">View all</button></div>
-        <div className="space-y-3">{providers.length === 0 ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No verified providers are available within 10 km right now.</p> : providers.map((item, i) => <Button variant="outline" type="button" key={item.id} onClick={() => onProvider(i)} className="flex h-auto w-full min-w-0 items-center justify-start gap-3 rounded-3xl bg-card p-3.5 text-left shadow-sm"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary font-display text-sm font-bold text-primary-foreground">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-foreground">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-primary text-primary" /> {item.rating} · {item.distance} km · <ShieldCheck className="size-3 text-success" /> Verified</span></span><ChevronRight className="size-5 shrink-0 text-primary" /></Button>)}</div>
+      <div className="space-y-3">{providers.length === 0 ? <p className="rounded-3xl border border-border bg-card p-5 text-sm text-muted-foreground">No verified providers are available within 10 km right now.</p> : providers.map((item, i) => <Button variant="outline" type="button" key={item.id} onClick={() => onProvider(i)} className="flex h-auto w-full min-w-0 items-center justify-start gap-3 rounded-3xl bg-card p-3.5 text-left shadow-sm"><span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary font-display text-sm font-bold text-primary-foreground">{item.initials}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-bold text-foreground">{item.name}</span><span className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground"><Star className="size-3 fill-accent text-accent" /> {item.rating} · {item.distance} km · <ShieldCheck className="size-3 text-success" /> Verified</span></span><ChevronRight className="size-5 shrink-0 text-primary" /></Button>)}</div>
     </section>
   </div>;
 }
