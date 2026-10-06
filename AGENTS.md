@@ -14,3 +14,5 @@
 - Keep private business data behind authenticated cloud access and enforce admin/provider roles in the database, not browser state.
 - Model customer-bookable services as provider service listings linked to catalogue categories so pricing and availability have one live source.
 - Use a persistent sidebar and wide data workspace for the admin panel on desktop while preserving stacked touch layouts on smaller screens.
+
+- Keep `capacitor.config.ts` (webDir `www`, no server.url) and Capacitor packages in the project so downloaded code always builds the bundled MyTento Android app.
