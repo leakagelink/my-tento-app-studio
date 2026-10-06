@@ -1,4 +1,7 @@
-import myTentoMark from "@/assets/mytento-brand.png.asset.json";
+// Bundled locally (not a hosted asset URL) so the logo also loads inside the Android app.
+import myTentoMarkUrl from "@/assets/mytento-brand.webp";
+
+const myTentoMark = { url: myTentoMarkUrl };
 
 type BrandLogoProps = {
   className?: string;
