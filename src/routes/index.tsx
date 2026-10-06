@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
-import { CabPriorityCard, ClientCabScreen } from "@/components/client-requirement-panels";
+import { ClientCabScreen } from "@/components/client-requirement-panels";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.webp";
 import homeBanner from "@/assets/home-banner.webp";
