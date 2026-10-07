@@ -12,7 +12,7 @@ import { compressImage } from "@/lib/image";
 const inr = (n: number | null | undefined) => `₹${Number(n ?? 0).toLocaleString("en-IN")}`;
 const Box = ({ children }: { children: React.ReactNode }) => <div className="rounded-lg border border-border bg-card p-4">{children}</div>;
 const Empty = ({ text }: { text: string }) => <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">{text}</p>;
-const Head = ({ title, sub, onAdd, addLabel }: { title: string; sub: string; onAdd?: () => void; addLabel?: string }) => <div className="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-extrabold">{title}</h2><p className="text-sm text-muted-foreground">{sub}</p></div>{onAdd && <Button onClick={onAdd}><Plus className="size-4" /> {addLabel}</Button>}</div>;
+const Head = ({ title, sub, onAdd, addLabel }: { title: string; sub: string; onAdd?: () => void; addLabel?: string }) => <div className="mb-6 flex flex-wrap items-end justify-between gap-3"><p className="text-sm text-muted-foreground" title={title}>{sub}</p>{onAdd && <Button onClick={onAdd}><Plus className="size-4" /> {addLabel}</Button>}</div>;
 
 function useInv() {
   const qc = useQueryClient();
@@ -23,10 +23,10 @@ function useInv() {
 type Offer = { id: string; code: string; title: string; discount_percent: number; max_discount: number | null; active: boolean; starts_at: string | null; ends_at: string | null };
 export function AdminOffers() {
   const inv = useInv();
-  const { data: rows = [] } = useQuery({ queryKey: ["admin-offers"], queryFn: async () => { const { data, error } = await supabase.from("offers").select("id,code,title,discount_percent,max_discount,active,starts_at,ends_at").order("created_at", { ascending: false }); if (error) throw error; return data as Offer[]; } });
+  const { data: rows = [] } = useQuery({ queryKey: ["admin-offers-full"], queryFn: async () => { const { data, error } = await supabase.from("offers").select("id,code,title,discount_percent,max_discount,active,starts_at,ends_at").order("created_at", { ascending: false }); if (error) throw error; return data as Offer[]; } });
   const [edit, setEdit] = useState<Offer | "new" | null>(null);
   const cur = edit && edit !== "new" ? edit : null;
-  const refresh = () => inv("admin-offers", "public-offers");
+  const refresh = () => inv("admin-offers-full", "public-offers");
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); const f = new FormData(e.currentTarget); const v = (k: string) => String(f.get(k) ?? "").trim();
     const pct = Number(v("discount_percent"));
@@ -56,11 +56,11 @@ export function AdminOffers() {
 type Banner = { id: string; banner_type: string; title: string; subtitle: string; image_url: string | null; active: boolean; sort_order: number };
 export function AdminBanners() {
   const inv = useInv();
-  const { data: rows = [] } = useQuery({ queryKey: ["admin-banners"], queryFn: async () => { const { data, error } = await supabase.from("banners").select("id,banner_type,title,subtitle,image_url,active,sort_order").order("sort_order"); if (error) throw error; return data as Banner[]; } });
+  const { data: rows = [] } = useQuery({ queryKey: ["admin-banners-full"], queryFn: async () => { const { data, error } = await supabase.from("banners").select("id,banner_type,title,subtitle,image_url,active,sort_order").order("sort_order"); if (error) throw error; return data as Banner[]; } });
   const [edit, setEdit] = useState<Banner | "new" | null>(null);
   const [img, setImg] = useState<string | null>(null);
   const cur = edit && edit !== "new" ? edit : null;
-  const refresh = () => inv("admin-banners", "public-banners");
+  const refresh = () => inv("admin-banners-full", "public-banners");
   const open = (b: Banner | "new") => { setEdit(b); setImg(b === "new" ? null : b.image_url); };
   async function pick(file?: File) { if (!file) return; try { setImg(await compressImage(file, 1280, 0.78)); } catch { toast.error("Image read nahi ho payi"); } }
   async function save(e: FormEvent<HTMLFormElement>) {
@@ -91,16 +91,16 @@ export function AdminBanners() {
 type Vehicle = { id: string; vehicle_type: string; vehicle_number: string; seats: number; base_fare: number; per_km_rate: number; active: boolean; created_at: string; providers: { business_name: string; phone: string; city: string; area: string; verified: boolean } | null };
 export function AdminCabs() {
   const inv = useInv();
-  const { data: rows = [] } = useQuery({ queryKey: ["admin-vehicles"], queryFn: async () => { const { data, error } = await supabase.from("vehicles").select("id,vehicle_type,vehicle_number,seats,base_fare,per_km_rate,active,created_at,providers(business_name,phone,city,area,verified)").order("created_at", { ascending: false }); if (error) throw error; return data as unknown as Vehicle[]; } });
+  const { data: rows = [] } = useQuery({ queryKey: ["admin-vehicles-full"], queryFn: async () => { const { data, error } = await supabase.from("vehicles").select("id,vehicle_type,vehicle_number,seats,base_fare,per_km_rate,active,created_at,providers(business_name,phone,city,area,verified)").order("created_at", { ascending: false }); if (error) throw error; return data as unknown as Vehicle[]; } });
   const [view, setView] = useState<Vehicle | null>(null);
   const [editing, setEditing] = useState(false);
-  const toggle = async (v: Vehicle) => { const { error } = await supabase.from("vehicles").update({ active: !v.active }).eq("id", v.id); if (error) toast.error("Update nahi hua"); else { await inv("admin-vehicles", "public-vehicles"); setView((x) => (x?.id === v.id ? { ...x, active: !v.active } : x)); } };
+  const toggle = async (v: Vehicle) => { const { error } = await supabase.from("vehicles").update({ active: !v.active }).eq("id", v.id); if (error) toast.error("Update nahi hua"); else { await inv("admin-vehicles-full", "admin-vehicles", "public-vehicles"); setView((x) => (x?.id === v.id ? { ...x, active: !v.active } : x)); } };
   async function saveRates(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); if (!view) return; const f = new FormData(e.currentTarget);
     const payload = { base_fare: Number(f.get("base_fare")), per_km_rate: Number(f.get("per_km_rate")), seats: Number(f.get("seats")) };
     const { error } = await supabase.from("vehicles").update(payload).eq("id", view.id);
     if (error) { toast.error("Rates save nahi hue"); return; }
-    toast.success("Rates updated"); setView({ ...view, ...payload }); setEditing(false); await inv("admin-vehicles", "public-vehicles");
+    toast.success("Rates updated"); setView({ ...view, ...payload }); setEditing(false); await inv("admin-vehicles-full", "admin-vehicles", "public-vehicles");
   }
   const D = ({ k, v }: { k: string; v: React.ReactNode }) => <div className="flex justify-between gap-4 border-b border-border py-2 text-sm last:border-0"><span className="text-muted-foreground">{k}</span><span className="text-right font-semibold">{v}</span></div>;
   return <>
