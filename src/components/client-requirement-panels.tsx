@@ -53,7 +53,11 @@ export function useNearbyVehicles(city?: string) {
       return (data ?? []).map((v) => {
         const provider = Array.isArray(v.providers) ? v.providers[0] : v.providers;
         return { id: v.id, vehicle_type: v.vehicle_type, seats: v.seats, base_fare: Number(v.base_fare), per_km_rate: Number(v.per_km_rate), provider };
-      }).filter((v) => v.provider?.active && v.provider.verified && Number(v.provider.distance_km) <= 10 && (!city || v.provider.city === city));
+      }).filter((v) => {
+        const want = (city ?? "").trim().toLowerCase().replace(/\s+(city|district)$/, "");
+        const have = (v.provider?.city ?? "").trim().toLowerCase();
+        return v.provider?.active && v.provider.verified && Number(v.provider.distance_km) <= 10 && (!want || have.includes(want) || want.includes(have));
+      });
     },
     staleTime: 60_000,
   });
