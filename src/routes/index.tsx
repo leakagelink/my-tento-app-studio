@@ -22,7 +22,7 @@ import serviceDecoration from "@/assets/service-decoration.webp";
 import serviceCatering from "@/assets/service-catering.webp";
 import serviceCab from "@/assets/service-cab.webp";
 import { supabase } from "@/integrations/supabase/client";
-import { createLiveBooking, useAvailableDates, useLiveProviders, type LiveProvider } from "@/lib/live-data";
+import { createLiveBooking, useAvailableDates, useServicePhotos, useLiveProviders, type LiveProvider } from "@/lib/live-data";
 import { useAuth } from "@/hooks/use-auth";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
@@ -178,9 +178,11 @@ function useCitySearch() {
 const POPULAR_CITIES = ["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"];
 
 function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onDetect, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onDetect: () => void; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
+  const photos = useServicePhotos();
+  const img = (n: ServiceName) => photos[n] ?? serviceImages[n];
   const t = useT();
   const { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity } = useCitySearch();
-  const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[32px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent" />{badge && <span className="absolute left-4 top-4 rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-5 left-5 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
+  const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[32px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 active:scale-[0.98] ${cls}`}><img src={img(name)} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent" />{badge && <span className="absolute left-4 top-4 rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-5 left-5 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
   return <div className="animate-rise-in">
     <section className="relative mb-5">
       <button type="button" onClick={() => setLocationOpen(!locationOpen)} className="flex max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-muted-foreground shadow-sm"><MapPin className="size-3.5 shrink-0 text-accent" /><span className="min-w-0 truncate text-[11px] font-bold uppercase tracking-widest">{location}</span><ChevronDown className="size-3 shrink-0 opacity-60" /></button>
@@ -236,7 +238,7 @@ function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen
         {tile("Catering", t("catering"), "Lucknowi flavours", "")}
       </div>
       <button type="button" onClick={() => onBook("Cab")} className="group relative mt-4 block min-h-[112px] w-full min-w-0 overflow-hidden rounded-[28px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 active:scale-[0.98]">
-        <img src={serviceImages.Cab} alt={t("cab")} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+        <img src={img("Cab")} alt={t("cab")} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
         <span className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/45 to-transparent" />
         <span className="absolute inset-y-0 left-5 flex min-w-0 flex-col justify-center pr-20">
           <span className="flex min-w-0 items-center gap-2"><span className="h-4 w-1 shrink-0 rounded-full bg-accent" /><span className="truncate font-display text-xl font-bold leading-tight text-white">{t("cab")}</span></span>
@@ -282,6 +284,7 @@ function ProfileScreen({ userId, email }: { userId: string | undefined; email: s
 function NotificationsScreen({ userId, onBooking }: { userId: string | undefined; onBooking: () => void }) { const queryClient = useQueryClient(); const { data = [], isLoading } = useQuery({ queryKey: ["notifications", userId], enabled: Boolean(userId), queryFn: async () => { const { data, error } = await supabase.from("notifications").select("id,title,message,read_at,created_at").eq("user_id", userId ?? "").order("created_at", { ascending: false }); if (error) throw error; return data ?? []; } }); const markRead = async () => { if (!userId) return; const { error } = await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId).is("read_at", null); if (error) { toast.error("Notifications could not be updated"); return; } await queryClient.invalidateQueries({ queryKey: ["notifications", userId] }); }; return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and account updates" />{data.some((item) => !item.read_at) && <Button variant="ghost" size="sm" onClick={() => void markRead()}>Mark all read</Button>}</div>{!userId ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Sign in to view notifications.</p> : isLoading ? <p className="text-sm text-muted-foreground">Loading notifications…</p> : data.length === 0 ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No notifications yet.</p> : <div className="space-y-3">{data.map((item) => <Button key={item.id} variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${item.read_at ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">{item.title}</span><span className="text-xs font-normal text-muted-foreground">{item.message}</span></span></Button>)}</div>}</div>; }
 
 function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, providers, loading, onContinue, onCityChange, onCabAddon }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; providers: LiveProvider[]; loading: boolean; onContinue: () => void; onCityChange: (value: string) => void; onCabAddon: (addon: CabAddon | null) => void }) {
+  const photos = useServicePhotos();
   const [cityEdit, setCityEdit] = useState(false);
   const { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity } = useCitySearch();
   const { isDateAvailable, isDateBooked } = useAvailableDates(providers.map((p) => p.id));
@@ -305,7 +308,7 @@ function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, ev
   }, [addonOn, addonVehicle?.id, addonPkgObj.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className="animate-rise-in pb-24">
     <section className="relative h-56 overflow-hidden bg-primary">
-      <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
+      <img src={photos[service] ?? serviceImages[service] ?? decorationHero} alt={service} width={1600} height={900} className="h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/35 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground">
         <span className="mb-3 grid size-11 place-items-center rounded-lg border border-primary-foreground/20 bg-primary-foreground/10 backdrop-blur"><Sparkles className="size-5" /></span>
