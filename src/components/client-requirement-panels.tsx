@@ -24,9 +24,19 @@ type CabVehicle = {
   provider: { id: string; business_name: string; city: string; distance_km: number } | null;
 };
 
+type CabMode = "trip" | "event";
+
+const EVENT_PACKAGES = [
+  { id: "4h", label: "4 hours", multiplier: 1.5 },
+  { id: "8h", label: "8 hours", multiplier: 2.5 },
+  { id: "12h", label: "Full day (12 hours)", multiplier: 3.5 },
+] as const;
+
 export function ClientCabScreen() {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<CabVehicle | null>(null);
+  const [mode, setMode] = useState<CabMode>("trip");
+  const [pkg, setPkg] = useState<string>("4h");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [pickup, setPickup] = useState("");
@@ -47,19 +57,24 @@ export function ClientCabScreen() {
   });
 
   const kmNum = Number(km) || 0;
-  const total = selected ? selected.base_fare + selected.per_km_rate * kmNum : 0;
+  const activePkg = EVENT_PACKAGES.find((p) => p.id === pkg) ?? EVENT_PACKAGES[0];
+  const total = selected
+    ? mode === "event"
+      ? Math.round(selected.base_fare * activePkg.multiplier)
+      : selected.base_fare + selected.per_km_rate * kmNum
+    : 0;
 
   const book = async () => {
     if (!selected?.provider) return;
-    if (!date || !time || !pickup.trim() || !drop.trim() || kmNum <= 0) {
-      toast.error("Date, time, pickup, drop aur distance bhariye");
+    if (!date || !time || !pickup.trim() || !drop.trim() || (mode === "trip" && kmNum <= 0)) {
+      toast.error(mode === "trip" ? "Date, time, pickup, drop aur distance bhariye" : "Date, time, pickup aur drop bhariye");
       return;
     }
     setSaving(true);
     try {
       const booking = await createLiveBooking({
         providerId: selected.provider.id,
-        bookingType: "Cab",
+        bookingType: mode === "event" ? "Marriage Cab" : "Cab",
         guests: selected.seats,
         totalAmount: total,
         paymentMethod: "cash",
@@ -67,9 +82,21 @@ export function ClientCabScreen() {
         eventTime: time,
         city: selected.provider.city,
       });
-      await supabase.from("bookings").update({ pickup_location: pickup.trim(), drop_location: drop.trim(), details: { source: "customer_app", vehicle_id: selected.id, vehicle_type: selected.vehicle_type, distance_km: kmNum } }).eq("id", booking.id);
+      await supabase.from("bookings").update({
+        pickup_location: pickup.trim(),
+        drop_location: drop.trim(),
+        details: {
+          source: "customer_app",
+          vehicle_id: selected.id,
+          vehicle_type: selected.vehicle_type,
+          ...(mode === "event"
+            ? { cab_mode: "event_package", package: activePkg.label }
+            : { cab_mode: "point_to_point", distance_km: kmNum }),
+        },
+      }).eq("id", booking.id);
       toast.success(`Cab booked! Code: ${booking.booking_code}`);
       setSelected(null);
+      setMode("trip"); setPkg("4h");
       setDate(""); setTime(""); setPickup(""); setDrop(""); setKm("");
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
     } catch (e) {
@@ -103,12 +130,32 @@ export function ClientCabScreen() {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Book {selected?.vehicle_type}</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant={mode === "trip" ? "default" : "outline"} onClick={() => setMode("trip")}>Point to point</Button>
+              <Button type="button" variant={mode === "event" ? "default" : "outline"} onClick={() => setMode("event")}>Marriage / Event</Button>
+            </div>
+            {mode === "event" && (
+              <div><Label>Package</Label>
+                <div className="mt-1 grid grid-cols-3 gap-2">
+                  {EVENT_PACKAGES.map((p) => (
+                    <Button key={p.id} type="button" size="sm" variant={pkg === p.id ? "default" : "outline"} onClick={() => setPkg(p.id)}>{p.label}</Button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div><Label>Date</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
             <div><Label>Time</Label><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
             <div><Label>Pickup location</Label><Input value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="Jahan se pick karna hai" /></div>
-            <div><Label>Drop location</Label><Input value={drop} onChange={(e) => setDrop(e.target.value)} placeholder="Jahan jaana hai" /></div>
-            <div><Label>Estimated distance (km)</Label><Input type="number" min="1" value={km} onChange={(e) => setKm(e.target.value)} placeholder="e.g. 12" /></div>
-            <div className="rounded-lg bg-secondary p-3 text-sm"><div className="flex justify-between"><span>Base fare</span><b>₹{selected?.base_fare}</b></div><div className="flex justify-between"><span>{kmNum} km × ₹{selected?.per_km_rate}/km</span><b>₹{(selected?.per_km_rate ?? 0) * kmNum}</b></div><div className="mt-1 flex justify-between border-t border-border pt-1"><span>Total (cash)</span><b className="text-primary">₹{total.toLocaleString("en-IN")}</b></div></div>
+            <div><Label>Drop location</Label><Input value={drop} onChange={(e) => setDrop(e.target.value)} placeholder={mode === "event" ? "Event venue" : "Jahan jaana hai"} /></div>
+            {mode === "trip" && <div><Label>Estimated distance (km)</Label><Input type="number" min="1" value={km} onChange={(e) => setKm(e.target.value)} placeholder="e.g. 12" /></div>}
+            <div className="rounded-lg bg-secondary p-3 text-sm">
+              {mode === "event" ? (
+                <><div className="flex justify-between"><span>{activePkg.label} package</span><b>₹{total.toLocaleString("en-IN")}</b></div><p className="mt-1 text-[11px] text-muted-foreground">Base fare ₹{selected?.base_fare} × {activePkg.multiplier} — event ke liye reserved cab</p></>
+              ) : (
+                <><div className="flex justify-between"><span>Base fare</span><b>₹{selected?.base_fare}</b></div><div className="flex justify-between"><span>{kmNum} km × ₹{selected?.per_km_rate}/km</span><b>₹{(selected?.per_km_rate ?? 0) * kmNum}</b></div></>
+              )}
+              <div className="mt-1 flex justify-between border-t border-border pt-1"><span>Total (cash)</span><b className="text-primary">₹{total.toLocaleString("en-IN")}</b></div>
+            </div>
             <Button className="w-full" size="lg" disabled={saving} onClick={book}>{saving ? "Booking…" : "Confirm booking"}</Button>
           </div>
         </DialogContent>
