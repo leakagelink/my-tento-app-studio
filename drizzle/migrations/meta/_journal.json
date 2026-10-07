@@ -57,6 +57,13 @@
       "when": 1791209365911,
       "tag": "0007_provider_panel_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791352878059,
+      "tag": "0008_allow_cab_guest_counts",
+      "breakpoints": true
     }
   ]
 }
