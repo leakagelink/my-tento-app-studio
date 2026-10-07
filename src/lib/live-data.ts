@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { displayableImage } from "@/lib/image";
 
 export type LiveProvider = {
   id: string;
@@ -10,6 +11,8 @@ export type LiveProvider = {
   initials: string;
   distance: number;
   phone: string;
+  logo: string | null;
+  banner: string | null;
 };
 
 export function useLiveProviders(city: string, serviceName: string) {
@@ -18,7 +21,7 @@ export function useLiveProviders(city: string, serviceName: string) {
     queryFn: async (): Promise<LiveProvider[]> => {
       const { data, error } = await supabase
         .from("providers")
-        .select("id,business_name,description,phone,rating,distance_km,provider_services!inner(base_price,details,active,services!inner(name))")
+        .select("id,business_name,description,phone,rating,distance_km,logo_url,banner_url,provider_services!inner(base_price,details,active,services!inner(name))")
         .ilike("city", `%${city.trim().replace(/\s+(city|district)$/i, "").replace(/[%_,]/g, "")}%`)
         .eq("active", true)
         .eq("verified", true)
@@ -39,6 +42,8 @@ export function useLiveProviders(city: string, serviceName: string) {
           initials: name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase(),
           distance: Number(provider.distance_km),
           phone: provider.phone,
+          logo: displayableImage(provider.logo_url),
+          banner: displayableImage(provider.banner_url),
         };
       });
     },
