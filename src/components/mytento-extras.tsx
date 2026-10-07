@@ -69,11 +69,17 @@ export function ReviewsScreen({ provider }: { provider: Prov }) {
 }
 
 /* ---------- Coupons ---------- */
-export function discountFor(code: string | null, amount: number) {
-  void code; void amount; return 0;
+export function discountFor(code: string | null, amount: number, offers: PublicOffer[] = []) {
+  return offerDiscount(offers.find((o) => o.code === code), amount);
 }
 export function CouponBox({ applied, setApplied }: { applied: string | null; setApplied: (c: string | null) => void }) {
-  void applied; void setApplied; return null;
+  const offers = usePublicOffers();
+  const [code, setCode] = useState("");
+  const apply = (c: string) => { const o = offers.find((x) => x.code === c.trim().toUpperCase()); if (!o) { toast.error("Ye coupon valid nahi hai"); return; } setApplied(o.code); toast.success(`${o.code} applied`); };
+  return <div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="font-bold">Offers & coupons</h3>
+    {applied ? <div className="mt-3 flex items-center justify-between rounded-md bg-success/10 p-3 text-sm"><b className="text-success">{applied} applied</b><button type="button" className="text-xs font-bold text-destructive" onClick={() => setApplied(null)}>Remove</button></div> : <div className="mt-3 flex gap-2"><input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon code" aria-label="Coupon code" className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm uppercase" /><button type="button" onClick={() => apply(code)} className="rounded-md bg-primary px-4 text-sm font-bold text-primary-foreground">Apply</button></div>}
+    {offers.length > 0 && !applied && <div className="mt-3 grid gap-2">{offers.map((o) => <button key={o.code} type="button" onClick={() => apply(o.code)} className="flex items-center justify-between rounded-md border border-dashed border-primary/40 p-3 text-left text-sm"><span><b className="font-mono text-primary">{o.code}</b><span className="block text-xs text-muted-foreground">{o.title}</span></span><span className="text-xs font-bold text-primary">{o.discount_percent}% off</span></button>)}</div>}
+  </div>;
 }
 
 /* ---------- Live tracking ---------- */
