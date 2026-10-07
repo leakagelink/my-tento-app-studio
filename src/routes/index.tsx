@@ -111,17 +111,17 @@ function Index() {
     {onboard && <Onboarding onDone={() => { setOnboard(false); localStorage.setItem("mt-onboarded", "1"); }} />}
     <div className="min-h-svh min-w-0 bg-background sm:py-6">
       <div className="mx-auto min-h-svh min-w-0 max-w-md overflow-x-clip bg-card sm:min-h-[calc(100svh-3rem)] sm:rounded-lg sm:border sm:border-border sm:shadow-panel">
-      <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
+      <header className="safe-top sticky top-0 z-30 border-b border-white/10 bg-primary/95 backdrop-blur">
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-4">
-          <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
-            {step !== "home" && <ArrowLeft className="size-5 text-foreground" />}
+          <Button variant="ghost" aria-label={step === "home" ? "My Tento home" : "Go back"} onClick={step === "home" ? undefined : goBack} className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-white/10 sm:gap-3">
+            {step !== "home" && <ArrowLeft className="size-5 text-primary-foreground" />}
              <BrandLogo priority className="size-11 max-[359px]:size-10" />
-              <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-logo sm:text-xl">MyTento</span><span className="mobile-compact-hide block truncate text-[10px] font-bold uppercase text-muted-foreground">Plan. Book. Celebrate.</span></span>
+              <span className="min-w-0 text-left"><span className="block truncate font-display text-lg font-extrabold text-primary-foreground sm:text-xl">MyTento</span><span className="mobile-compact-hide block truncate text-[10px] font-bold uppercase text-primary-foreground/70">Plan. Book. Celebrate.</span></span>
           </Button>
            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><CalendarDays className="size-5" /></Button>
-             <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /></Button>
-             <Button variant="ghost" size="icon" aria-label={user ? "Profile" : "Sign in"} onClick={() => user ? go("profile") : void navigate({ to: "/auth", search: { redirect: "/" } })} className="rounded-full bg-secondary text-primary hover:bg-secondary/80"><UserRound className="size-5" /></Button>
+            <Button variant="ghost" size="icon" aria-label="My bookings" onClick={() => go("bookings")} className="rounded-full bg-white/15 text-primary-foreground hover:bg-white/25"><CalendarDays className="size-5" /></Button>
+             <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => go("notifications")} className="rounded-full bg-white/15 text-primary-foreground hover:bg-white/25"><Bell className="size-5" /></Button>
+             <Button variant="ghost" size="icon" aria-label={user ? "Profile" : "Sign in"} onClick={() => user ? go("profile") : void navigate({ to: "/auth", search: { redirect: "/" } })} className="rounded-full bg-white/15 text-primary-foreground hover:bg-white/25"><UserRound className="size-5" /></Button>
           </div>
         </div>
       </header>

@@ -72,12 +72,12 @@ function ProviderPanel() {
 
   return (
     <div className="app-bottom-space min-h-svh min-w-0 bg-background">
-      <header className="safe-top sticky top-0 z-30 border-b border-border/70 bg-card/95 backdrop-blur">
+      <header className="safe-top sticky top-0 z-30 border-b border-white/10 bg-primary/95 backdrop-blur">
         <div className="mx-auto grid min-h-16 max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:flex sm:px-6">
-          <Button variant="ghost" asChild className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-transparent sm:gap-3">
-             <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-foreground" /><BrandLogo priority className="size-11 max-[359px]:size-10" /><span className="min-w-0 truncate font-display text-lg font-extrabold text-logo sm:text-xl">MyTento <span className="mobile-compact-hide text-xs font-bold text-muted-foreground sm:text-sm">Provider</span></span></Link>
+          <Button variant="ghost" asChild className="h-auto min-w-0 justify-start gap-2 overflow-hidden px-0 hover:bg-white/10 sm:gap-3">
+             <Link to="/" className="min-w-0"><ArrowLeft className="size-5 shrink-0 text-primary-foreground" /><BrandLogo priority className="size-11 max-[359px]:size-10" /><span className="min-w-0 truncate font-display text-lg font-extrabold text-primary-foreground sm:text-xl">MyTento <span className="mobile-compact-hide text-xs font-bold text-primary-foreground/70 sm:text-sm">Provider</span></span></Link>
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-secondary text-primary hover:bg-secondary/80"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
+          <Button variant="ghost" size="icon" aria-label="Notifications" className="relative rounded-full bg-white/15 text-primary-foreground hover:bg-white/25"><Bell className="size-5" /><span className="absolute right-2 top-2 size-2 rounded-full bg-accent" /></Button>
         </div>
       </header>
 
