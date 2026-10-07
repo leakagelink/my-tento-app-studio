@@ -13,3 +13,5 @@
 - [ ] Verify live account and booking flows end to end
 - [ ] Add live demo services and admin add/edit/delete controls
 - [x] Optimize the admin panel for desktop with responsive navigation and data layouts
+- [ ] Event date picker: only allow dates with available providers (disable/unavailable dates)
+- [ ] Restore cab marriage/event addon customization in event booking flow
