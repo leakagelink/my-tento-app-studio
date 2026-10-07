@@ -4,19 +4,7 @@ import { toast } from "sonner";
 import { ImagePlus, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-
-/** Resize + compress an image file to a WebP data URL (keeps the app fast). */
-async function compress(file: File, max = 1280): Promise<string> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise<HTMLImageElement>((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
-    const scale = Math.min(1, max / Math.max(img.width, img.height));
-    const c = document.createElement("canvas");
-    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
-    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
-    return c.toDataURL("image/webp", 0.8);
-  } finally { URL.revokeObjectURL(url); }
-}
+import { compressImage as compress } from "@/lib/image";
 
 export function AdminServicePhotos() {
   const qc = useQueryClient();

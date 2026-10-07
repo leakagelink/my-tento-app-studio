@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Pencil, Plus, Star, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { compressImage } from "@/lib/image";
 
 const field = "mt-1 w-full rounded-md border border-border bg-background p-2.5 text-sm outline-none focus:border-primary";
 const inr = (n: number | string) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -26,6 +27,7 @@ export function BusinessEditor({ providerId }: { providerId: string }) {
   const [banner, setBanner] = useState<string | null>(null);
   useEffect(() => { void (async () => {
     for (const [path, set] of [[data?.logo_url, setLogo], [data?.banner_url, setBanner]] as const) {
+      if (path?.startsWith("data:")) { set(path); continue; }
       if (path) { const { data: s } = await supabase.storage.from("provider-media").createSignedUrl(path, 3600); set(s?.signedUrl ?? null); }
     }
   })(); }, [data?.logo_url, data?.banner_url]);
@@ -39,12 +41,11 @@ export function BusinessEditor({ providerId }: { providerId: string }) {
   async function upload(kind: "logo_url" | "banner_url", file?: File) {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5 MB"); return; }
-    const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return;
-    const path = `${auth.user.id}/${kind === "logo_url" ? "logo" : "banner"}-${Date.now()}.${file.name.split(".").pop() || "jpg"}`;
-    const { error } = await supabase.storage.from("provider-media").upload(path, file, { upsert: true });
-    if (error) { toast.error(error.message); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image"); return; }
+    let path: string;
+    try { path = await compressImage(file, kind === "logo_url" ? 400 : 1280); } catch { toast.error("Image could not be read"); return; }
     const { error: e2 } = await supabase.from("providers").update(kind === "logo_url" ? { logo_url: path } : { banner_url: path }).eq("id", providerId);
-    if (done(e2, "Photo uploaded")) await inv("provider-business");
+    if (done(e2, "Photo uploaded")) await inv("provider-business", "providers");
   }
   return <Card title="Business details" sub={data.verified ? "Verified by MyTento" : "Waiting for admin verification"}>
     <div className="mb-4 grid grid-cols-[auto_1fr] gap-3">
