@@ -167,7 +167,7 @@ function useCitySearch() {
       setCityResults([...new Set(names)]);
     } catch { setCityResults([]); } finally { setCitySearching(false); }
   };
-  return { cityQuery, setCityQuery, cityResults, citySearching, searchCity };
+  return { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity };
 }
 
 const POPULAR_CITIES = ["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"];
