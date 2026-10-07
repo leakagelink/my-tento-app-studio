@@ -71,6 +71,13 @@
       "when": 1791353525457,
       "tag": "0009_allow_marriage_cab_guests",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791356613816,
+      "tag": "0010_service_category_photos",
+      "breakpoints": true
     }
   ]
 }
