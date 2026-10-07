@@ -388,7 +388,7 @@ function PaymentScreen({ service, amount, guests, provider, eventDate, eventTime
   const confirm = async () => {
     setBusy(true);
     try {
-      const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, paymentMethod: "cash", eventDate, eventTime, city });
+      const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, discount: off, coupon, paymentMethod: "cash", eventDate, eventTime, city });
       if (cabAddon) {
         try {
           const addonBooking = await createLiveBooking({ providerId: cabAddon.providerId, bookingType: "Marriage Cab", guests: cabAddon.seats, totalAmount: cabAddon.total, paymentMethod: "cash", eventDate, eventTime, city });
