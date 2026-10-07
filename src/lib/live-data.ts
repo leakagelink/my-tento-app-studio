@@ -46,6 +46,42 @@ export function useLiveProviders(city: string, serviceName: string) {
   });
 }
 
+/**
+ * Availability rules per provider: a provider that has any calendar rows is
+ * "restricted" (open only on dates explicitly marked available); a provider
+ * with no rows is open every day. A date is bookable when at least one
+ * relevant provider is open on it.
+ */
+export function useAvailableDates(providerIds: string[]) {
+  const ids = [...providerIds].sort();
+  const { data, isLoading } = useQuery({
+    queryKey: ["provider-availability-open", ids],
+    enabled: ids.length > 0,
+    queryFn: async () => {
+      const { data: rows, error } = await supabase.from("provider_availability").select("provider_id,available_date,status").in("provider_id", ids);
+      if (error) throw error;
+      return rows ?? [];
+    },
+    staleTime: 60_000,
+  });
+  const openDates = new Set<string>();
+  let restricted = 0;
+  if (data) {
+    const byProvider = new Map<string, number>();
+    for (const row of data) {
+      byProvider.set(row.provider_id, (byProvider.get(row.provider_id) ?? 0) + 1);
+      if (row.status === "available") openDates.add(row.available_date);
+    }
+    restricted = [...byProvider.values()].filter((count) => count > 0).length;
+  }
+  const isDateAvailable = (date: Date) => {
+    if (restricted === 0) return true;
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return openDates.has(key);
+  };
+  return { isDateAvailable, isLoading };
+}
+
 export async function getCurrentUser() {
   const { data } = await supabase.auth.getUser();
   return data.user ?? null;

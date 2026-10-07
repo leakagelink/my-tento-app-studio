@@ -24,13 +24,40 @@ type CabVehicle = {
   provider: { id: string; business_name: string; city: string; distance_km: number } | null;
 };
 
-type CabMode = "trip" | "event";
+export type CabMode = "trip" | "event";
 
-const EVENT_PACKAGES = [
+export const EVENT_PACKAGES = [
   { id: "4h", label: "4 hours", multiplier: 1.5 },
   { id: "8h", label: "8 hours", multiplier: 2.5 },
   { id: "12h", label: "Full day (12 hours)", multiplier: 3.5 },
 ] as const;
+
+export type CabAddon = {
+  vehicleId: string;
+  vehicleType: string;
+  seats: number;
+  providerId: string;
+  providerName: string;
+  pkgId: string;
+  pkgLabel: string;
+  multiplier: number;
+  total: number;
+};
+
+export function useNearbyVehicles(city?: string) {
+  return useQuery({
+    queryKey: ["public-vehicles", city ?? "all"],
+    queryFn: async (): Promise<CabVehicle[]> => {
+      const { data, error } = await supabase.from("vehicles").select("id,vehicle_type,seats,base_fare,per_km_rate,providers(id,business_name,city,distance_km,verified,active)").eq("active", true).order("base_fare");
+      if (error) throw error;
+      return (data ?? []).map((v) => {
+        const provider = Array.isArray(v.providers) ? v.providers[0] : v.providers;
+        return { id: v.id, vehicle_type: v.vehicle_type, seats: v.seats, base_fare: Number(v.base_fare), per_km_rate: Number(v.per_km_rate), provider };
+      }).filter((v) => v.provider?.active && v.provider.verified && Number(v.provider.distance_km) <= 10 && (!city || v.provider.city === city));
+    },
+    staleTime: 60_000,
+  });
+}
 
 export function ClientCabScreen() {
   const queryClient = useQueryClient();
