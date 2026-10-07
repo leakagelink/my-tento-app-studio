@@ -71,17 +71,7 @@ export function ClientCabScreen() {
   const [km, setKm] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const { data: vehicles = [], isLoading } = useQuery({
-    queryKey: ["public-vehicles"],
-    queryFn: async (): Promise<CabVehicle[]> => {
-      const { data, error } = await supabase.from("vehicles").select("id,vehicle_type,seats,base_fare,per_km_rate,providers(id,business_name,city,distance_km,verified,active)").eq("active", true).order("base_fare");
-      if (error) throw error;
-      return (data ?? []).map((v) => {
-        const provider = Array.isArray(v.providers) ? v.providers[0] : v.providers;
-        return { id: v.id, vehicle_type: v.vehicle_type, seats: v.seats, base_fare: Number(v.base_fare), per_km_rate: Number(v.per_km_rate), provider };
-      }).filter((v) => v.provider?.active && v.provider.verified && Number(v.provider.distance_km) <= 10);
-    },
-  });
+  const { data: vehicles = [], isLoading } = useNearbyVehicles();
 
   const kmNum = Number(km) || 0;
   const activePkg = EVENT_PACKAGES.find((p) => p.id === pkg) ?? EVENT_PACKAGES[0];
