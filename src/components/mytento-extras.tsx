@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Languages, ShieldCheck, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
+import { toast } from "sonner";
+import { offerDiscount, usePublicOffers, type PublicOffer } from "@/lib/live-data";
 import homeBanner from "@/assets/home-banner.webp";
 import serviceTent from "@/assets/service-tent.webp";
 import serviceDecoration from "@/assets/service-decoration.webp";
