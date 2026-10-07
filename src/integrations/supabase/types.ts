@@ -518,6 +518,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          image_url: string | null
           name: string
           sort_order: number
           subtitle: string
@@ -526,6 +527,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          image_url?: string | null
           name: string
           sort_order?: number
           subtitle?: string
@@ -534,6 +536,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          image_url?: string | null
           name?: string
           sort_order?: number
           subtitle?: string

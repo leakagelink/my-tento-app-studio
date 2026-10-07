@@ -128,3 +128,16 @@ export async function createLiveBooking(input: {
   if (paymentError) throw paymentError;
   return booking;
 }
+/** Admin-managed photos for each service category, keyed by service name. */
+export function useServicePhotos() {
+  const { data } = useQuery({
+    queryKey: ["service-photos"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("services").select("name,image_url");
+      if (error) throw error;
+      return Object.fromEntries((data ?? []).filter((s) => s.image_url).map((s) => [s.name, s.image_url as string])) as Record<string, string>;
+    },
+    staleTime: 5 * 60_000,
+  });
+  return data ?? {};
+}
