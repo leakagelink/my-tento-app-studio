@@ -65,12 +65,14 @@ export function useAvailableDates(providerIds: string[]) {
     staleTime: 60_000,
   });
   const openDates = new Set<string>();
+  const bookedDates = new Set<string>();
   let restricted = 0;
   if (data) {
     const byProvider = new Map<string, number>();
     for (const row of data) {
       byProvider.set(row.provider_id, (byProvider.get(row.provider_id) ?? 0) + 1);
       if (row.status === "available") openDates.add(row.available_date);
+      if (row.status === "booked") bookedDates.add(row.available_date);
     }
     restricted = [...byProvider.values()].filter((count) => count > 0).length;
   }
@@ -79,7 +81,11 @@ export function useAvailableDates(providerIds: string[]) {
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     return openDates.has(key);
   };
-  return { isDateAvailable, isLoading };
+  const isDateBooked = (date: Date) => {
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return bookedDates.has(key);
+  };
+  return { isDateAvailable, isDateBooked, isLoading };
 }
 
 export async function getCurrentUser() {
