@@ -22,7 +22,7 @@ import serviceDecoration from "@/assets/service-decoration.webp";
 import serviceCatering from "@/assets/service-catering.webp";
 import serviceCab from "@/assets/service-cab.webp";
 import { supabase } from "@/integrations/supabase/client";
-import { createLiveBooking, useAvailableDates, useServicePhotos, useLiveProviders, type LiveProvider } from "@/lib/live-data";
+import { createLiveBooking, useAvailableDates, useServicePhotos, usePublicOffers, usePublicBanners, useLiveProviders, type LiveProvider } from "@/lib/live-data";
 import { useAuth } from "@/hooks/use-auth";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
@@ -179,6 +179,8 @@ const POPULAR_CITIES = ["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayod
 
 function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onDetect, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onDetect: () => void; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
   const photos = useServicePhotos();
+  const banners = usePublicBanners();
+  const offers = usePublicOffers();
   const img = (n: ServiceName) => photos[n] ?? serviceImages[n];
   const t = useT();
   const { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity } = useCitySearch();
@@ -214,6 +216,7 @@ function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen
       <span className="relative z-10 flex shrink-0 items-center gap-1.5 rounded-xl bg-card px-4 py-2.5 text-[11px] font-bold text-primary shadow-sm transition-transform active:scale-95">View <ChevronRight className="size-3" /></span>
     </button>
 
+    {banners.length > 0 ? <div className="-mx-1 mb-8 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1">{banners.map((b) => <button key={b.id} type="button" onClick={() => onBook("Tent")} className="group relative block h-52 w-[88%] shrink-0 snap-center overflow-hidden rounded-[32px] bg-primary text-left shadow-tile last:mr-1 only:w-full">{b.image_url && <img src={b.image_url} alt={b.title} className="absolute inset-0 h-full w-full object-cover" />}<span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" /><span className="absolute bottom-5 left-6 right-6"><span className="mb-2 inline-block rounded-md bg-accent px-2.5 py-1 text-[9px] font-black uppercase text-accent-foreground shadow-sm">{b.banner_type}</span><span className="block font-display text-xl font-bold leading-tight text-white">{b.title}</span>{b.subtitle && <span className="mt-1 block text-xs text-white/80">{b.subtitle}</span>}</span></button>)}</div> : (
     <button type="button" onClick={() => onBook("Tent")} className="group relative mb-8 block h-52 w-full overflow-hidden rounded-[32px] bg-secondary text-left shadow-tile">
       <img src={homeBanner} alt="Wedding venue" width={1280} height={720} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
       <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -222,7 +225,8 @@ function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen
         <span className="block font-display text-xl font-bold leading-tight text-white">{t("offerTitle")}</span>
         <span className="mt-1 block text-xs text-white/80">{t("offerSub")}</span>
       </span>
-    </button>
+    </button>)}
+    {offers.length > 0 && <div className="-mx-1 mb-8 flex gap-3 overflow-x-auto px-1">{offers.map((o) => <div key={o.code} className="shrink-0 rounded-2xl border border-dashed border-primary/40 bg-card px-4 py-3"><p className="font-mono text-sm font-bold text-primary">{o.code}</p><p className="text-xs text-muted-foreground">{o.title} · {o.discount_percent}% off</p></div>)}</div>}
 
     <section className="mb-8">
       <div className="mb-4 flex items-end justify-between gap-3 px-1">
@@ -381,13 +385,14 @@ function ProvidersScreen({ providers, selected, setSelected, onContinue, onView 
 }
 
 function PaymentScreen({ service, amount, guests, provider, eventDate, eventTime, city, cabAddon, onConfirm }: { service: string; amount: number; guests: number; provider: LiveProvider; eventDate: string; eventTime: string; city: string; cabAddon: CabAddon | null; onConfirm: (bookingCode: string) => void }) {
+  const offers = usePublicOffers();
   const [coupon, setCoupon] = useState<string | null>(null); const [busy, setBusy] = useState(false);
-  const off = discountFor(coupon, amount); const final = amount - off; const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const off = discountFor(coupon, amount, offers); const final = amount - off; const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const grand = final + (cabAddon?.total ?? 0);
   const confirm = async () => {
     setBusy(true);
     try {
-      const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, paymentMethod: "cash", eventDate, eventTime, city });
+      const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, discount: off, coupon, paymentMethod: "cash", eventDate, eventTime, city });
       if (cabAddon) {
         try {
           const addonBooking = await createLiveBooking({ providerId: cabAddon.providerId, bookingType: "Marriage Cab", guests: cabAddon.seats, totalAmount: cabAddon.total, paymentMethod: "cash", eventDate, eventTime, city });

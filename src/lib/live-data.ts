@@ -109,6 +109,8 @@ export async function createLiveBooking(input: {
   eventDate: string;
   eventTime: string;
   city: string;
+  discount?: number;
+  coupon?: string | null;
 }) {
   const user = await getCurrentUser();
   if (!user) throw new Error("SIGN_IN_REQUIRED");
@@ -120,9 +122,10 @@ export async function createLiveBooking(input: {
     event_time: input.eventTime,
     city: input.city,
     guests: input.guests,
-    subtotal: input.totalAmount,
+    subtotal: input.totalAmount + (input.discount ?? 0),
+    discount: input.discount ?? 0,
     total_amount: input.totalAmount,
-    details: { source: "customer_app" },
+    details: input.coupon ? { source: "customer_app", coupon: input.coupon } : { source: "customer_app" },
   }).select("id,booking_code").single();
   if (error) throw error;
   const { error: paymentError } = await supabase.from("payments").insert({
@@ -147,4 +150,38 @@ export function useServicePhotos() {
     staleTime: 5 * 60_000,
   });
   return data ?? {};
+}
+
+export type PublicOffer = { code: string; title: string; discount_percent: number; max_discount: number | null; starts_at: string | null; ends_at: string | null };
+/** Active offers currently within their date window. */
+export function usePublicOffers() {
+  const { data } = useQuery({
+    queryKey: ["public-offers"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("offers").select("code,title,discount_percent,max_discount,starts_at,ends_at").eq("active", true).order("discount_percent", { ascending: false });
+      if (error) throw error;
+      const now = Date.now();
+      return (data ?? []).filter((o) => (!o.starts_at || Date.parse(o.starts_at) <= now) && (!o.ends_at || Date.parse(o.ends_at) >= now)) as PublicOffer[];
+    },
+    staleTime: 0,
+  });
+  return data ?? [];
+}
+export function offerDiscount(offer: PublicOffer | undefined, amount: number) {
+  if (!offer) return 0;
+  const raw = Math.round((amount * offer.discount_percent) / 100);
+  return offer.max_discount ? Math.min(raw, Number(offer.max_discount)) : raw;
+}
+
+export function usePublicBanners() {
+  const { data } = useQuery({
+    queryKey: ["public-banners"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("banners").select("id,title,subtitle,image_url,banner_type").eq("active", true).order("sort_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 0,
+  });
+  return data ?? [];
 }
