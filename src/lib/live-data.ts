@@ -47,7 +47,9 @@ export function useLiveProviders(city: string, serviceName: string) {
         };
       });
     },
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
 
