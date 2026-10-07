@@ -24,9 +24,19 @@ type CabVehicle = {
   provider: { id: string; business_name: string; city: string; distance_km: number } | null;
 };
 
+type CabMode = "trip" | "event";
+
+const EVENT_PACKAGES = [
+  { id: "4h", label: "4 hours", multiplier: 1.5 },
+  { id: "8h", label: "8 hours", multiplier: 2.5 },
+  { id: "12h", label: "Full day (12 hours)", multiplier: 3.5 },
+] as const;
+
 export function ClientCabScreen() {
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<CabVehicle | null>(null);
+  const [mode, setMode] = useState<CabMode>("trip");
+  const [pkg, setPkg] = useState<string>("4h");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [pickup, setPickup] = useState("");
