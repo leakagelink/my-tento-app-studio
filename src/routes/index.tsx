@@ -172,7 +172,13 @@ function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen
   return <div className="animate-rise-in">
     <section className="relative mb-5">
       <button type="button" onClick={() => setLocationOpen(!locationOpen)} className="flex max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-muted-foreground shadow-sm"><MapPin className="size-3.5 shrink-0 text-accent" /><span className="min-w-0 truncate text-[11px] font-bold uppercase tracking-widest">{location}</span><ChevronDown className="size-3 shrink-0 opacity-60" /></button>
-      {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-popover p-2 shadow-lg"><Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
+      {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-2xl border border-border bg-popover p-2 shadow-lg">
+        <div className="mb-1 flex items-center gap-2 rounded-xl border border-border bg-muted px-3 py-2"><Search className="size-4 shrink-0 text-muted-foreground" /><input value={cityQuery} onChange={(e) => void searchCity(e.target.value)} placeholder="Search your city…" className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground" /></div>
+        {citySearching && <p className="px-3 py-2 text-xs text-muted-foreground">Searching…</p>}
+        {cityResults.map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); setCityQuery(""); setCityResults([]); }} className="w-full justify-start"><MapPin className="size-4 shrink-0 text-accent" /><span className="truncate">{city}</span></Button>)}
+        <Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>
+        {["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}
+      </div>}
     </section>
 
     <section className="mb-5 overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-tile">
