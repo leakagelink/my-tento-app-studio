@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BrandLogo } from "@/components/brand-logo";
 import { RoleGate } from "@/components/role-gate";
+import { AdminOffers, AdminBanners, AdminCabs } from "@/components/admin-content";
 import { AdminServicePhotos } from "@/components/admin-service-photos";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -102,9 +103,9 @@ function AdminPanel() {
       {tab === "bookings" && <><Page title="Bookings" sub="All saved customer bookings" /><ListEmpty count={bookings.length} text="No bookings yet.">{bookings.map((booking) => <BookingRow key={booking.id} booking={booking} />)}</ListEmpty></>}
       {tab === "users" && <><Page title="Users" sub="Registered customer profiles" /><ListEmpty count={profiles.length} text="No user profiles yet.">{profiles.map((profile) => <Card key={profile.id}><div className="flex items-center gap-3"><Avatar text={profile.full_name || "User"} /><div className="min-w-0"><b>{profile.full_name || "Unnamed user"}</b><p className="text-xs text-muted-foreground">{profile.phone || "No phone"} · {profile.city || "No city"}</p></div></div></Card>)}</ListEmpty></>}
       {tab === "payments" && <><Page title="Payments" sub="Saved payment records" /><ListEmpty count={payments.length} text="No payments yet.">{payments.map((payment) => { const booking = Array.isArray(payment.bookings) ? payment.bookings[0] : payment.bookings; return <Card key={payment.id}><div className="flex items-center gap-3"><IndianRupee className="size-5 text-primary" /><div className="min-w-0 flex-1"><b>{booking?.booking_code ?? payment.id}</b><p className="text-xs text-muted-foreground">{payment.method} · {payment.status}</p></div><b className="text-primary">₹{Number(payment.amount).toLocaleString("en-IN")}</b></div></Card>; })}</ListEmpty></>}
-      {tab === "offers" && <><Page title="Offers" sub="Live discount codes" /><ListEmpty count={offers.length} text="No offers created.">{offers.map((offer) => <Card key={offer.id}><div className="flex items-center gap-3"><div className="min-w-0 flex-1"><b>{offer.code}</b><p className="text-xs text-muted-foreground">{offer.title} · {offer.discount_percent}% off</p></div><Button size="sm" variant={offer.active ? "default" : "outline"} onClick={() => void toggleOffer(offer.id, offer.active)}>{offer.active ? "Active" : "Paused"}</Button></div></Card>)}</ListEmpty></>}
-      {tab === "cab" && <><Page title="Cab control" sub="Live vehicle records and rates" /><ListEmpty count={vehicles.length} text="No vehicles registered.">{vehicles.map((vehicle) => { const provider = Array.isArray(vehicle.providers) ? vehicle.providers[0] : vehicle.providers; return <Card key={vehicle.id}><div className="flex items-center gap-3"><TentTree className="size-5 text-primary" /><div className="min-w-0 flex-1"><b>{vehicle.vehicle_type} · {vehicle.vehicle_number}</b><p className="text-xs text-muted-foreground">{provider?.business_name ?? "Unassigned"} · ₹{Number(vehicle.base_fare)}/base · ₹{Number(vehicle.per_km_rate)}/km</p></div><Button size="sm" variant={vehicle.active ? "default" : "outline"} onClick={() => void toggleVehicle(vehicle.id, vehicle.active)}>{vehicle.active ? "Active" : "Paused"}</Button></div></Card>; })}</ListEmpty></>}
-      {tab === "content" && <><Page title="Banners" sub="Live offers, updates and announcements" /><ListEmpty count={banners.length} text="No banners created.">{banners.map((banner) => <Card key={banner.id}><b>{banner.title}</b><p className="text-xs text-muted-foreground">{banner.banner_type} · {banner.subtitle} · {banner.active ? "Active" : "Paused"}</p></Card>)}</ListEmpty></>}
+      {tab === "offers" && <AdminOffers />}
+      {tab === "cab" && <AdminCabs />}
+      {tab === "content" && <AdminBanners />}
       {(["notifications","reports","settings"] as Tab[]).includes(tab) && <><Page title={tab[0]?.toUpperCase() + tab.slice(1)} sub="Live data only" /><Empty text="No live records or controls are available here yet." /></>}
     </main>
       </div>
