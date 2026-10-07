@@ -330,8 +330,28 @@ function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, ev
           ) : (
             <button type="button" onClick={() => setCityEdit(true)} className="col-span-2 flex w-full items-center gap-3 rounded-lg border border-border bg-muted p-3 text-left transition-transform active:scale-[0.99]" aria-label="Change city"><span className="grid size-9 place-items-center rounded-md bg-card text-primary shadow-sm"><MapPin className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">City</p><p className="truncate text-sm font-bold">{city}</p></div><span className="flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase text-primary">Change <ChevronRight className="size-3.5" /></span></button>
           )}
-          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><CalendarDays className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Event date</span><input aria-label="Event date" type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><CalendarDays className="size-4 shrink-0 text-primary" /><span className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Event date</span><Popover open={dateOpen} onOpenChange={setDateOpen}><PopoverTrigger asChild><button type="button" aria-label="Event date" className="w-full truncate text-left text-xs font-bold outline-none">{eventDate ? format(new Date(`${eventDate}T00:00:00`), "d MMM yyyy") : "Select date"}</button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={eventDate ? new Date(`${eventDate}T00:00:00`) : undefined} onSelect={(d) => { if (d) { setEventDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`); setDateOpen(false); } }} disabled={(d) => d < today || !isDateAvailable(d)} initialFocus className="p-3 pointer-events-auto" /></PopoverContent></Popover></span></div>
           <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><Clock3 className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Time</span><input aria-label="Start time" type="time" value={eventTime} onChange={(event) => setEventTime(event.target.value)} className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
+          <div className="col-span-2 rounded-lg border border-border bg-muted p-3">
+            <div className="flex items-center justify-between gap-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Add-on</p><p className="text-sm font-bold">Marriage / Event cab</p><p className="mt-0.5 text-[11px] text-muted-foreground">Event ke liye ghanton ke hisaab se cab add karein</p></div><Switch checked={addonOn} onCheckedChange={(v) => { setAddonOn(v); if (!v) setAddonVehicleId(""); }} aria-label="Add marriage or event cab" /></div>
+            {addonOn && (
+              <div className="mt-3 space-y-2">
+                {addonVehicles.length === 0 ? <p className="rounded-md bg-card p-2 text-xs text-muted-foreground">No verified cabs available in {city} right now.</p> : (
+                  <>
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground">Select cab</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {addonVehicles.map((v) => <Button key={v.id} type="button" size="sm" variant={addonVehicle?.id === v.id ? "default" : "outline"} onClick={() => setAddonVehicleId(v.id)} className="h-auto flex-col items-start gap-0.5 px-3 py-2 text-left"><span className="w-full truncate text-xs">{v.vehicle_type}</span><span className="text-[10px] opacity-80">{v.seats} seats · ₹{v.base_fare}</span></Button>)}
+                    </div>
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground">Package</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {EVENT_PACKAGES.map((p) => <Button key={p.id} type="button" size="sm" variant={addonPkg === p.id ? "default" : "outline"} onClick={() => setAddonPkg(p.id)}>{p.label}</Button>)}
+                    </div>
+                    {addonVehicle && <p className="rounded-md bg-secondary p-2 text-xs font-bold text-primary">{addonPkgObj.label} · ₹{Math.round(addonVehicle.base_fare * addonPkgObj.multiplier).toLocaleString("en-IN")} <span className="font-normal text-muted-foreground">— confirm karne par cab booking alag save hogi</span></p>}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
           <div className="col-span-2 flex items-center justify-between rounded-lg border border-border bg-muted p-3"><div><p className="text-[10px] font-bold uppercase text-muted-foreground">Number of guests · steps of 20</p><p className="text-sm font-bold">{guests} guests</p></div><div className="flex items-center gap-2"><Button variant="outline" size="icon" aria-label="Remove 20 guests" onClick={() => setGuests(Math.max(20, guests - 20))} className="size-8 min-h-8"><Minus className="size-4" /></Button><Button size="icon" aria-label="Add 20 guests" onClick={() => setGuests(guests + 20)} className="size-8 min-h-8"><Plus className="size-4" /></Button></div></div>
         </div>
       </section>
