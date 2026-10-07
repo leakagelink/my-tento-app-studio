@@ -8,8 +8,12 @@ import {
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import { format } from "date-fns";
 import { BrandLogo } from "@/components/brand-logo";
-import { ClientCabScreen } from "@/components/client-requirement-panels";
+import { ClientCabScreen, useNearbyVehicles, EVENT_PACKAGES, type CabAddon } from "@/components/client-requirement-panels";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.webp";
 import homeBanner from "@/assets/home-banner.webp";
@@ -18,7 +22,7 @@ import serviceDecoration from "@/assets/service-decoration.webp";
 import serviceCatering from "@/assets/service-catering.webp";
 import serviceCab from "@/assets/service-cab.webp";
 import { supabase } from "@/integrations/supabase/client";
-import { createLiveBooking, useLiveProviders, type LiveProvider } from "@/lib/live-data";
+import { createLiveBooking, useAvailableDates, useLiveProviders, type LiveProvider } from "@/lib/live-data";
 import { useAuth } from "@/hooks/use-auth";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
