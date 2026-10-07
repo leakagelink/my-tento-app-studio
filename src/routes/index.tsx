@@ -281,9 +281,28 @@ function ProfileScreen({ userId, email }: { userId: string | undefined; email: s
 
 function NotificationsScreen({ userId, onBooking }: { userId: string | undefined; onBooking: () => void }) { const queryClient = useQueryClient(); const { data = [], isLoading } = useQuery({ queryKey: ["notifications", userId], enabled: Boolean(userId), queryFn: async () => { const { data, error } = await supabase.from("notifications").select("id,title,message,read_at,created_at").eq("user_id", userId ?? "").order("created_at", { ascending: false }); if (error) throw error; return data ?? []; } }); const markRead = async () => { if (!userId) return; const { error } = await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId).is("read_at", null); if (error) { toast.error("Notifications could not be updated"); return; } await queryClient.invalidateQueries({ queryKey: ["notifications", userId] }); }; return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and account updates" />{data.some((item) => !item.read_at) && <Button variant="ghost" size="sm" onClick={() => void markRead()}>Mark all read</Button>}</div>{!userId ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Sign in to view notifications.</p> : isLoading ? <p className="text-sm text-muted-foreground">Loading notifications…</p> : data.length === 0 ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No notifications yet.</p> : <div className="space-y-3">{data.map((item) => <Button key={item.id} variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${item.read_at ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">{item.title}</span><span className="text-xs font-normal text-muted-foreground">{item.message}</span></span></Button>)}</div>}</div>; }
 
-function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, providers, loading, onContinue, onCityChange }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; providers: LiveProvider[]; loading: boolean; onContinue: () => void; onCityChange: (value: string) => void }) {
+function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, providers, loading, onContinue, onCityChange, onCabAddon }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; providers: LiveProvider[]; loading: boolean; onContinue: () => void; onCityChange: (value: string) => void; onCabAddon: (addon: CabAddon | null) => void }) {
   const [cityEdit, setCityEdit] = useState(false);
   const { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity } = useCitySearch();
+  const { isDateAvailable } = useAvailableDates(providers.map((p) => p.id));
+  const [dateOpen, setDateOpen] = useState(false);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  // Cab add-on (Marriage / Event cab) local picks, synced to the parent booking
+  const [addonOn, setAddonOn] = useState(false);
+  const [addonVehicleId, setAddonVehicleId] = useState("");
+  const [addonPkg, setAddonPkg] = useState<string>(EVENT_PACKAGES[0].id);
+  const { data: addonVehicles = [] } = useNearbyVehicles(city);
+  const addonVehicle = addonVehicles.find((v) => v.id === addonVehicleId) ?? addonVehicles[0];
+  const addonPkgObj = EVENT_PACKAGES.find((p) => p.id === addonPkg) ?? EVENT_PACKAGES[0];
+  useEffect(() => {
+    if (!addonOn || !addonVehicle) { onCabAddon(null); return; }
+    onCabAddon({
+      vehicleId: addonVehicle.id, vehicleType: addonVehicle.vehicle_type, seats: addonVehicle.seats,
+      providerId: addonVehicle.provider!.id, providerName: addonVehicle.provider!.business_name,
+      pkgId: addonPkgObj.id, pkgLabel: addonPkgObj.label, multiplier: addonPkgObj.multiplier,
+      total: Math.round(addonVehicle.base_fare * addonPkgObj.multiplier),
+    });
+  }, [addonOn, addonVehicle?.id, addonPkgObj.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className="animate-rise-in pb-24">
     <section className="relative h-56 overflow-hidden bg-primary">
       <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
