@@ -59,7 +59,7 @@ export function useNearbyVehicles(city?: string) {
         return v.provider?.active && v.provider.verified && Number(v.provider.distance_km) <= 10 && (!want || have.includes(want) || want.includes(have));
       });
     },
-    staleTime: 60_000,
+    staleTime: 0, refetchOnMount: "always",
   });
 }
 
