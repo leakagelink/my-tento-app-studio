@@ -57,19 +57,24 @@ export function ClientCabScreen() {
   });
 
   const kmNum = Number(km) || 0;
-  const total = selected ? selected.base_fare + selected.per_km_rate * kmNum : 0;
+  const activePkg = EVENT_PACKAGES.find((p) => p.id === pkg) ?? EVENT_PACKAGES[0];
+  const total = selected
+    ? mode === "event"
+      ? Math.round(selected.base_fare * activePkg.multiplier)
+      : selected.base_fare + selected.per_km_rate * kmNum
+    : 0;
 
   const book = async () => {
     if (!selected?.provider) return;
-    if (!date || !time || !pickup.trim() || !drop.trim() || kmNum <= 0) {
-      toast.error("Date, time, pickup, drop aur distance bhariye");
+    if (!date || !time || !pickup.trim() || !drop.trim() || (mode === "trip" && kmNum <= 0)) {
+      toast.error(mode === "trip" ? "Date, time, pickup, drop aur distance bhariye" : "Date, time, pickup aur drop bhariye");
       return;
     }
     setSaving(true);
     try {
       const booking = await createLiveBooking({
         providerId: selected.provider.id,
-        bookingType: "Cab",
+        bookingType: mode === "event" ? "Marriage Cab" : "Cab",
         guests: selected.seats,
         totalAmount: total,
         paymentMethod: "cash",
@@ -77,9 +82,21 @@ export function ClientCabScreen() {
         eventTime: time,
         city: selected.provider.city,
       });
-      await supabase.from("bookings").update({ pickup_location: pickup.trim(), drop_location: drop.trim(), details: { source: "customer_app", vehicle_id: selected.id, vehicle_type: selected.vehicle_type, distance_km: kmNum } }).eq("id", booking.id);
+      await supabase.from("bookings").update({
+        pickup_location: pickup.trim(),
+        drop_location: drop.trim(),
+        details: {
+          source: "customer_app",
+          vehicle_id: selected.id,
+          vehicle_type: selected.vehicle_type,
+          ...(mode === "event"
+            ? { cab_mode: "event_package", package: activePkg.label }
+            : { cab_mode: "point_to_point", distance_km: kmNum }),
+        },
+      }).eq("id", booking.id);
       toast.success(`Cab booked! Code: ${booking.booking_code}`);
       setSelected(null);
+      setMode("trip"); setPkg("4h");
       setDate(""); setTime(""); setPickup(""); setDrop(""); setKm("");
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
     } catch (e) {
