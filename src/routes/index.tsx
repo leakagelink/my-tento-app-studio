@@ -22,7 +22,7 @@ import serviceDecoration from "@/assets/service-decoration.webp";
 import serviceCatering from "@/assets/service-catering.webp";
 import serviceCab from "@/assets/service-cab.webp";
 import { supabase } from "@/integrations/supabase/client";
-import { createLiveBooking, useAvailableDates, useServicePhotos, useLiveProviders, type LiveProvider } from "@/lib/live-data";
+import { createLiveBooking, useAvailableDates, useServicePhotos, usePublicOffers, usePublicBanners, useLiveProviders, type LiveProvider } from "@/lib/live-data";
 import { useAuth } from "@/hooks/use-auth";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
@@ -381,8 +381,9 @@ function ProvidersScreen({ providers, selected, setSelected, onContinue, onView 
 }
 
 function PaymentScreen({ service, amount, guests, provider, eventDate, eventTime, city, cabAddon, onConfirm }: { service: string; amount: number; guests: number; provider: LiveProvider; eventDate: string; eventTime: string; city: string; cabAddon: CabAddon | null; onConfirm: (bookingCode: string) => void }) {
+  const offers = usePublicOffers();
   const [coupon, setCoupon] = useState<string | null>(null); const [busy, setBusy] = useState(false);
-  const off = discountFor(coupon, amount); const final = amount - off; const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  const off = discountFor(coupon, amount, offers); const final = amount - off; const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const grand = final + (cabAddon?.total ?? 0);
   const confirm = async () => {
     setBusy(true);
