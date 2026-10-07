@@ -154,11 +154,31 @@ function Index() {
 
 function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onDetect, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onDetect: () => void; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
   const t = useT();
+  const [cityQuery, setCityQuery] = useState("");
+  const [cityResults, setCityResults] = useState<string[]>([]);
+  const [citySearching, setCitySearching] = useState(false);
+  const searchCity = async (q: string) => {
+    setCityQuery(q);
+    if (q.trim().length < 3) { setCityResults([]); return; }
+    setCitySearching(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=in&featureType=city&q=${encodeURIComponent(q.trim())}`);
+      const data = await res.json() as Array<{ display_name?: string; address?: { city?: string; town?: string; village?: string; state?: string } }>;
+      const names = (data ?? []).map((d) => { const a = d.address ?? {}; const c = a.city || a.town || a.village; return c ? `${c}${a.state ? `, ${a.state}` : ""}` : (d.display_name ?? "").split(",").slice(0, 2).join(",").trim(); }).filter(Boolean);
+      setCityResults([...new Set(names)]);
+    } catch { setCityResults([]); } finally { setCitySearching(false); }
+  };
   const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[32px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent" />{badge && <span className="absolute left-4 top-4 rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-5 left-5 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
   return <div className="animate-rise-in">
     <section className="relative mb-5">
       <button type="button" onClick={() => setLocationOpen(!locationOpen)} className="flex max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-muted-foreground shadow-sm"><MapPin className="size-3.5 shrink-0 text-accent" /><span className="min-w-0 truncate text-[11px] font-bold uppercase tracking-widest">{location}</span><ChevronDown className="size-3 shrink-0 opacity-60" /></button>
-      {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-64 rounded-2xl border border-border bg-popover p-2 shadow-lg"><Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>{["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}</div>}
+      {locationOpen && <div className="absolute left-0 top-full z-20 mt-2 w-72 rounded-2xl border border-border bg-popover p-2 shadow-lg">
+        <div className="mb-1 flex items-center gap-2 rounded-xl border border-border bg-muted px-3 py-2"><Search className="size-4 shrink-0 text-muted-foreground" /><input value={cityQuery} onChange={(e) => void searchCity(e.target.value)} placeholder="Search your city…" className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground" /></div>
+        {citySearching && <p className="px-3 py-2 text-xs text-muted-foreground">Searching…</p>}
+        {cityResults.map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); setCityQuery(""); setCityResults([]); }} className="w-full justify-start"><MapPin className="size-4 shrink-0 text-accent" /><span className="truncate">{city}</span></Button>)}
+        <Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>
+        {["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}
+      </div>}
     </section>
 
     <section className="mb-5 overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-tile">
