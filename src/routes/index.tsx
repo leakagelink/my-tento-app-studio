@@ -8,8 +8,12 @@ import {
   Star, Store, TentTree, UserRound, UtensilsCrossed, WalletCards, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
+import { format } from "date-fns";
 import { BrandLogo } from "@/components/brand-logo";
-import { ClientCabScreen } from "@/components/client-requirement-panels";
+import { ClientCabScreen, useNearbyVehicles, EVENT_PACKAGES, type CabAddon } from "@/components/client-requirement-panels";
 import { LangContext, useT, LanguageToggle, Onboarding, ComboScreen, ProviderDetailFull, ReviewsScreen, CouponBox, discountFor, BookingTracker, tr, type Lang, type TKey } from "@/components/mytento-extras";
 import decorationHero from "@/assets/decoration-hero.webp";
 import homeBanner from "@/assets/home-banner.webp";
@@ -18,7 +22,7 @@ import serviceDecoration from "@/assets/service-decoration.webp";
 import serviceCatering from "@/assets/service-catering.webp";
 import serviceCab from "@/assets/service-cab.webp";
 import { supabase } from "@/integrations/supabase/client";
-import { createLiveBooking, useLiveProviders, type LiveProvider } from "@/lib/live-data";
+import { createLiveBooking, useAvailableDates, useLiveProviders, type LiveProvider } from "@/lib/live-data";
 import { useAuth } from "@/hooks/use-auth";
 
 const serviceImages: Record<ServiceName, string> = { Tent: serviceTent, Decoration: serviceDecoration, Catering: serviceCatering, Cab: serviceCab };
@@ -66,6 +70,7 @@ function Index() {
   const [onboard, setOnboard] = useState(false);
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
   const [bookingCode, setBookingCode] = useState("");
+  const [cabAddon, setCabAddon] = useState<CabAddon | null>(null);
   const city = location.split(",")[0] ?? "Lucknow";
   const { data: liveProviders = [], isLoading: providersLoading } = useLiveProviders(city, service);
   const visibleProviders: LiveProvider[] = liveProviders;
@@ -127,10 +132,10 @@ function Index() {
          {step === "reviews" && chosenProvider && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
         {step === "details" && service === "Cab" && <ClientCabScreen />}
-         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} city={city} providers={visibleProviders} loading={providersLoading} onContinue={() => go("providers")} />}
+         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} city={city} providers={visibleProviders} loading={providersLoading} onContinue={() => go("providers")} onCityChange={chooseLocation} onCabAddon={setCabAddon} />}
          {step === "providers" && <ProvidersScreen providers={visibleProviders} selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
          {step === "providerDetail" && chosenProvider && <ProviderDetailFull provider={chosenProvider} onBook={() => go("details")} onReviews={() => go("reviews")} />}
-          {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} eventDate={eventDate} eventTime={eventTime} city={city} onConfirm={(code) => { setBookingCode(code); go("success"); }} />}
+          {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} eventDate={eventDate} eventTime={eventTime} city={city} cabAddon={cabAddon} onConfirm={(code) => { setBookingCode(code); go("success"); }} />}
           {step === "success" && chosenProvider && <SuccessScreen provider={chosenProvider} bookingCode={bookingCode} eventDate={eventDate} onHome={() => go("home")} />}
           {step === "bookings" && <BookingsScreen userId={user?.id} onTrack={(booking) => { setSelectedBooking(booking); go("bookingDetail"); }} onSignIn={() => { void navigate({ to: "/auth", search: { redirect: "/" } }); }} />}
           {step === "bookingDetail" && <BookingTracker booking={selectedBooking} />}
@@ -152,8 +157,7 @@ function Index() {
   );
 }
 
-function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onDetect, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onDetect: () => void; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
-  const t = useT();
+function useCitySearch() {
   const [cityQuery, setCityQuery] = useState("");
   const [cityResults, setCityResults] = useState<string[]>([]);
   const [citySearching, setCitySearching] = useState(false);
@@ -168,6 +172,14 @@ function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen
       setCityResults([...new Set(names)]);
     } catch { setCityResults([]); } finally { setCitySearching(false); }
   };
+  return { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity };
+}
+
+const POPULAR_CITIES = ["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"];
+
+function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen, setLocation, onDetect, onServices, onProviders, onProvider, onCombo }: { providers: LiveProvider[]; onDetect: () => void; onCombo: () => void; onBook: (name: ServiceName) => void; location: string; locationOpen: boolean; setLocationOpen: (v: boolean) => void; setLocation: (v: string) => void; onServices: () => void; onProviders: () => void; onProvider: (i: number) => void }) {
+  const t = useT();
+  const { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity } = useCitySearch();
   const tile = (name: ServiceName, label: string, sub: string, cls: string, badge?: string) => <button key={name} type="button" onClick={() => onBook(name)} className={`group relative min-w-0 overflow-hidden rounded-[32px] border border-background bg-secondary text-left shadow-tile transition-transform duration-300 active:scale-[0.98] ${cls}`}><img src={serviceImages[name]} alt={label} loading="lazy" width={1024} height={768} className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent" />{badge && <span className="absolute left-4 top-4 rounded-full bg-accent px-2.5 py-1 text-[9px] font-black uppercase tracking-tight text-accent-foreground shadow-sm">{badge}</span>}<span className="absolute bottom-5 left-5 right-3 min-w-0"><span className="block truncate font-display text-lg font-bold leading-tight text-white">{label}</span><span className="mt-0.5 block truncate text-[11px] font-medium leading-tight text-white/80">{sub}</span></span></button>;
   return <div className="animate-rise-in">
     <section className="relative mb-5">
@@ -177,7 +189,7 @@ function HomeScreen({ providers, onBook, location, locationOpen, setLocationOpen
         {citySearching && <p className="px-3 py-2 text-xs text-muted-foreground">Searching…</p>}
         {cityResults.map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); setCityQuery(""); setCityResults([]); }} className="w-full justify-start"><MapPin className="size-4 shrink-0 text-accent" /><span className="truncate">{city}</span></Button>)}
         <Button variant="ghost" onClick={() => { onDetect(); setLocationOpen(false); }} className="w-full justify-start text-primary"><Navigation className="size-4" />Use current location</Button>
-        {["Lucknow, Uttar Pradesh", "Kanpur, Uttar Pradesh", "Ayodhya, Uttar Pradesh"].map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}
+        {POPULAR_CITIES.map(city => <Button key={city} variant="ghost" onClick={() => { setLocation(city); setLocationOpen(false); }} className="w-full justify-start">{city === location && <Check className="size-4 text-success" />}{city}</Button>)}
       </div>}
     </section>
 
@@ -269,7 +281,28 @@ function ProfileScreen({ userId, email }: { userId: string | undefined; email: s
 
 function NotificationsScreen({ userId, onBooking }: { userId: string | undefined; onBooking: () => void }) { const queryClient = useQueryClient(); const { data = [], isLoading } = useQuery({ queryKey: ["notifications", userId], enabled: Boolean(userId), queryFn: async () => { const { data, error } = await supabase.from("notifications").select("id,title,message,read_at,created_at").eq("user_id", userId ?? "").order("created_at", { ascending: false }); if (error) throw error; return data ?? []; } }); const markRead = async () => { if (!userId) return; const { error } = await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId).is("read_at", null); if (error) { toast.error("Notifications could not be updated"); return; } await queryClient.invalidateQueries({ queryKey: ["notifications", userId] }); }; return <div className="mx-auto max-w-2xl animate-rise-in"><div className="mb-6 flex items-center justify-between"><PageTitle title="Notifications" subtitle="Booking and account updates" />{data.some((item) => !item.read_at) && <Button variant="ghost" size="sm" onClick={() => void markRead()}>Mark all read</Button>}</div>{!userId ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Sign in to view notifications.</p> : isLoading ? <p className="text-sm text-muted-foreground">Loading notifications…</p> : data.length === 0 ? <p className="rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">No notifications yet.</p> : <div className="space-y-3">{data.map((item) => <Button key={item.id} variant="outline" onClick={onBooking} className="h-auto w-full justify-start gap-3 p-4 text-left"><span className={`size-2 shrink-0 rounded-full ${item.read_at ? "bg-border" : "bg-accent"}`} /><span><span className="block font-bold">{item.title}</span><span className="text-xs font-normal text-muted-foreground">{item.message}</span></span></Button>)}</div>}</div>; }
 
-function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, providers, loading, onContinue }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; providers: LiveProvider[]; loading: boolean; onContinue: () => void }) {
+function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, eventTime, setEventTime, city, providers, loading, onContinue, onCityChange, onCabAddon }: { service: ServiceName; guests: number; setGuests: (n: number) => void; eventDate: string; setEventDate: (value: string) => void; eventTime: string; setEventTime: (value: string) => void; city: string; providers: LiveProvider[]; loading: boolean; onContinue: () => void; onCityChange: (value: string) => void; onCabAddon: (addon: CabAddon | null) => void }) {
+  const [cityEdit, setCityEdit] = useState(false);
+  const { cityQuery, setCityQuery, cityResults, setCityResults, citySearching, searchCity } = useCitySearch();
+  const { isDateAvailable, isDateBooked } = useAvailableDates(providers.map((p) => p.id));
+  const [dateOpen, setDateOpen] = useState(false);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  // Cab add-on (Marriage / Event cab) local picks, synced to the parent booking
+  const [addonOn, setAddonOn] = useState(false);
+  const [addonVehicleId, setAddonVehicleId] = useState("");
+  const [addonPkg, setAddonPkg] = useState<string>(EVENT_PACKAGES[0].id);
+  const { data: addonVehicles = [] } = useNearbyVehicles(city);
+  const addonVehicle = addonVehicles.find((v) => v.id === addonVehicleId) ?? addonVehicles[0];
+  const addonPkgObj = EVENT_PACKAGES.find((p) => p.id === addonPkg) ?? EVENT_PACKAGES[0];
+  useEffect(() => {
+    if (!addonOn || !addonVehicle) { onCabAddon(null); return; }
+    onCabAddon({
+      vehicleId: addonVehicle.id, vehicleType: addonVehicle.vehicle_type, seats: addonVehicle.seats,
+      providerId: addonVehicle.provider!.id, providerName: addonVehicle.provider!.business_name,
+      pkgId: addonPkgObj.id, pkgLabel: addonPkgObj.label, multiplier: addonPkgObj.multiplier,
+      total: Math.round(addonVehicle.base_fare * addonPkgObj.multiplier),
+    });
+  }, [addonOn, addonVehicle?.id, addonPkgObj.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className="animate-rise-in pb-24">
     <section className="relative h-56 overflow-hidden bg-primary">
       <img src={decorationHero} alt="Premium wedding decoration stage" width={1600} height={900} className="h-full w-full object-cover" />
@@ -285,9 +318,40 @@ function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, ev
       <section>
         <SectionHeading number="1" title="Event Details" subtitle="Tell us about your event" />
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="col-span-2 flex items-center gap-3 rounded-lg border border-border bg-muted p-3"><span className="grid size-9 place-items-center rounded-md bg-card text-primary shadow-sm"><MapPin className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">City</p><p className="truncate text-sm font-bold">{city}</p></div></div>
-          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><CalendarDays className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Event date</span><input aria-label="Event date" type="date" value={eventDate} onChange={(event) => setEventDate(event.target.value)} className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
+          {cityEdit ? (
+            <div className="col-span-2 rounded-lg border border-primary/30 bg-muted p-3">
+              <div className="flex items-center gap-2"><Search className="size-4 shrink-0 text-muted-foreground" /><input autoFocus value={cityQuery} onChange={(e) => void searchCity(e.target.value)} placeholder="Search your city…" aria-label="Search your city" className="min-w-0 flex-1 bg-transparent text-sm font-bold outline-none placeholder:text-muted-foreground" /><Button variant="ghost" size="sm" onClick={() => { setCityEdit(false); setCityQuery(""); setCityResults([]); }} className="shrink-0 text-xs">Cancel</Button></div>
+              {citySearching && <p className="mt-2 px-1 text-xs text-muted-foreground">Searching…</p>}
+              <div className="mt-2 max-h-56 space-y-1 overflow-y-auto">
+                {cityResults.map(c => <Button key={c} variant="ghost" onClick={() => { onCityChange(c); setCityEdit(false); setCityQuery(""); setCityResults([]); }} className="h-auto w-full justify-start gap-2 py-2 text-left"><MapPin className="size-4 shrink-0 text-accent" /><span className="truncate text-sm">{c}</span></Button>)}
+                {POPULAR_CITIES.map(c => <Button key={c} variant="ghost" onClick={() => { onCityChange(c); setCityEdit(false); setCityQuery(""); setCityResults([]); }} className="h-auto w-full justify-start gap-2 py-2 text-left">{c === city ? <Check className="size-4 shrink-0 text-success" /> : <MapPin className="size-4 shrink-0 text-accent" />}<span className="truncate text-sm">{c}</span></Button>)}
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setCityEdit(true)} className="col-span-2 flex w-full items-center gap-3 rounded-lg border border-border bg-muted p-3 text-left transition-transform active:scale-[0.99]" aria-label="Change city"><span className="grid size-9 place-items-center rounded-md bg-card text-primary shadow-sm"><MapPin className="size-4" /></span><div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase text-muted-foreground">City</p><p className="truncate text-sm font-bold">{city}</p></div><span className="flex shrink-0 items-center gap-1 text-[10px] font-bold uppercase text-primary">Change <ChevronRight className="size-3.5" /></span></button>
+          )}
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><CalendarDays className="size-4 shrink-0 text-primary" /><span className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Event date</span><Popover open={dateOpen} onOpenChange={setDateOpen}><PopoverTrigger asChild><button type="button" aria-label="Event date" className="w-full truncate text-left text-xs font-bold outline-none">{eventDate ? format(new Date(`${eventDate}T00:00:00`), "d MMM yyyy") : "Select date"}</button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={eventDate ? new Date(`${eventDate}T00:00:00`) : undefined} onSelect={(d) => { if (d) { setEventDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`); setDateOpen(false); } }} disabled={(d) => d < today || !isDateAvailable(d)} modifiers={{ available: (d) => d >= today && isDateAvailable(d) && !isDateBooked(d), booked: (d) => isDateBooked(d) }} modifiersClassNames={{ available: "!bg-success/15 !text-success font-bold", booked: "!bg-destructive/20 !text-destructive line-through" }} initialFocus className="p-3 pointer-events-auto" /><div className="flex gap-4 px-4 pb-3 text-[10px] font-bold text-muted-foreground"><span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-success/40" /> Available</span><span className="flex items-center gap-1"><span className="size-2.5 rounded-full bg-destructive/40" /> Booked</span></div></PopoverContent></Popover></span></div>
           <label className="flex items-center gap-2 rounded-lg border border-border bg-muted p-3"><Clock3 className="size-4 shrink-0 text-primary" /><span className="min-w-0"><span className="block text-[10px] font-bold uppercase text-muted-foreground">Time</span><input aria-label="Start time" type="time" value={eventTime} onChange={(event) => setEventTime(event.target.value)} className="w-full bg-transparent text-xs font-bold outline-none" /></span></label>
+          <div className="col-span-2 rounded-lg border border-border bg-muted p-3">
+            <div className="flex items-center justify-between gap-3"><div className="min-w-0"><p className="text-[10px] font-bold uppercase text-muted-foreground">Add-on</p><p className="text-sm font-bold">Marriage / Event cab</p><p className="mt-0.5 text-[11px] text-muted-foreground">Event ke liye ghanton ke hisaab se cab add karein</p></div><Switch checked={addonOn} onCheckedChange={(v) => { setAddonOn(v); if (!v) setAddonVehicleId(""); }} aria-label="Add marriage or event cab" /></div>
+            {addonOn && (
+              <div className="mt-3 space-y-2">
+                {addonVehicles.length === 0 ? <p className="rounded-md bg-card p-2 text-xs text-muted-foreground">No verified cabs available in {city} right now.</p> : (
+                  <>
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground">Select cab</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {addonVehicles.map((v) => <Button key={v.id} type="button" size="sm" variant={addonVehicle?.id === v.id ? "default" : "outline"} onClick={() => setAddonVehicleId(v.id)} className="h-auto flex-col items-start gap-0.5 px-3 py-2 text-left"><span className="w-full truncate text-xs">{v.vehicle_type}</span><span className="text-[10px] opacity-80">{v.seats} seats · ₹{v.base_fare}</span></Button>)}
+                    </div>
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground">Package</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {EVENT_PACKAGES.map((p) => <Button key={p.id} type="button" size="sm" variant={addonPkg === p.id ? "default" : "outline"} onClick={() => setAddonPkg(p.id)}>{p.label}</Button>)}
+                    </div>
+                    {addonVehicle && <p className="rounded-md bg-secondary p-2 text-xs font-bold text-primary">{addonPkgObj.label} · ₹{Math.round(addonVehicle.base_fare * addonPkgObj.multiplier).toLocaleString("en-IN")} <span className="font-normal text-muted-foreground">— confirm karne par cab booking alag save hogi</span></p>}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
           <div className="col-span-2 flex items-center justify-between rounded-lg border border-border bg-muted p-3"><div><p className="text-[10px] font-bold uppercase text-muted-foreground">Number of guests · steps of 20</p><p className="text-sm font-bold">{guests} guests</p></div><div className="flex items-center gap-2"><Button variant="outline" size="icon" aria-label="Remove 20 guests" onClick={() => setGuests(Math.max(20, guests - 20))} className="size-8 min-h-8"><Minus className="size-4" /></Button><Button size="icon" aria-label="Add 20 guests" onClick={() => setGuests(guests + 20)} className="size-8 min-h-8"><Plus className="size-4" /></Button></div></div>
         </div>
       </section>
@@ -313,11 +377,24 @@ function ProvidersScreen({ providers, selected, setSelected, onContinue, onView 
   return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="2 of 3" title="Choose a provider" subtitle={`${providers.length} verified providers within 10 km`} /><div className="mb-4 flex items-center gap-2 rounded-lg bg-brand-soft p-3 text-xs font-bold text-primary"><MapPin className="size-4" /> Showing nearby providers only · 10 km radius</div><div className="space-y-3">{providers.map((item, index) => <Button variant="outline" key={`${item.id}-${item.name}`} onClick={() => setSelected(index)} className={`grid h-auto w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center justify-normal gap-3 rounded-lg bg-card p-3 text-left transition min-[380px]:grid-cols-[auto_minmax(0,1fr)_auto] min-[380px]:gap-4 min-[380px]:p-4 ${selected === index ? "border-primary ring-2 ring-primary/15" : "border-border"}`}><span className="grid size-12 shrink-0 place-items-center rounded-lg bg-brand-soft font-display font-bold text-primary min-[380px]:size-14">{item.initials}</span><span className="min-w-0 flex-1"><span className="block break-words font-bold">{item.name}</span><span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Star className="size-3 shrink-0 fill-accent text-accent" /> {item.rating} · Verified · {item.distance} km away</span><span className="mt-2 block text-xs text-muted-foreground">{item.detail}</span></span><span className="col-span-2 flex items-center justify-between text-right min-[380px]:col-span-1 min-[380px]:block"><span className="block font-display font-bold text-primary">{item.price}</span><span className="text-xs text-muted-foreground">package</span>{selected === index && <Check className="ml-auto mt-2 size-5 text-success" />}</span></Button>)}</div><div className="mt-5 grid grid-cols-1 gap-3 min-[340px]:grid-cols-2"><Button variant="outline" onClick={onView}>View details</Button><Button disabled={providers.length === 0} onClick={onContinue}>Continue to payment</Button></div></div>;
 }
 
-function PaymentScreen({ service, amount, guests, provider, eventDate, eventTime, city, onConfirm }: { service: string; amount: number; guests: number; provider: LiveProvider; eventDate: string; eventTime: string; city: string; onConfirm: (bookingCode: string) => void }) {
+function PaymentScreen({ service, amount, guests, provider, eventDate, eventTime, city, cabAddon, onConfirm }: { service: string; amount: number; guests: number; provider: LiveProvider; eventDate: string; eventTime: string; city: string; cabAddon: CabAddon | null; onConfirm: (bookingCode: string) => void }) {
   const [coupon, setCoupon] = useState<string | null>(null); const [busy, setBusy] = useState(false);
   const off = discountFor(coupon, amount); const final = amount - off; const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-  const confirm = async () => { setBusy(true); try { const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, paymentMethod: "cash", eventDate, eventTime, city }); onConfirm(booking.booking_code); } catch (error) { if (error instanceof Error && error.message === "SIGN_IN_REQUIRED") { toast.error("Please sign in before confirming your booking"); window.location.assign("/auth?redirect=/"); } else toast.error("Booking could not be saved. Please try again."); } finally { setBusy(false); } };
-  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="3 of 3" title="Confirm booking" subtitle="Review your booking details" /><div className="rounded-lg border border-border bg-card p-5"><h3 className="mb-4 font-bold">Booking summary</h3><Summary label="Service" value={service} /><Summary label="Provider" value={provider.name} /><Summary label="Date & time" value={`${eventDate} · ${eventTime}`} /><Summary label="City" value={city} /><Summary label="Guests" value={`${guests}`} /><div className="mt-4 border-t border-border pt-4"><Summary label="Package price" value={fmt(amount)} />{off > 0 && <Summary label={`Coupon (${coupon})`} value={`− ${fmt(off)}`} />}<Summary label="Total payable" value={fmt(final)} strong /></div></div><CouponBox applied={coupon} setApplied={setCoupon} /><div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="font-bold">Payment method</h3><p className="mt-2 text-sm text-muted-foreground">Cash / pay provider. Online payment is not active yet.</p></div><div className="mt-4 flex gap-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" /><p>Your booking request and pending payment record will be saved securely.</p></div><Button disabled={busy || !provider.id || !eventDate || !eventTime} onClick={() => void confirm()} className="mt-5 w-full">{busy ? "Saving booking…" : "Confirm booking"}</Button></div>;
+  const grand = final + (cabAddon?.total ?? 0);
+  const confirm = async () => {
+    setBusy(true);
+    try {
+      const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, paymentMethod: "cash", eventDate, eventTime, city });
+      if (cabAddon) {
+        try {
+          const addonBooking = await createLiveBooking({ providerId: cabAddon.providerId, bookingType: "Marriage Cab", guests: cabAddon.seats, totalAmount: cabAddon.total, paymentMethod: "cash", eventDate, eventTime, city });
+          await supabase.from("bookings").update({ details: { source: "customer_app", addon_of: booking.booking_code, vehicle_id: cabAddon.vehicleId, vehicle_type: cabAddon.vehicleType, cab_mode: "event_package", package: cabAddon.pkgLabel } }).eq("id", addonBooking.id);
+        } catch { toast.error("Cab add-on save nahi hui — baaki booking save ho gayi hai"); }
+      }
+      onConfirm(booking.booking_code);
+    } catch (error) { if (error instanceof Error && error.message === "SIGN_IN_REQUIRED") { toast.error("Please sign in before confirming your booking"); window.location.assign("/auth?redirect=/"); } else toast.error("Booking could not be saved. Please try again."); } finally { setBusy(false); }
+  };
+  return <div className="mx-auto max-w-2xl animate-rise-in"><StepTitle step="3 of 3" title="Confirm booking" subtitle="Review your booking details" /><div className="rounded-lg border border-border bg-card p-5"><h3 className="mb-4 font-bold">Booking summary</h3><Summary label="Service" value={service} /><Summary label="Provider" value={provider.name} /><Summary label="Date & time" value={`${eventDate} · ${eventTime}`} /><Summary label="City" value={city} /><Summary label="Guests" value={`${guests}`} />{cabAddon && <Summary label={`Add-on · ${cabAddon.vehicleType}`} value={`${cabAddon.pkgLabel} · ${cabAddon.providerName}`} />}<div className="mt-4 border-t border-border pt-4"><Summary label="Package price" value={fmt(amount)} />{off > 0 && <Summary label={`Coupon (${coupon})`} value={`− ${fmt(off)}`} />}{cabAddon && <Summary label={`Add-on: ${cabAddon.pkgLabel} cab`} value={fmt(cabAddon.total)} />}<Summary label="Total payable" value={fmt(grand)} strong /></div></div><CouponBox applied={coupon} setApplied={setCoupon} /><div className="mt-4 rounded-lg border border-border bg-card p-5"><h3 className="font-bold">Payment method</h3><p className="mt-2 text-sm text-muted-foreground">Cash / pay provider. Online payment is not active yet.</p></div><div className="mt-4 flex gap-3 rounded-lg bg-brand-soft p-4 text-sm text-primary"><ShieldCheck className="size-5 shrink-0" /><p>Your booking request and pending payment record will be saved securely.</p></div><Button disabled={busy || !provider.id || !eventDate || !eventTime} onClick={() => void confirm()} className="mt-5 w-full">{busy ? "Saving booking…" : "Confirm booking"}</Button></div>;
 }
 
 function SuccessScreen({ provider, bookingCode, eventDate, onHome }: { provider: LiveProvider; bookingCode: string; eventDate: string; onHome: () => void }) {
