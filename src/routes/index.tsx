@@ -70,6 +70,7 @@ function Index() {
   const [onboard, setOnboard] = useState(false);
   const [combo, setCombo] = useState<{ name: string; price: number } | null>(null);
   const [bookingCode, setBookingCode] = useState("");
+  const [cabAddon, setCabAddon] = useState<CabAddon | null>(null);
   const city = location.split(",")[0] ?? "Lucknow";
   const { data: liveProviders = [], isLoading: providersLoading } = useLiveProviders(city, service);
   const visibleProviders: LiveProvider[] = liveProviders;
@@ -131,7 +132,7 @@ function Index() {
          {step === "reviews" && chosenProvider && <ReviewsScreen provider={chosenProvider} />}
         {step === "services" && <ServicesScreen onBook={beginBooking} />}
         {step === "details" && service === "Cab" && <ClientCabScreen />}
-         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} city={city} providers={visibleProviders} loading={providersLoading} onContinue={() => go("providers")} onCityChange={chooseLocation} />}
+         {step === "details" && service !== "Cab" && <DetailsScreen service={service} guests={guests} setGuests={setGuests} eventDate={eventDate} setEventDate={setEventDate} eventTime={eventTime} setEventTime={setEventTime} city={city} providers={visibleProviders} loading={providersLoading} onContinue={() => go("providers")} onCityChange={chooseLocation} onCabAddon={setCabAddon} />}
          {step === "providers" && <ProvidersScreen providers={visibleProviders} selected={provider} setSelected={setProvider} onContinue={() => go("payment")} onView={() => go("providerDetail")} />}
          {step === "providerDetail" && chosenProvider && <ProviderDetailFull provider={chosenProvider} onBook={() => go("details")} onReviews={() => go("reviews")} />}
           {step === "payment" && chosenProvider && <PaymentScreen service={combo ? combo.name : service} amount={combo ? combo.price : Number(chosenProvider.price.replace(/[^0-9]/g, ""))} guests={guests} provider={chosenProvider} eventDate={eventDate} eventTime={eventTime} city={city} onConfirm={(code) => { setBookingCode(code); go("success"); }} />}
