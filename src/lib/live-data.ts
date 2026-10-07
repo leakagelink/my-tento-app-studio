@@ -19,7 +19,7 @@ export function useLiveProviders(city: string, serviceName: string) {
       const { data, error } = await supabase
         .from("providers")
         .select("id,business_name,description,phone,rating,distance_km,provider_services!inner(base_price,details,active,services!inner(name))")
-        .eq("city", city)
+        .ilike("city", `%${city.trim().replace(/\s+(city|district)$/i, "").replace(/[%_,]/g, "")}%`)
         .eq("active", true)
         .eq("verified", true)
         .eq("provider_services.active", true)
