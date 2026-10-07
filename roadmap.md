@@ -13,5 +13,6 @@
 - [ ] Verify live account and booking flows end to end
 - [ ] Add live demo services and admin add/edit/delete controls
 - [x] Optimize the admin panel for desktop with responsive navigation and data layouts
-- [ ] Event date picker: only allow dates with available providers (disable/unavailable dates)
-- [ ] Restore cab marriage/event addon customization in event booking flow
+- [x] Event date picker: only allow dates with available providers; green = available, red = booked
+- [x] Restore cab marriage/event addon customization in event booking flow
+- [ ] Phone app rebuild pending user action (build:mobile → cap-prepare → cap sync → Android Studio)
