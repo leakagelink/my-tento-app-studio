@@ -105,7 +105,7 @@ export function pickupEtaMin(providerDistanceKm: number) {
 function PlaceSearch({ placeholder, near, onSelect }: { placeholder: string; near: LatLng | null; onSelect: (p: Place) => void }) {
   const [q, setQ] = useState("");
   const [res, setRes] = useState<Place[]>([]);
-  const t = useRef<ReturnType<typeof setTimeout>>();
+  const t = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     clearTimeout(t.current);
     if (q.trim().length < 3) { setRes([]); return; }
