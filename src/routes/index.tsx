@@ -104,6 +104,8 @@ function Index() {
     go(previous[step] ?? "home");
   };
   const t = (k: TKey) => tr(lang, k);
+  const serviceFlow = step === "details" || step === "providers" || step === "providerDetail" || step === "payment" || step === "success";
+  const activeService = serviceFlow ? service.toLowerCase() : null;
   const tab = step === "bookings" || step === "bookingDetail" ? "bookings" : step === "wallet" ? "wallet" : step === "profile" ? "profile" : "home";
 
   return (
