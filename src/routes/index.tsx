@@ -104,6 +104,8 @@ function Index() {
     go(previous[step] ?? "home");
   };
   const t = (k: TKey) => tr(lang, k);
+  const serviceFlow = step === "details" || step === "providers" || step === "providerDetail" || step === "payment" || step === "success";
+  const activeService = serviceFlow ? service.toLowerCase() : null;
   const tab = step === "bookings" || step === "bookingDetail" ? "bookings" : step === "wallet" ? "wallet" : step === "profile" ? "profile" : "home";
 
   return (
@@ -145,11 +147,11 @@ function Index() {
       </main>
 
       <nav className="safe-bottom app-bottom-nav fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card sm:left-1/2 sm:max-w-md sm:-translate-x-1/2"><div className="mx-auto grid h-18 max-w-md grid-cols-5">
-        <NavItem icon={Home} label={t("home")} active={tab === "home"} onClick={() => go("home")} />
-        <NavItem icon={TentTree} label={t("tent")} active={false} onClick={() => beginBooking("Tent")} />
-        <NavItem icon={Sparkles} label={t("decoration")} active={false} onClick={() => beginBooking("Decoration")} />
-        <NavItem icon={UtensilsCrossed} label={t("catering")} active={false} onClick={() => beginBooking("Catering")} />
-        <NavItem icon={Car} label={t("cab")} active={false} onClick={() => beginBooking("Cab")} />
+        <NavItem icon={Home} label={t("home")} active={tab === "home" && !activeService} onClick={() => go("home")} />
+        <NavItem icon={TentTree} label={t("tent")} active={activeService === "tent"} onClick={() => beginBooking("Tent")} />
+        <NavItem icon={Sparkles} label={t("decoration")} active={activeService === "decoration"} onClick={() => beginBooking("Decoration")} />
+        <NavItem icon={UtensilsCrossed} label={t("catering")} active={activeService === "catering"} onClick={() => beginBooking("Catering")} />
+        <NavItem icon={Car} label={t("cab")} active={activeService === "cab"} onClick={() => beginBooking("Cab")} />
       </div></nav>
       </div>
     </div>
