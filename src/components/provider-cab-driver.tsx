@@ -36,7 +36,7 @@ export function ProviderCabDriver({ providerId }: { providerId: string }) {
   const act = async (action: "arrived" | "start" | "complete" | "cancel") => {
     if (!ride) return;
     setBusy(true);
-    const { error } = await supabase.rpc("cab_ride_action", { _request_id: ride.request_id, _action: action, _otp: action === "start" ? otp.trim() : undefined });
+    const { error } = await supabase.rpc("cab_ride_action", { _request_id: ride.request_id, _action: action, ...(action === "start" ? { _otp: otp.trim() } : {}) });
     setBusy(false);
     if (error) { toast.error(error.message.includes("WRONG_OTP") ? "OTP galat hai — customer se dobara poochiye" : "Action nahi ho paya, dobara try kariye"); return; }
     toast.success({ arrived: "Customer ko bata diya ki aap pahunch gaye", start: "Ride shuru ho gayi", complete: "Ride complete — cash collect kariye", cancel: "Ride cancel ho gayi" }[action]);

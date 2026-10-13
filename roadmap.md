@@ -19,5 +19,5 @@
 - [x] Event date picker: only allow dates with available providers; green = available, red = booked
 - [x] Restore cab marriage/event addon customization in event booking flow
 - [ ] Phone app rebuild pending user action (build:mobile → cap-prepare → cap sync → Android Studio)
-- [ ] Reconnect Google Maps Platform in new workspace
-- [ ] Cab ride OTP start, live driver location, notifications, both-side details, ride history
+- [x] Reconnect Google Maps Platform in new workspace
+- [x] Cab ride OTP start, live driver location, notifications, both-side details, ride history
