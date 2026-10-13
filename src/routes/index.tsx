@@ -389,12 +389,16 @@ function ProvidersScreen({ providers, selected, setSelected, onContinue, onView 
 function PaymentScreen({ service, amount, guests, provider, eventDate, eventTime, city, cabAddon, onConfirm }: { service: string; amount: number; guests: number; provider: LiveProvider; eventDate: string; eventTime: string; city: string; cabAddon: CabAddon | null; onConfirm: (bookingCode: string) => void }) {
   const offers = usePublicOffers();
   const [coupon, setCoupon] = useState<string | null>(null); const [busy, setBusy] = useState(false);
+  const [contact, setContact] = useState({ name: "", phone: "", venue: "", landmark: "", occasion: "", notes: "" });
+  useEffect(() => { void (async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return; const { data: p } = await supabase.from("profiles").select("full_name,phone,address").eq("id", auth.user.id).maybeSingle(); if (p) setContact((c) => ({ ...c, name: c.name || p.full_name || "", phone: c.phone || p.phone || "", venue: c.venue || p.address || "" })); })(); }, []);
+  const contactOk = contact.name.trim().length > 1 && /^[0-9+\s-]{10,15}$/.test(contact.phone.trim()) && contact.venue.trim().length > 4;
   const off = discountFor(coupon, amount, offers); const final = amount - off; const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const grand = final + (cabAddon?.total ?? 0);
   const confirm = async () => {
     setBusy(true);
     try {
-      const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, discount: off, coupon, paymentMethod: "cash", eventDate, eventTime, city });
+      const extra = { customer_name: contact.name.trim(), customer_phone: contact.phone.trim(), venue_address: contact.venue.trim(), landmark: contact.landmark.trim(), occasion: contact.occasion.trim(), notes: contact.notes.trim(), package_price: String(amount) };
+      const booking = await createLiveBooking({ providerId: provider.id, bookingType: service, guests, totalAmount: final, discount: off, coupon, paymentMethod: "cash", eventDate, eventTime, city, venue: contact.venue.trim(), extra });
       if (cabAddon) {
         try {
           const addonBooking = await createLiveBooking({ providerId: cabAddon.providerId, bookingType: "Marriage Cab", guests: cabAddon.seats, totalAmount: cabAddon.total, paymentMethod: "cash", eventDate, eventTime, city });
