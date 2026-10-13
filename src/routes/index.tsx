@@ -313,8 +313,8 @@ function DetailsScreen({ service, guests, setGuests, eventDate, setEventDate, ev
     });
   }, [addonOn, addonVehicle?.id, addonPkgObj.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return <div className="animate-rise-in pb-24">
-    <section className="relative h-56 overflow-hidden bg-primary">
-      <img src={photos[service] ?? serviceImages[service] ?? decorationHero} alt={service} width={1600} height={900} className="h-full w-full object-cover" />
+    <section className="relative overflow-hidden bg-primary">
+      <img src={photos[service] ?? serviceImages[service] ?? decorationHero} alt={service} width={1600} height={900} className="block h-auto w-full object-contain" />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/35 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground">
         <span className="mb-3 grid size-11 place-items-center rounded-lg border border-primary-foreground/20 bg-primary-foreground/10 backdrop-blur"><Sparkles className="size-5" /></span>
