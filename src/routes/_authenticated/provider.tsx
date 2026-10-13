@@ -192,7 +192,7 @@ function BookingDetail({ booking, providerId, onNext, onDecline, onClose }: { bo
         )}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Button variant="outline" onClick={booking.status === "new" ? onDecline : onClose}>{booking.status === "new" ? "Decline request" : "Close"}</Button>
-          <Button onClick={onNext}>{booking.liveCab ? ({ confirmed: "Arrived at pickup", team: "Start ride", setup: "Complete ride" } as Record<string, string>)[booking.status] ?? "Completed" : action ? action.label : "Completed"}</Button>
+          {booking.liveCab ? <p className="self-center text-sm text-muted-foreground">Ride ko upar "Cab driver" section se OTP ke saath chalayein.</p> : <Button onClick={onNext}>{booking.liveCab ? ({ confirmed: "Arrived at pickup", team: "Start ride", setup: "Complete ride" } as Record<string, string>)[booking.status] ?? "Completed" : action ? action.label : "Completed"}</Button>}
         </div>
       </div>
     </div>

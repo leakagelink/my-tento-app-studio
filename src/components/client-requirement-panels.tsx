@@ -197,7 +197,7 @@ export function ClientCabScreen() {
   const mapDrivers = useMemo(() => mode === "trip" ? liveDrivers.map(d => ({ lat: d.latitude, lng: d.longitude, name: d.driver_name })) : [], [liveDrivers, mode]);
 
   useEffect(() => { setElapsed(0); setSelectedId(null); if (mode !== "trip" || !pickup) return; const timer = setInterval(() => setElapsed(s => Math.min(120, s + 1)), 1000); return () => clearInterval(timer); }, [mode, pickup?.point.lat, pickup?.point.lng]);
-  useEffect(() => { if (!user) return; let active = true; void supabase.from("cab_trip_requests").select("id").eq("customer_id", user.id).eq("state", "searching").order("started_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => { if (active && data) setRequestId(data.id); }); return () => { active = false; }; }, [user?.id]);
+  useEffect(() => { if (!user) return; let active = true; void supabase.from("cab_trip_requests").select("id").eq("customer_id", user.id).or("state.eq.searching,ride_status.in.(accepted,arrived,started)").order("started_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => { if (active && data) setRequestId(data.id); }); return () => { active = false; }; }, [user?.id]);
 
   useEffect(() => { setMounted(true); }, []);
 
