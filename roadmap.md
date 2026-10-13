@@ -21,3 +21,5 @@
 - [ ] Phone app rebuild pending user action (build:mobile → cap-prepare → cap sync → Android Studio)
 - [x] Reconnect Google Maps Platform in new workspace
 - [x] Cab ride OTP start, live driver location, notifications, both-side details, ride history
+
+- [ ] Reconnect Google Maps connector in new workspace (old connection std_01m4tkpq5ke6hv9d6pxqmfz0sq no longer applies)
