@@ -12,10 +12,11 @@ const pin = (color: string, label: string) =>
     html: `<div style="display:flex;flex-direction:column;align-items:center"><div style="width:28px;height:28px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.35);display:grid;place-items:center;color:#fff;font:800 11px sans-serif">${label}</div><div style="width:3px;height:10px;background:${color}"></div></div>`,
   });
 
-export default function CabRideMap({ pickup, drop, route, onPick }: { pickup: LatLng | null; drop: LatLng | null; route: [number, number][]; onPick: (p: LatLng) => void }) {
+export default function CabRideMap({ pickup, drop, route, onPick, drivers = [], radiusKm = 0 }: { pickup: LatLng | null; drop: LatLng | null; route: [number, number][]; onPick: (p: LatLng) => void; drivers?: { lat: number; lng: number; name: string }[]; radiusKm?: number }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const layers = useRef<L.LayerGroup | null>(null);
+  const driverLayers = useRef<L.LayerGroup | null>(null);
   const pickRef = useRef(onPick);
   pickRef.current = onPick;
 
@@ -25,6 +26,7 @@ export default function CabRideMap({ pickup, drop, route, onPick }: { pickup: La
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(m);
     m.on("click", (e: L.LeafletMouseEvent) => pickRef.current({ lat: e.latlng.lat, lng: e.latlng.lng }));
     layers.current = L.layerGroup().addTo(m);
+    driverLayers.current = L.layerGroup().addTo(m);
     map.current = m;
     setTimeout(() => m.invalidateSize(), 200);
     return () => { m.remove(); map.current = null; };
@@ -43,6 +45,20 @@ export default function CabRideMap({ pickup, drop, route, onPick }: { pickup: La
       m.fitBounds(L.latLngBounds([[pickup.lat, pickup.lng], [drop.lat, drop.lng]]), { padding: [40, 40] });
     } else if (pickup) m.setView([pickup.lat, pickup.lng], 15);
   }, [pickup, drop, route]);
+
+  useEffect(() => {
+    const g = driverLayers.current;
+    if (!g || !el.current) return;
+    g.clearLayers();
+    const color = getComputedStyle(el.current).getPropertyValue("--primary").trim() || "currentColor";
+    if (pickup && radiusKm > 0) L.circle([pickup.lat, pickup.lng], { radius: radiusKm * 1000, color, weight: 1, fillOpacity: 0.05, interactive: false }).addTo(g);
+    for (const driver of drivers) {
+      const icon = L.divIcon({ className: "", iconSize: [32, 32], iconAnchor: [16, 16], html: '<span class="grid size-8 place-items-center rounded-full border-2 border-primary bg-card text-lg shadow-lg">🚕</span>' });
+      const label = document.createElement("span");
+      label.textContent = driver.name;
+      L.marker([driver.lat, driver.lng], { icon }).bindTooltip(label).addTo(g);
+    }
+  }, [drivers, pickup, radiusKm]);
 
   return <div ref={el} className="h-full w-full" />;
 }

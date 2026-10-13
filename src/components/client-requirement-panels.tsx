@@ -173,6 +173,7 @@ export function ClientCabScreen() {
   const vehicles: CabVehicle[] = mode === "event" ? eventVehicles : liveDrivers.map(d => ({ ...d, provider: { id: d.provider_id, business_name: d.business_name, city: d.city, distance_km: d.distance_km } }));
   const isLoading = mode === "event" ? eventLoading : driverLoading;
   const selected = vehicles.find((v) => v.id === selectedId) ?? vehicles[0] ?? null;
+  const mapDrivers = useMemo(() => mode === "trip" ? liveDrivers.map(d => ({ lat: d.latitude, lng: d.longitude, name: d.driver_name })) : [], [liveDrivers, mode]);
 
   useEffect(() => { setElapsed(0); setSelectedId(null); if (mode !== "trip" || !pickup) return; const timer = setInterval(() => setElapsed(s => Math.min(120, s + 1)), 1000); return () => clearInterval(timer); }, [mode, pickup?.point.lat, pickup?.point.lng]);
   useEffect(() => { if (!user) return; let active = true; void supabase.from("cab_trip_requests").select("id").eq("customer_id", user.id).eq("state", "searching").order("started_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => { if (active && data) setRequestId(data.id); }); return () => { active = false; }; }, [user?.id]);
@@ -292,7 +293,7 @@ export function ClientCabScreen() {
   return (
     <div className="min-w-0 animate-rise-in">
       <div className="relative h-[46vh] min-h-[300px] w-full overflow-hidden bg-secondary">
-        {mounted && <Suspense fallback={<div className="grid h-full place-items-center text-sm text-muted-foreground">Loading map…</div>}><CabRideMap pickup={pickup?.point ?? null} drop={drop?.point ?? null} route={mapLine} onPick={onMapPick} /></Suspense>}
+        {mounted && <Suspense fallback={<div className="grid h-full place-items-center text-sm text-muted-foreground">Loading map…</div>}><CabRideMap pickup={pickup?.point ?? null} drop={drop?.point ?? null} route={mapLine} onPick={onMapPick} drivers={mapDrivers} radiusKm={mode === "trip" ? radius : 0} /></Suspense>}
         <div className="pointer-events-none absolute inset-x-3 top-3 z-[500] flex justify-center">
           <div className="pointer-events-auto grid grid-cols-2 gap-1 rounded-full bg-card p-1 shadow-lg">
             <button type="button" onClick={() => setMode("trip")} className={`rounded-full px-4 py-2 text-xs font-bold ${mode === "trip" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>Ride now</button>
