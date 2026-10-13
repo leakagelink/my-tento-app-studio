@@ -12,6 +12,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { RoleGate } from "@/components/role-gate";
 import { supabase } from "@/integrations/supabase/client";
 import { BookingExtras, BusinessEditor, CalendarEditor, InventoryManager, ReviewsList, ServicesManager, TeamManager, VehiclesManager } from "@/components/provider-manage";
+import { ProviderCabDriver } from "@/components/provider-cab-driver";
 
 export const Route = createFileRoute("/_authenticated/provider")({
   head: () => ({
@@ -82,6 +83,7 @@ function ProviderPanel() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        {providerProfile && <ProviderCabDriver providerId={providerProfile.id} />}
         {open ? (
           <BookingDetail booking={open} providerId={providerProfile?.id} onNext={() => { const n = nextStatus[open.status]; if (n) void update(open.id, n.next); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
