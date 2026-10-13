@@ -549,6 +549,38 @@ export type Database = {
           },
         ]
       }
+      provider_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          provider_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          provider_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          provider_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_images_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_services: {
         Row: {
           active: boolean

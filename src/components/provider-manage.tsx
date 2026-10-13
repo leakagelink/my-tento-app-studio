@@ -63,6 +63,57 @@ export function BusinessEditor({ providerId }: { providerId: string }) {
   </Card>;
 }
 
+/* ---------- Service gallery (multiple photos) ---------- */
+export function GalleryManager({ providerId }: { providerId: string }) {
+  const inv = useInvalidate();
+  const { data: photos = [] } = useQuery({
+    queryKey: ["provider-gallery-manage", providerId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("provider_images").select("id,image_url").eq("provider_id", providerId).order("sort_order").order("created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const [busy, setBusy] = useState(false);
+
+  async function upload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setBusy(true);
+    try {
+      let order = photos.length;
+      for (const file of Array.from(files)) {
+        if (file.size > 5 * 1024 * 1024) { toast.error(`${file.name}: 5 MB se chhoti photo chahiye`); continue; }
+        if (!file.type.startsWith("image/")) { toast.error(`${file.name}: sirf image chaliye`); continue; }
+        let dataUrl: string;
+        try { dataUrl = await compressImage(file, 1280); } catch { toast.error(`${file.name} read nahi ho payi`); continue; }
+        const { error } = await supabase.from("provider_images").insert({ provider_id: providerId, image_url: dataUrl, sort_order: order++ });
+        if (error) { toast.error(error.message); break; }
+      }
+      toast.success("Photos uploaded");
+      await inv("provider-gallery-manage", "provider-gallery");
+    } finally { setBusy(false); }
+  }
+  async function remove(id: string) {
+    const { error } = await supabase.from("provider_images").delete().eq("id", id);
+    if (done(error, "Photo removed")) await inv("provider-gallery-manage", "provider-gallery");
+  }
+
+  return <Card title="Service photos" sub="Customers ko aapke kaam ki ye saari photos dikhengi — jitni chaaho upload karo">
+    <div className="grid grid-cols-3 gap-2 min-[420px]:grid-cols-4">
+      {photos.map((p) => (
+        <div key={p.id} className="group relative aspect-square overflow-hidden rounded-lg border border-border">
+          <img src={p.image_url} alt="Service photo" className="size-full object-cover" />
+          <button type="button" aria-label="Delete photo" onClick={() => void remove(p.id)} className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-card/90 text-destructive opacity-100 shadow sm:opacity-0 sm:group-hover:opacity-100"><Trash2 className="size-3.5" /></button>
+        </div>
+      ))}
+      <label className={`grid aspect-square cursor-pointer place-items-center rounded-lg border border-dashed border-border bg-secondary text-center text-[10px] text-muted-foreground ${busy ? "pointer-events-none opacity-50" : ""}`}>
+        <span><Upload className="mx-auto size-4" />{busy ? "Uploading…" : "Add photos"}</span>
+        <input type="file" accept="image/*" multiple className="hidden" disabled={busy} onChange={(e) => { void upload(e.target.files); e.target.value = ""; }} />
+      </label>
+    </div>
+  </Card>;
+}
+
 /* ---------- Services & prices ---------- */
 export function ServicesManager({ providerId }: { providerId: string }) {
   const inv = useInvalidate();

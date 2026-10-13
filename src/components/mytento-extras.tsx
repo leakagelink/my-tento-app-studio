@@ -3,7 +3,7 @@ import { CalendarDays, ChevronRight, Languages, Phone, ShieldCheck, Star, X } fr
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { toast } from "sonner";
-import { offerDiscount, usePublicOffers, type PublicOffer } from "@/lib/live-data";
+import { offerDiscount, useProviderGallery, usePublicOffers, type PublicOffer } from "@/lib/live-data";
 import homeBanner from "@/assets/home-banner.webp";
 import serviceTent from "@/assets/service-tent.webp";
 import serviceDecoration from "@/assets/service-decoration.webp";
@@ -52,11 +52,20 @@ export function ComboScreen({ onContinue }: { onContinue: (name: string, price: 
 }
 
 /* ---------- Provider detail: gallery, dates, reviews ---------- */
+function ProviderGallery({ providerId, fallback, name }: { providerId?: string; fallback?: string | null; name: string }) {
+  const { data: photos = [] } = useProviderGallery(providerId);
+  const all = [...photos, ...(fallback && !photos.includes(fallback) ? [fallback] : [])];
+  if (all.length === 0) return <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">This provider has not uploaded any service photos yet.</p>;
+  if (all.length === 1) return <img src={all[0]} alt={`${name} photo`} className="aspect-video w-full rounded-lg border border-border object-cover" />;
+  return <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1">
+    {all.map((src, i) => <img key={i} src={src} alt={`${name} photo ${i + 1}`} className="aspect-video w-[85%] shrink-0 snap-center rounded-lg border border-border object-cover first:ml-0 last:mr-1" />)}
+  </div>;
+}
 type Prov = { id?: string; name: string; detail: string; price: string; rating: string; initials: string; phone?: string; logo?: string | null; banner?: string | null };
 export function ProviderDetailFull({ provider, onBook, onReviews }: { provider: Prov; onBook: () => void; onReviews: () => void }) {
   return <div className="mx-auto max-w-2xl animate-rise-in pb-4">
     <div className="mb-5 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 min-[360px]:gap-4"><span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-brand-soft font-display text-xl font-bold text-primary min-[360px]:size-20">{provider.logo ? <img src={provider.logo} alt="" className="size-full rounded-[inherit] object-cover" /> : provider.initials}</span><div className="min-w-0"><h1 className="break-words text-xl font-extrabold min-[360px]:text-2xl">{provider.name}</h1><p className="mt-1 flex flex-wrap items-center gap-1 text-sm text-muted-foreground"><Star className="size-4 shrink-0 fill-accent text-accent" /> {provider.rating} · Verified</p>{provider.phone && <p className="break-words text-xs text-muted-foreground">{provider.phone}</p>}</div></div>
-    <h2 className="mb-2 font-bold">Service gallery</h2>{provider.banner ? <img src={provider.banner} alt={`${provider.name} photo`} className="aspect-video w-full rounded-lg border border-border object-cover" /> : <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">This provider has not uploaded any service photos yet.</p>}
+    <h2 className="mb-2 font-bold">Service gallery</h2><ProviderGallery providerId={provider.id} fallback={provider.banner} name={provider.name} />
     <h2 className="mb-2 mt-6 flex items-center gap-2 font-bold"><CalendarDays className="size-4 text-primary" /> Availability</h2><p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">No availability dates have been published by this provider.</p>
     <div className="mb-2 mt-6 flex items-center justify-between"><h2 className="font-bold">Ratings & reviews</h2><Button variant="ghost" size="sm" onClick={onReviews}>See all <ChevronRight className="size-4" /></Button></div>
     <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">Reviews appear after completed customer bookings.</p>

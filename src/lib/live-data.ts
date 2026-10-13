@@ -53,6 +53,26 @@ export function useLiveProviders(city: string, serviceName: string) {
   });
 }
 
+/** All gallery photos a provider has uploaded, in upload order. */
+export function useProviderGallery(providerId?: string) {
+  return useQuery({
+    queryKey: ["provider-gallery", providerId],
+    enabled: !!providerId,
+    queryFn: async (): Promise<string[]> => {
+      const { data, error } = await supabase
+        .from("provider_images")
+        .select("image_url")
+        .eq("provider_id", providerId!)
+        .order("sort_order")
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []).map((r) => displayableImage(r.image_url)).filter((u): u is string => !!u);
+    },
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+}
+
 /**
  * Availability rules per provider: a provider that has any calendar rows is
  * "restricted" (open only on dates explicitly marked available); a provider
