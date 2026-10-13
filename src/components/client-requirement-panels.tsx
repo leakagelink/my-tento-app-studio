@@ -8,8 +8,24 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { createLiveBooking } from "@/lib/live-data";
 import type { LatLng } from "@/components/cab-ride-map";
+import autoPhoto from "@/assets/vehicle-auto.webp";
+import totoPhoto from "@/assets/vehicle-toto.webp";
+import cabPhoto from "@/assets/vehicle-cab.webp";
+import suvPhoto from "@/assets/vehicle-suv.webp";
+import travellerPhoto from "@/assets/vehicle-traveller.png";
+import busPhoto from "@/assets/vehicle-bus.png";
 
 const CabRideMap = lazy(() => import("@/components/cab-ride-map"));
+
+function vehiclePhoto(type: string) {
+  const name = type.trim().toLowerCase();
+  if (/toto|e[\s-]?rickshaw|electric.*rickshaw/.test(name)) return totoPhoto;
+  if (/auto|rickshaw/.test(name)) return autoPhoto;
+  if (/travell?er|tempo|minibus|mini bus|van/.test(name)) return travellerPhoto;
+  if (/bus|coach/.test(name)) return busPhoto;
+  if (/suv|muv|innova|ertiga|fortuner|scorpio|bolero/.test(name)) return suvPhoto;
+  return cabPhoto;
+}
 
 export type AdminExtraTab = "content" | "notifications" | "reports" | "settings";
 
@@ -316,17 +332,19 @@ export function ClientCabScreen() {
                 const price = mode === "event" ? Math.round(v.base_fare * activePkg.multiplier) : rideFare(v, km);
                 const vEta = pickupEtaMin(Number(v.provider?.distance_km ?? 0));
                 return (
-                  <button key={v.id} type="button" onClick={() => setSelectedId(v.id)} className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition ${active ? "border-primary bg-primary/5" : "border-border bg-card"}`}>
-                    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-secondary text-primary"><Car className="size-6" /></span>
+                  <Button key={v.id} type="button" variant="ghost" aria-pressed={active} onClick={() => setSelectedId(v.id)} className={`flex h-auto w-full items-center justify-start gap-3 whitespace-normal rounded-2xl border-2 p-3 text-left transition ${active ? "border-primary bg-primary/5" : "border-border bg-card"}`}>
+                    <span className="grid h-16 w-20 shrink-0 place-items-center overflow-hidden rounded-lg bg-secondary">
+                      <img src={vehiclePhoto(v.vehicle_type)} alt={`${v.vehicle_type} vehicle`} width={80} height={64} loading="lazy" className="h-full w-full object-contain p-1" />
+                    </span>
                     <div className="min-w-0 flex-1">
                       <p className="font-bold">{v.vehicle_type} <span className="text-xs font-medium text-muted-foreground">· {v.seats} seats</span></p>
                       <p className="truncate text-xs text-muted-foreground">{mode === "trip" ? `${fmtMin(vEta)} away · ` : ""}{v.provider?.business_name}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="shrink-0 text-right">
                       <p className="font-extrabold">{mode === "trip" && !route ? `₹${v.per_km_rate}/km` : `₹${price.toLocaleString("en-IN")}`}</p>
                       {mode === "trip" && !route && <p className="text-[10px] text-muted-foreground">+ ₹{v.base_fare} base</p>}
                     </div>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
