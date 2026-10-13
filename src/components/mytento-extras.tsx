@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { CalendarDays, ChevronRight, Languages, ShieldCheck, Star, X } from "lucide-react";
+import { CalendarDays, ChevronRight, Languages, Phone, ShieldCheck, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { toast } from "sonner";
@@ -85,7 +85,8 @@ export function CouponBox({ applied, setApplied }: { applied: string | null; set
 }
 
 /* ---------- Live tracking ---------- */
-export function BookingTracker({ booking }: { booking?: { booking_code: string; booking_type: string; event_date: string; event_time: string; city: string; status: string; total_amount: number } | null }) {
+export function BookingTracker({ booking }: { booking?: { booking_code: string; booking_type: string; event_date: string; event_time: string; city: string; status: string; total_amount: number; details?: { cab_mode?: string; driver_name?: string; driver_phone?: string; vehicle_number?: string; vehicle_type?: string; distance_km?: number; trip_minutes?: number } | null } | null }) {
   if (!booking) return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">Booking details</h1><p className="mt-5 rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">Select a saved booking to view its current status.</p></div>;
-  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">{booking.booking_type} booking</h1><p className="mt-1 text-sm text-muted-foreground">{booking.booking_code}</p><div className="mt-5 rounded-lg border border-border bg-card p-5"><p className="text-xs font-bold uppercase text-primary">{booking.status.replaceAll("_", " ")}</p><p className="mt-3 font-bold">{booking.event_date} · {booking.event_time}</p><p className="text-sm text-muted-foreground">{booking.city}</p><p className="mt-4 font-display text-xl font-extrabold text-primary">₹{Number(booking.total_amount).toLocaleString("en-IN")}</p></div></div>;
+  const d = booking.details;
+  return <div className="mx-auto max-w-2xl animate-rise-in"><h1 className="text-2xl font-extrabold">{booking.booking_type} booking</h1><p className="mt-1 text-sm text-muted-foreground">{booking.booking_code}</p><div className="mt-5 rounded-lg border border-border bg-card p-5"><p className="text-xs font-bold uppercase text-primary">{booking.status.replaceAll("_", " ")}</p><p className="mt-3 font-bold">{booking.event_date} · {booking.event_time}</p><p className="text-sm text-muted-foreground">{booking.city}</p>{d?.driver_name && <div className="mt-4 rounded-lg border border-border bg-brand-soft/50 p-4"><p className="text-xs font-bold uppercase text-muted-foreground">Your driver</p><p className="mt-1 text-lg font-bold">{d.driver_name}</p><p className="text-sm">{d.vehicle_type ? `${d.vehicle_type} · ` : ""}{d.vehicle_number}</p>{d.driver_phone && <a href={`tel:${d.driver_phone}`} className="mt-3 flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary"><Phone className="size-4" />Call driver · {d.driver_phone}</a>}</div>}{d?.distance_km && <p className="mt-2 text-xs text-muted-foreground">{Number(d.distance_km).toFixed(1)} km trip{d.trip_minutes ? ` · about ${Math.round(Number(d.trip_minutes))} min` : ""}</p>}<p className="mt-4 font-display text-xl font-extrabold text-primary">₹{Number(booking.total_amount).toLocaleString("en-IN")}</p></div></div>;
 }
