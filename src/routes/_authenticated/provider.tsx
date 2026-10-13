@@ -32,6 +32,7 @@ type Tab = "dashboard" | "bookings" | "calendar" | "earnings" | "profile";
 
 type ProviderBooking = {
   id: string; customer: string; phone: string; service: string; detail: string;
+  liveCab?: boolean;
   date: string; time: string; area: string; amount: string; status: "new" | "confirmed" | "team" | "setup" | "done" | "declined";
 };
 
@@ -85,7 +86,7 @@ function ProviderPanel() {
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {providerProfile && <ProviderCabDriver providerId={providerProfile.id} />}
         {open ? (
-          <BookingDetail booking={open} providerId={providerProfile?.id} onNext={() => { const n = nextStatus[open.status]; if (n) void update(open.id, n.next); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
+          <BookingDetail booking={open} providerId={providerProfile?.id} onNext={() => { const n = open.liveCab ? ({ confirmed: "team", team: "setup", setup: "done" } as const)[open.status as "confirmed" | "team" | "setup"] : nextStatus[open.status]?.next; if (n) void update(open.id, n); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
           <Dashboard bookings={bookings} profile={providerProfile} onOpen={(id) => setOpenId(id)} />
         ) : tab === "bookings" ? (
