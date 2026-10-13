@@ -243,8 +243,13 @@ export type Database = {
       }
       cab_trip_requests: {
         Row: {
+          accepted_at: string | null
+          arrived_at: string | null
           booking_id: string | null
           customer_id: string
+          driver_lat: number | null
+          driver_lng: number | null
+          driver_updated_at: string | null
           drop_label: string
           drop_lat: number
           drop_lng: number
@@ -252,6 +257,10 @@ export type Database = {
           pickup_label: string
           pickup_lat: number
           pickup_lng: number
+          ride_completed_at: string | null
+          ride_otp: string | null
+          ride_started_at: string | null
+          ride_status: string
           road_km: number
           started_at: string
           state: string
@@ -259,8 +268,13 @@ export type Database = {
           vehicle_type: string
         }
         Insert: {
+          accepted_at?: string | null
+          arrived_at?: string | null
           booking_id?: string | null
           customer_id: string
+          driver_lat?: number | null
+          driver_lng?: number | null
+          driver_updated_at?: string | null
           drop_label?: string
           drop_lat: number
           drop_lng: number
@@ -268,6 +282,10 @@ export type Database = {
           pickup_label?: string
           pickup_lat: number
           pickup_lng: number
+          ride_completed_at?: string | null
+          ride_otp?: string | null
+          ride_started_at?: string | null
+          ride_status?: string
           road_km: number
           started_at?: string
           state?: string
@@ -275,8 +293,13 @@ export type Database = {
           vehicle_type?: string
         }
         Update: {
+          accepted_at?: string | null
+          arrived_at?: string | null
           booking_id?: string | null
           customer_id?: string
+          driver_lat?: number | null
+          driver_lng?: number | null
+          driver_updated_at?: string | null
           drop_label?: string
           drop_lat?: number
           drop_lng?: number
@@ -284,6 +307,10 @@ export type Database = {
           pickup_label?: string
           pickup_lat?: number
           pickup_lng?: number
+          ride_completed_at?: string | null
+          ride_otp?: string | null
+          ride_started_at?: string | null
+          ride_status?: string
           road_km?: number
           started_at?: string
           state?: string
@@ -812,6 +839,10 @@ export type Database = {
         Args: { a_lat: number; a_lng: number; b_lat: number; b_lng: number }
         Returns: number
       }
+      cab_ride_action: {
+        Args: { _action: string; _otp?: string; _request_id: string }
+        Returns: Json
+      }
       cancel_cab_trip_request: {
         Args: { _request_id: string }
         Returns: undefined
@@ -841,6 +872,7 @@ export type Database = {
           phone: string
         }[]
       }
+      get_cab_driver_active_ride: { Args: never; Returns: Json }
       get_cab_driver_inbox: { Args: never; Returns: Json }
       has_role: {
         Args: {
@@ -872,6 +904,10 @@ export type Database = {
           _vehicle_id: string
         }
         Returns: Json
+      }
+      update_cab_ride_location: {
+        Args: { _lat: number; _lng: number; _request_id: string }
+        Returns: undefined
       }
     }
     Enums: {
