@@ -56,9 +56,9 @@ function ProviderGallery({ providerId, fallback, name }: { providerId: string | 
   const { data: photos = [] } = useProviderGallery(providerId);
   const all = [...photos, ...(fallback && !photos.includes(fallback) ? [fallback] : [])];
   if (all.length === 0) return <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">This provider has not uploaded any service photos yet.</p>;
-  if (all.length === 1) return <img src={all[0]} alt={`${name} photo`} className="aspect-video w-full rounded-lg border border-border object-cover" />;
+  if (all.length === 1) return <img src={all[0]} alt={`${name} photo`} className="h-auto w-full rounded-lg border border-border object-contain" />;
   return <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1">
-    {all.map((src, i) => <img key={i} src={src} alt={`${name} photo ${i + 1}`} className="aspect-video w-[85%] shrink-0 snap-center rounded-lg border border-border object-cover first:ml-0 last:mr-1" />)}
+    {all.map((src, i) => <img key={i} src={src} alt={`${name} photo ${i + 1}`} className="h-auto max-h-72 w-[85%] shrink-0 snap-center rounded-lg border border-border object-contain first:ml-0 last:mr-1" />)}
   </div>;
 }
 type Prov = { id?: string; name: string; detail: string; price: string; rating: string; initials: string; phone?: string; logo?: string | null; banner?: string | null };
