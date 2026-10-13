@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import { RoleGate } from "@/components/role-gate";
 import { supabase } from "@/integrations/supabase/client";
-import { BookingExtras, BusinessEditor, CalendarEditor, InventoryManager, ReviewsList, ServicesManager, TeamManager, VehiclesManager } from "@/components/provider-manage";
+import { BookingExtras, BusinessEditor, CalendarEditor, GalleryManager, InventoryManager, ReviewsList, ServicesManager, TeamManager, VehiclesManager } from "@/components/provider-manage";
 import { ProviderCabDriver } from "@/components/provider-cab-driver";
 
 export const Route = createFileRoute("/_authenticated/provider")({
