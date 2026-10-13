@@ -123,24 +123,43 @@ export function pickupEtaMin(providerDistanceKm: number) {
   return Math.round((providerDistanceKm / 25) * 60 + 2);
 }
 
+type SearchHit = Place & { name?: string; sub?: string; km?: number | null };
+
 function PlaceSearch({ placeholder, near, onSelect }: { placeholder: string; near: LatLng | null; onSelect: (p: Place) => void }) {
   const [q, setQ] = useState("");
-  const [res, setRes] = useState<Place[]>([]);
+  const [res, setRes] = useState<SearchHit[]>([]);
   const t = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const seq = useRef(0);
+  const googleSearch = useServerFn(searchPlacesGoogle);
   useEffect(() => {
     clearTimeout(t.current);
-    if (q.trim().length < 3) { setRes([]); return; }
-    t.current = setTimeout(() => { searchPlaces(q, near).then(setRes).catch(() => setRes([])); }, 450);
-  }, [q, near]);
+    if (q.trim().length < 2) { setRes([]); return; }
+    const id = ++seq.current;
+    t.current = setTimeout(async () => {
+      let hits: SearchHit[] = [];
+      try {
+        const g = await googleSearch({ data: { q, lat: near?.lat ?? null, lng: near?.lng ?? null } });
+        hits = g.map((p) => ({ label: p.address ? `${p.name}, ${p.address}` : p.name, name: p.name, sub: p.address, point: p.point, km: p.distanceKm }));
+      } catch {
+        hits = await searchPlaces(q, near).catch(() => []);
+      }
+      if (id === seq.current) setRes(hits);
+    }, 300);
+  }, [q, near, googleSearch]);
   return (
     <div className="relative">
       <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} className="h-11 rounded-xl pl-9" />
       {res.length > 0 && (
-        <div className="absolute z-[1000] mt-1 w-full overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+        <div className="absolute z-[1000] mt-1 max-h-80 w-full overflow-y-auto rounded-xl border border-border bg-card shadow-lg">
           {res.map((r, i) => (
-            <button key={i} type="button" onClick={() => { onSelect(r); setQ(""); setRes([]); }} className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm hover:bg-secondary">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-accent" /><span className="line-clamp-2">{r.label}</span>
+            <button key={i} type="button" onClick={() => { onSelect({ label: r.label, point: r.point }); setQ(""); setRes([]); }} className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm hover:bg-secondary">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-semibold">{r.name ?? r.label}</span>
+                {r.sub && <span className="block truncate text-xs text-muted-foreground">{r.sub}</span>}
+              </span>
+              {r.km != null && <span className="shrink-0 text-xs text-muted-foreground">{r.km < 1 ? `${Math.round(r.km * 1000)} m` : `${r.km.toFixed(r.km < 10 ? 1 : 0)} km`}</span>}
             </button>
           ))}
         </div>
