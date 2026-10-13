@@ -99,6 +99,13 @@
       "when": 1791896198528,
       "tag": "0013_cab_ride_otp_lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791898567302,
+      "tag": "0014_provider_gallery_images",
+      "breakpoints": true
     }
   ]
 }
