@@ -141,6 +141,165 @@ export type Database = {
           },
         ]
       }
+      cab_driver_presence: {
+        Row: {
+          driver_name: string
+          latitude: number
+          longitude: number
+          online: boolean
+          provider_id: string
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          driver_name?: string
+          latitude: number
+          longitude: number
+          online?: boolean
+          provider_id: string
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          driver_name?: string
+          latitude?: number
+          longitude?: number
+          online?: boolean
+          provider_id?: string
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cab_driver_presence_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: true
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cab_driver_presence_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cab_trip_offers: {
+        Row: {
+          distance_km: number
+          expires_at: string
+          fare: number
+          id: string
+          provider_id: string
+          request_id: string
+          state: string
+          vehicle_id: string
+        }
+        Insert: {
+          distance_km: number
+          expires_at?: string
+          fare: number
+          id?: string
+          provider_id: string
+          request_id: string
+          state?: string
+          vehicle_id: string
+        }
+        Update: {
+          distance_km?: number
+          expires_at?: string
+          fare?: number
+          id?: string
+          provider_id?: string
+          request_id?: string
+          state?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cab_trip_offers_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cab_trip_offers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "cab_trip_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cab_trip_offers_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cab_trip_requests: {
+        Row: {
+          booking_id: string | null
+          customer_id: string
+          drop_label: string
+          drop_lat: number
+          drop_lng: number
+          id: string
+          pickup_label: string
+          pickup_lat: number
+          pickup_lng: number
+          road_km: number
+          started_at: string
+          state: string
+          trip_minutes: number
+          vehicle_type: string
+        }
+        Insert: {
+          booking_id?: string | null
+          customer_id: string
+          drop_label?: string
+          drop_lat: number
+          drop_lng: number
+          id?: string
+          pickup_label?: string
+          pickup_lat: number
+          pickup_lng: number
+          road_km: number
+          started_at?: string
+          state?: string
+          trip_minutes: number
+          vehicle_type?: string
+        }
+        Update: {
+          booking_id?: string | null
+          customer_id?: string
+          drop_label?: string
+          drop_lat?: number
+          drop_lng?: number
+          id?: string
+          pickup_label?: string
+          pickup_lat?: number
+          pickup_lng?: number
+          road_km?: number
+          started_at?: string
+          state?: string
+          trip_minutes?: number
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cab_trip_requests_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_items: {
         Row: {
           active: boolean
@@ -648,6 +807,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      advance_cab_trip_request: { Args: { _request_id: string }; Returns: Json }
+      cab_distance_km: {
+        Args: { a_lat: number; a_lng: number; b_lat: number; b_lng: number }
+        Returns: number
+      }
+      cancel_cab_trip_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
+      create_cab_trip_request: {
+        Args: {
+          _dlat: number
+          _dlng: number
+          _drop: string
+          _km: number
+          _minutes: number
+          _pickup: string
+          _plat: number
+          _plng: number
+          _type: string
+        }
+        Returns: string
+      }
+      find_nearby_cab_drivers: {
+        Args: { _lat: number; _lng: number; _radius: number }
+        Returns: Json
+      }
       get_booking_customer_contact: {
         Args: { _booking_code: string }
         Returns: {
@@ -655,6 +841,7 @@ export type Database = {
           phone: string
         }[]
       }
+      get_cab_driver_inbox: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -671,6 +858,20 @@ export type Database = {
           _phone: string
         }
         Returns: string
+      }
+      respond_cab_trip_offer: {
+        Args: { _accept: boolean; _offer_id: string }
+        Returns: Json
+      }
+      set_cab_driver_presence: {
+        Args: {
+          _lat: number
+          _lng: number
+          _name: string
+          _online: boolean
+          _vehicle_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
