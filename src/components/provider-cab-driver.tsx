@@ -42,7 +42,7 @@ export function ProviderCabDriver({ providerId }: { providerId: string }) {
     };
     setGps("Getting GPS…");
     const watch = navigator.geolocation.watchPosition(pos => { if (stopped) return; point.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; lastGpsAt = Date.now(); void save(true); }, () => { if (stopped) return; void save(false); setOnline(false); setGps("Location permission required"); toast.error("Driver online hone ke liye location permission chahiye"); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
-    const timer = setInterval(() => { if (Date.now() - lastGpsAt < 60000) void save(true); else { void save(false); setGps("GPS lost · Offline"); setOnline(false); } }, 20000);
+    const timer = setInterval(() => { navigator.geolocation.getCurrentPosition(pos => { if (stopped) return; point.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; lastGpsAt = Date.now(); void save(true); }, () => { if (stopped || Date.now() - lastGpsAt < 60000) return; void save(false); setGps("GPS lost · Offline"); setOnline(false); }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }); }, 20000);
     return () => { stopped = true; navigator.geolocation.clearWatch(watch); clearInterval(timer); };
   }, [online, selectedVehicle, name]);
 

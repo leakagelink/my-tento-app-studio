@@ -32,6 +32,7 @@ type Tab = "dashboard" | "bookings" | "calendar" | "earnings" | "profile";
 
 type ProviderBooking = {
   id: string; customer: string; phone: string; service: string; detail: string;
+  liveCab?: boolean;
   date: string; time: string; area: string; amount: string; status: "new" | "confirmed" | "team" | "setup" | "done" | "declined";
 };
 
@@ -50,7 +51,7 @@ function ProviderPanel() {
   const [openId, setOpenId] = useState<string | null>(null);
   const { data: providerProfile } = useQuery({ queryKey: ["provider-profile"], queryFn: async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return null; const { data, error } = await supabase.from("providers").select("id,business_name,city,rating,verified").eq("owner_id", auth.user.id).maybeSingle(); if (error) throw error; return data; } });
   const { data: availability = [] } = useQuery({ queryKey: ["provider-availability", providerProfile?.id], enabled: Boolean(providerProfile?.id), queryFn: async () => { const { data, error } = await supabase.from("provider_availability").select("id,available_date,status").eq("provider_id", providerProfile?.id ?? "").order("available_date"); if (error) throw error; return data ?? []; } });
-  const { data: liveBookings } = useQuery({ queryKey: ["provider-bookings"], queryFn: async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return []; const { data: provider } = await supabase.from("providers").select("id").eq("owner_id", auth.user.id).maybeSingle(); if (!provider) return []; const { data, error } = await supabase.from("bookings").select("booking_code,booking_type,event_date,event_time,city,total_amount,status,guests").eq("provider_id", provider.id).order("created_at", { ascending: false }); if (error) throw error; return (data ?? []).map((row): ProviderBooking => { const statusMap: Record<string, ProviderBooking["status"]> = { pending: "new", confirmed: "confirmed", team_assigned: "team", setup_started: "setup", completed: "done", declined: "declined", cancelled: "declined" }; return { id: row.booking_code, customer: "Customer", phone: "Shared after accept", service: `${row.booking_type} booking`, detail: `${row.guests} guests`, date: row.event_date, time: row.event_time, area: row.city, amount: `₹${Number(row.total_amount).toLocaleString("en-IN")}`, status: statusMap[row.status] ?? "new" }; }); } });
+  const { data: liveBookings } = useQuery({ queryKey: ["provider-bookings"], queryFn: async () => { const { data: auth } = await supabase.auth.getUser(); if (!auth.user) return []; const { data: provider } = await supabase.from("providers").select("id").eq("owner_id", auth.user.id).maybeSingle(); if (!provider) return []; const { data, error } = await supabase.from("bookings").select("booking_code,booking_type,event_date,event_time,city,total_amount,status,guests,details").eq("provider_id", provider.id).order("created_at", { ascending: false }); if (error) throw error; return (data ?? []).map((row): ProviderBooking => { const statusMap: Record<string, ProviderBooking["status"]> = { pending: "new", confirmed: "confirmed", team_assigned: "team", setup_started: "setup", completed: "done", declined: "declined", cancelled: "declined" }; return { liveCab: typeof row.details === "object" && row.details !== null && !Array.isArray(row.details) && row.details["cab_mode"] === "live_dispatch", id: row.booking_code, customer: "Customer", phone: "Shared after accept", service: `${row.booking_type} booking`, detail: `${row.guests} guests`, date: row.event_date, time: row.event_time, area: row.city, amount: `₹${Number(row.total_amount).toLocaleString("en-IN")}`, status: statusMap[row.status] ?? "new" }; }); } });
   useEffect(() => { setBookings(liveBookings ?? []); }, [liveBookings]);
 
   const go = (next: Tab) => { setTab(next); setOpenId(null); window.scrollTo(0, 0); };
@@ -85,7 +86,7 @@ function ProviderPanel() {
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {providerProfile && <ProviderCabDriver providerId={providerProfile.id} />}
         {open ? (
-          <BookingDetail booking={open} providerId={providerProfile?.id} onNext={() => { const n = nextStatus[open.status]; if (n) void update(open.id, n.next); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
+          <BookingDetail booking={open} providerId={providerProfile?.id} onNext={() => { const n = open.liveCab ? ({ confirmed: "team", team: "setup", setup: "done" } as const)[open.status as "confirmed" | "team" | "setup"] : nextStatus[open.status]?.next; if (n) void update(open.id, n); else setOpenId(null); }} onDecline={() => { void update(open.id, "declined"); setOpenId(null); }} onClose={() => setOpenId(null)} />
         ) : tab === "dashboard" ? (
           <Dashboard bookings={bookings} profile={providerProfile} onOpen={(id) => setOpenId(id)} />
         ) : tab === "bookings" ? (
@@ -184,14 +185,14 @@ function BookingDetail({ booking, providerId, onNext, onDecline, onClose }: { bo
         {booking.status !== "new" && (
           <div className="mt-5">
             <h3 className="font-bold">Job progress</h3>
-            <div className="mt-3 space-y-3">{["Booking confirmed", "Team assigned", "Setup started", "Event completed"].map((label, i) => (
+            <div className="mt-3 space-y-3">{(booking.liveCab ? ["Driver accepted", "Arrived at pickup", "Ride started", "Ride completed"] : ["Booking confirmed", "Team assigned", "Setup started", "Event completed"]).map((label, i) => (
               <div key={label} className="flex gap-3"><span className={`mt-1 size-3 rounded-full ${i <= stages.indexOf(booking.status) - 1 ? "bg-success" : "bg-border"}`} /><div><p className="text-sm font-semibold">{label}</p><p className="text-xs text-muted-foreground">{i <= stages.indexOf(booking.status) - 1 ? "Done" : "Pending"}</p></div></div>
             ))}</div>
           </div>
         )}
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Button variant="outline" onClick={booking.status === "new" ? onDecline : onClose}>{booking.status === "new" ? "Decline request" : "Close"}</Button>
-          <Button onClick={onNext}>{action ? action.label : "Completed"}</Button>
+          <Button onClick={onNext}>{booking.liveCab ? ({ confirmed: "Arrived at pickup", team: "Start ride", setup: "Complete ride" } as Record<string, string>)[booking.status] ?? "Completed" : action ? action.label : "Completed"}</Button>
         </div>
       </div>
     </div>
