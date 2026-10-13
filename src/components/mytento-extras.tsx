@@ -52,7 +52,7 @@ export function ComboScreen({ onContinue }: { onContinue: (name: string, price: 
 }
 
 /* ---------- Provider detail: gallery, dates, reviews ---------- */
-function ProviderGallery({ providerId, fallback, name }: { providerId?: string; fallback?: string | null; name: string }) {
+function ProviderGallery({ providerId, fallback, name }: { providerId: string | undefined; fallback: string | null | undefined; name: string }) {
   const { data: photos = [] } = useProviderGallery(providerId);
   const all = [...photos, ...(fallback && !photos.includes(fallback) ? [fallback] : [])];
   if (all.length === 0) return <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">This provider has not uploaded any service photos yet.</p>;

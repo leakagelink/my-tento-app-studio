@@ -23,3 +23,4 @@
 - [x] Cab ride OTP start, live driver location, notifications, both-side details, ride history
 
 - [ ] Reconnect Google Maps connector in new workspace (old connection std_01m4tkpq5ke6hv9d6pxqmfz0sq no longer applies)
+- [x] Provider multi-photo gallery: upload many photos, customer sees swipeable gallery
