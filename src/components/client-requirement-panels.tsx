@@ -14,6 +14,9 @@ import cabPhoto from "@/assets/vehicle-cab.webp";
 import suvPhoto from "@/assets/vehicle-suv.webp";
 import travellerPhoto from "@/assets/vehicle-traveller.png";
 import busPhoto from "@/assets/vehicle-bus.png";
+import { useAuth } from "@/hooks/use-auth";
+import { findLiveDrivers, searchRadius } from "@/lib/cab-dispatch";
+import { CabDispatchStatus } from "@/components/cab-dispatch-status";
 
 const CabRideMap = lazy(() => import("@/components/cab-ride-map"));
 
@@ -39,6 +42,8 @@ type CabVehicle = {
   seats: number;
   base_fare: number;
   per_km_rate: number;
+  driver_name?: string;
+  vehicle_number?: string;
   provider: { id: string; business_name: string; city: string; distance_km: number } | null;
 };
 
@@ -159,9 +164,18 @@ export function ClientCabScreen() {
   const [time, setTime] = useState("");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState<string | null>(null);
-
-  const { data: vehicles = [], isLoading } = useNearbyVehicles();
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const { user } = useAuth();
+  const { data: eventVehicles = [], isLoading: eventLoading } = useNearbyVehicles();
+  const radius = searchRadius(elapsed);
+  const { data: liveDrivers = [], isLoading: driverLoading, error: driverError } = useQuery({ queryKey: ["live-cab-drivers", pickup?.point.lat, pickup?.point.lng, radius, user?.id], enabled: mode === "trip" && Boolean(pickup && user) && !requestId, queryFn: () => pickup ? findLiveDrivers(pickup.point.lat, pickup.point.lng, radius) : Promise.resolve([]), refetchInterval: 5000 });
+  const vehicles: CabVehicle[] = mode === "event" ? eventVehicles : liveDrivers.map(d => ({ ...d, provider: { id: d.provider_id, business_name: d.business_name, city: d.city, distance_km: d.distance_km } }));
+  const isLoading = mode === "event" ? eventLoading : driverLoading;
   const selected = vehicles.find((v) => v.id === selectedId) ?? vehicles[0] ?? null;
+
+  useEffect(() => { setElapsed(0); setSelectedId(null); if (mode !== "trip" || !pickup) return; const timer = setInterval(() => setElapsed(s => Math.min(120, s + 1)), 1000); return () => clearInterval(timer); }, [mode, pickup?.point.lat, pickup?.point.lng]);
+  useEffect(() => { if (!user) return; let active = true; void supabase.from("cab_trip_requests").select("id").eq("customer_id", user.id).eq("state", "searching").order("started_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => { if (active && data) setRequestId(data.id); }); return () => { active = false; }; }, [user?.id]);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -213,6 +227,12 @@ export function ClientCabScreen() {
     if (mode === "trip" && !route) { toast.error("Route calculate ho raha hai, ek second rukiye"); return; }
     setSaving(true);
     try {
+      if (mode === "trip") {
+        const { data, error } = await supabase.rpc("create_cab_trip_request", { _type: selected.vehicle_type, _pickup: pickup.label, _drop: drop.label, _plat: pickup.point.lat, _plng: pickup.point.lng, _dlat: drop.point.lat, _dlng: drop.point.lng, _km: route?.km ?? km, _minutes: route?.min ?? 1 });
+        if (error) throw error;
+        setRequestId(data);
+        return;
+      }
       const now = new Date();
       const booking = await createLiveBooking({
         providerId: selected.provider.id,
@@ -224,7 +244,7 @@ export function ClientCabScreen() {
         eventTime: mode === "event" ? time : `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
         city: selected.provider.city,
       });
-      await supabase.from("bookings").update({
+      const { error: detailsError } = await supabase.from("bookings").update({
         pickup_location: pickup.label,
         drop_location: drop.label,
         details: {
@@ -238,6 +258,7 @@ export function ClientCabScreen() {
             : { cab_mode: "point_to_point", distance_km: km, trip_minutes: Math.round(route?.min ?? 0) }),
         },
       }).eq("id", booking.id);
+      if (detailsError) throw detailsError;
       setDone(booking.booking_code);
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
     } catch (e) {
@@ -248,6 +269,8 @@ export function ClientCabScreen() {
   };
 
   const eta = selected?.provider ? pickupEtaMin(Number(selected.provider.distance_km)) : 0;
+
+  if (requestId) return <CabDispatchStatus requestId={requestId} onClose={() => { setRequestId(null); setElapsed(0); void queryClient.invalidateQueries({ queryKey: ["bookings"] }); void queryClient.invalidateQueries({ queryKey: ["live-cab-drivers"] }); }} />;
 
   if (done) {
     return (
@@ -289,7 +312,7 @@ export function ClientCabScreen() {
             <div className="min-w-0 flex-1 space-y-2">
               <div>
                 <p className="text-[10px] font-bold uppercase text-muted-foreground">Pickup</p>
-                <p className="truncate text-sm font-semibold">{pickup?.label ?? (locating ? "Detecting your location…" : "Pickup chuniye")}</p>
+                <div className="flex items-center gap-2"><p className="min-w-0 flex-1 truncate text-sm font-semibold">{pickup?.label ?? (locating ? "Detecting your location…" : "Pickup chuniye")}</p>{pickup && <Button variant="link" size="sm" onClick={() => setPickup(null)}>Change</Button>}</div>
                 {!pickup && !locating && <div className="mt-1"><PlaceSearch placeholder="Search pickup" near={null} onSelect={setPickup} /></div>}
               </div>
               <div className="border-t border-border pt-2">
@@ -325,7 +348,8 @@ export function ClientCabScreen() {
 
         <div>
           <h2 className="mb-2 font-display text-sm font-bold">Choose a ride</h2>
-          {isLoading ? <p className="text-sm text-muted-foreground">Loading vehicles…</p> : vehicles.length === 0 ? <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">Abhi aas-paas koi verified cab available nahi hai.</p> : (
+          {mode === "trip" && user && pickup && <p className="mb-3 flex items-center gap-2 text-xs text-primary"><LocateFixed className="size-4" />{elapsed < 30 ? "Scanning nearby drivers" : "Live drivers"} · {radius} km · nearest first</p>}
+          {mode === "trip" && !user ? <p className="text-sm text-muted-foreground">Nearby drivers dekhne aur ride book karne ke liye sign in kariye.</p> : mode === "trip" && !pickup ? <p className="text-sm text-muted-foreground">Pickup location chuniye.</p> : driverError && mode === "trip" ? <p className="text-sm text-destructive">Drivers load nahi hue. Connection check kariye.</p> : isLoading ? <p className="text-sm text-muted-foreground">Loading vehicles…</p> : vehicles.length === 0 ? <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">{mode === "trip" ? (elapsed < 30 ? `${radius} km mein driver nahi mila; search area badh raha hai…` : "15 km mein koi live online driver available nahi hai.") : "Abhi koi verified event cab available nahi hai."}</p> : (
             <div className="space-y-2">
               {vehicles.map((v) => {
                 const active = selected?.id === v.id;
@@ -338,7 +362,8 @@ export function ClientCabScreen() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="font-bold">{v.vehicle_type} <span className="text-xs font-medium text-muted-foreground">· {v.seats} seats</span></p>
-                      <p className="truncate text-xs text-muted-foreground">{mode === "trip" ? `${fmtMin(vEta)} away · ` : ""}{v.provider?.business_name}</p>
+                      {mode === "trip" && <p className="break-words text-xs font-semibold">{v.driver_name}</p>}
+                      <p className="truncate text-xs text-muted-foreground">{mode === "trip" ? `${Number(v.provider?.distance_km ?? 0).toFixed(1)} km · ~${fmtMin(vEta)} away` : v.provider?.business_name}</p>
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="font-extrabold">{mode === "trip" && !route ? `₹${v.per_km_rate}/km` : `₹${price.toLocaleString("en-IN")}`}</p>
@@ -353,7 +378,7 @@ export function ClientCabScreen() {
 
         {selected && (
           <Button className="h-14 w-full rounded-2xl text-base font-bold" disabled={saving || !pickup || !drop || (mode === "trip" && !route)} onClick={book}>
-            {saving ? "Booking…" : !drop ? "Drop location chuniye" : `Book ${selected.vehicle_type} · ₹${total.toLocaleString("en-IN")}`}
+            {saving ? "Booking…" : !drop ? "Drop location chuniye" : `${mode === "trip" ? "Find" : "Book"} ${selected.vehicle_type} · ₹${total.toLocaleString("en-IN")}`}
           </Button>
         )}
         <p className="text-center text-[11px] text-muted-foreground">Cash payment · fare includes base ₹{selected?.base_fare ?? 0} + per km rate</p>
