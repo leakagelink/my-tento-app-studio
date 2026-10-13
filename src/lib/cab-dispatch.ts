@@ -9,7 +9,7 @@ export type LiveCabDriver = {
 export type CabDispatchState = {
   id: string; state: "searching" | "accepted" | "cancelled" | "no_driver"; radius: number;
   pickup: string; drop: string;
-  driver: { name: string; vehicle_type: string; vehicle_number: string; distance_km: number; fare: number; latitude: number; longitude: number } | null;
+  driver: { name: string; vehicle_type: string; vehicle_number: string; phone?: string | null; rating?: number | null; business_name?: string | null; distance_km: number; fare: number; latitude: number; longitude: number } | null;
   booking: { id: string; code: string; status: string; total: number } | null;
 };
 export type CabOffer = { id: string; fare: number; expires_at: string; distance_km: number; pickup_label: string; drop_label: string; road_km: number; trip_minutes: number; vehicle_type: string };
