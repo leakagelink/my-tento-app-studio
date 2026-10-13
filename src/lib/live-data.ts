@@ -131,6 +131,8 @@ export async function createLiveBooking(input: {
   city: string;
   discount?: number;
   coupon?: string | null;
+  venue?: string;
+  extra?: Record<string, string>;
 }) {
   const user = await getCurrentUser();
   if (!user) throw new Error("SIGN_IN_REQUIRED");
@@ -145,7 +147,8 @@ export async function createLiveBooking(input: {
     subtotal: input.totalAmount + (input.discount ?? 0),
     discount: input.discount ?? 0,
     total_amount: input.totalAmount,
-    details: input.coupon ? { source: "customer_app", coupon: input.coupon } : { source: "customer_app" },
+    ...(input.venue ? { pickup_location: input.venue } : {}),
+    details: { source: "customer_app", ...(input.coupon ? { coupon: input.coupon } : {}), ...(input.extra ?? {}) },
   }).select("id,booking_code").single();
   if (error) throw error;
   const { error: paymentError } = await supabase.from("payments").insert({
