@@ -11,7 +11,18 @@ export type CabDispatchState = {
   pickup: string; drop: string;
   driver: { name: string; vehicle_type: string; vehicle_number: string; phone?: string | null; rating?: number | null; business_name?: string | null; distance_km: number; fare: number; latitude: number; longitude: number } | null;
   booking: { id: string; code: string; status: string; total: number } | null;
+  ride_status?: "pending" | "accepted" | "arrived" | "started" | "completed" | "cancelled";
+  otp?: string | null;
+  pickup_coords?: { lat: number; lng: number }; drop_coords?: { lat: number; lng: number };
+  road_km?: number; trip_minutes?: number;
 };
+export type ActiveCabRide = { request_id: string; booking_code: string; ride_status: "accepted" | "arrived" | "started"; pickup_label: string; drop_label: string; pickup_lat: number; pickup_lng: number; drop_lat: number; drop_lng: number; road_km: number; trip_minutes: number; fare: number; customer_name: string; customer_phone: string | null };
+export function rideHeadline(state: CabDispatchState["state"] | undefined, ride?: CabDispatchState["ride_status"]) {
+  if (!state || state === "searching") return "Finding your driver";
+  if (state === "no_driver") return "No driver available";
+  if (state === "cancelled" || ride === "cancelled") return "Ride cancelled";
+  return ({ accepted: "Driver is on the way", arrived: "Driver has arrived", started: "Ride in progress", completed: "Ride completed" } as Record<string, string>)[ride ?? "accepted"] ?? "Driver is on the way";
+}
 export type CabOffer = { id: string; fare: number; expires_at: string; distance_km: number; pickup_label: string; drop_label: string; road_km: number; trip_minutes: number; vehicle_type: string };
 
 export function searchRadius(elapsedSeconds: number) {

@@ -9,3 +9,11 @@ describe("cab matching", () => {
     expect([0, 9, 10, 19, 20, 29, 30, 120].map(searchRadius)).toEqual([2, 2, 5, 5, 10, 10, 15, 15]);
   });
 });
+import { rideHeadline } from "./cab-dispatch";
+describe("ride progress", () => {
+  it("shows OTP-based ride stages", () => {
+    expect(rideHeadline("accepted", "arrived")).toBe("Driver has arrived");
+    expect(rideHeadline("accepted", "started")).toBe("Ride in progress");
+    expect(rideHeadline("accepted", "cancelled")).toBe("Ride cancelled");
+  });
+});
