@@ -96,7 +96,7 @@ function ProviderPanel() {
         ) : tab === "earnings" ? (
           <Earnings bookings={bookings} />
         ) : (
-          <div><ProviderProfile profile={providerProfile} />{providerProfile && <><BusinessEditor providerId={providerProfile.id} /><ServicesManager providerId={providerProfile.id} /><InventoryManager providerId={providerProfile.id} /><VehiclesManager providerId={providerProfile.id} /><TeamManager providerId={providerProfile.id} /><ReviewsList providerId={providerProfile.id} /></>}</div>
+          <div><ProviderProfile profile={providerProfile} />{providerProfile && <><BusinessEditor providerId={providerProfile.id} /><GalleryManager providerId={providerProfile.id} /><ServicesManager providerId={providerProfile.id} /><InventoryManager providerId={providerProfile.id} /><VehiclesManager providerId={providerProfile.id} /><TeamManager providerId={providerProfile.id} /><ReviewsList providerId={providerProfile.id} /></>}</div>
         )}
       </main>
 
