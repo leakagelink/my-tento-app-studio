@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Car, LoaderCircle, Navigation } from "lucide-react";
+import { Car, LoaderCircle, Navigation, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ export function CabDispatchStatus({ requestId, onClose }: { requestId: string; o
       <p className="mt-1 text-lg font-bold">{data.driver.name}</p>
       <p className="text-sm">{data.driver.vehicle_type} · {data.driver.vehicle_number}</p>
       <p className="mt-2 flex items-center gap-1 text-sm text-primary"><Navigation className="size-4" />{Number(data.driver.distance_km).toFixed(1)} km away · estimated {Math.round(Number(data.driver.distance_km) / 25 * 60 + 2)} min</p>
+      {!searching && data.driver.phone && <a href={`tel:${data.driver.phone}`} className="mt-3 flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2 text-sm font-semibold text-primary"><Phone className="size-4" />Call driver · {data.driver.phone}</a>}
       <p className="mt-3 border-t border-border pt-3 font-bold">Cash · ₹{Number(data.driver.fare).toLocaleString("en-IN")}</p>
     </div>}
     {data && <div className="space-y-2 text-sm"><p><b>Pickup:</b> {data.pickup}</p><p><b>Drop:</b> {data.drop}</p>{data.booking && <p><b>Booking:</b> {data.booking.code}</p>}</div>}
